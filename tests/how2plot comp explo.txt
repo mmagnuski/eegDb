@@ -1,0 +1,34 @@
+To plot components:
+
+topoplot( EEG.icawinv(:,ri), EEG.chanlocs, 'verbose', 'off', 'style' , 'fill', 'chaninfo', EEG.chaninfo, 'numcontour', 8);
+
+(also after plotting some of them in table:
+axis square;)
+
+The buttons work this way:
+
+button = uicontrol(gcf, 'Style', 'pushbutton', 'Units','Normalized', 'Position',...
+                           [X Y+sizewy sizewx sizewy*0.25].*s+q, 'tag', ['comp' num2str(ri)]);
+		command = sprintf('pop_prop( %s, 0, %d, %3.15f, { ''freqrange'', [1 50] });', inputname(1), ri, button);
+		set( button, 'callback', command );
+
+
+In one window the compo image is obtained by:
+topoplot( EEG.icawinv(:,chanorcomp), EEG.chanlocs, 'chaninfo', EEG.chaninfo, 'shading', 'interp', 'numcontour', 3); axis square;
+
+clickable large version:
+copyaxis('if ~isempty(get(gca, ''userdata'')), eval(get(gca, ''userdata'')); end;')
+
+
+freqrange is being used to plot comp spectra
+
+
+
+to get component:
+icaacttmp = eeg_getdatact(EEG, 'component', chanorcomp);
+
+plot figure with?:
+'numbertitle', 'off', 'visible', 'off'
+
+Check these:
+pop_icathresh(EEG)

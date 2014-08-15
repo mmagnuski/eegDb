@@ -1,0 +1,15 @@
+Docs:
+
+"WindowButtonMotionFcn" and "CurrentPoint".
+ButtonDownFcn
+Interruptible
+
+HitTest --> gco (general(ly) current object)
+if 'off' clicking the object can select what
+is below it
+
+
+'windowbuttondownfcn',   g.commandselect{1});
+  set(figh, 'windowbuttonmotionfcn', g.commandselect{2});
+  set(figh, 'windowbuttonupfcn',     g.commandselect{3});
+  set(figh, 'WindowKeyPressFcn',

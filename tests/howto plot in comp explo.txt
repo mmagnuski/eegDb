@@ -1,0 +1,5 @@
+EEGlab labels power axis in pop_prop this way:
+
+set( get(gca, 'ylabel'), 'string', 'Power 10*log_{10}(\muV^{2}/Hz)', 'fontsize', 14); 
+	set( get(gca, 'xlabel'), 'string', 'Frequency (Hz)', 'fontsize', 14); 
+	title('Activity power spectrum', 'fontsize', 14); 

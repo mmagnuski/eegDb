@@ -1,0 +1,9 @@
+winreject:
+[ ] apply rejections menu - display names,     not fieldnames 
+[ ] profiles
+[ ] color palette GUI:
+    - add use of use my colors
+    - add 'X' to the toggle button
+      if color is not used
+[ ] plot data options --> cooleegplot
+    - how to plot bad channels

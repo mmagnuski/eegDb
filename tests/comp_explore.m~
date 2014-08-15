@@ -1,0 +1,797 @@
+function varargout = comp_explore(varargin)
+% COMP_EXPLORE MATLAB code for comp_explore.fig
+%      COMP_EXPLORE, by itself, creates a new COMP_EXPLORE or raises the existing
+%      singleton*.
+%
+%      H = COMP_EXPLORE returns the handle to a new COMP_EXPLORE or the handle to
+%      the existing singleton*.
+%
+%      COMP_EXPLORE('CALLBACK',hObject,eventData,handles,...) calls the local
+%      function named CALLBACK in COMP_EXPLORE.M with the given input arguments.
+%
+%      COMP_EXPLORE('Property','Value',...) creates a new COMP_EXPLORE or raises the
+%      existing singleton*.  Starting from the left, property value pairs are
+%      applied to the GUI before comp_explore_OpeningFcn gets called.  An
+%      unrecognized property name or invalid value makes property application
+%      stop.  All inputs are passed to comp_explore_OpeningFcn via varargin.
+%
+%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
+%      instance to run (singleton)".
+%
+% See also: GUIDE, GUIDATA, GUIHANDLES
+
+% Edit the above text to modify the response to help comp_explore
+
+% Last Modified by GUIDE v2.5 18-Nov-2013 19:00:22
+
+% TODOs:
+% [ ] - editable component descriptions
+% [ ] - update ICAw by (inputname?) global variable
+% [ ] - compare spectopo and SpectPwelch - why are they different in 
+%       plotting component spectra?
+% [ ] - for now use calls to spectopo function?
+% [ ] - add button options for erpimage (smoothing, something else/)
+% [ ] - change scatter to go back to variance if patch deleted
+% [ ] - add some (floating?) text-box with info on freq when marking
+%       spectrum for scatter display
+% [ ] - change display of scatter
+% [ ] - add options gui for spectrum
+% [ ] - add/repair click-zoom property for topo, tri etc.
+
+% Begin initialization code - DO NOT EDIT
+gui_Singleton = 1;
+gui_State = struct('gui_Name',       mfilename, ...
+    'gui_Singleton',  gui_Singleton, ...
+    'gui_OpeningFcn', @comp_explore_OpeningFcn, ...
+    'gui_OutputFcn',  @comp_explore_OutputFcn, ...
+    'gui_LayoutFcn',  [] , ...
+    'gui_Callback',   []);
+if nargin && ischar(varargin{1})
+    gui_State.gui_Callback = str2func(varargin{1});
+end
+
+if nargout
+    [varargout{1:nargout}] = gui_mainfcn(gui_State, varargin{:});
+else
+    gui_mainfcn(gui_State, varargin{:});
+end
+% End initialization code - DO NOT EDIT
+
+
+% --- Executes just before comp_explore is made visible.
+function comp_explore_OpeningFcn(hObject, eventdata, h, varargin) %#ok<INUSL>
+% This function has no output args, see OutputFcn.
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% varargin   command line arguments to comp_explore (see VARARGIN)
+
+% Choose default command line output for comp_explore
+h.output = hObject;
+
+h.EEG = varargin{1};
+h.spect = cell(1, size(h.EEG.icaweights, 1));
+h.varia = h.spect;
+
+% check num of comps
+h.ncomp = size(h.EEG.icaweights, 1);
+
+% additional arguments:
+if evalin('base', 'exist(''ICAw'', ''var'');');
+    % take care of additional arguments
+    evalin('base', 'global ICAw;');
+    global ICAw %#ok<TLEV>
+else
+    % dupa blada
+    error('Damn, you should have a ICAw variable in your workspace');
+end
+
+% additional arguments:
+if nargin > 5
+    % take care of additional arguments
+    h.r = varargin{3};
+else
+    % dupa blada
+    error('Damn, you should have given me record number!');
+end
+
+% additional arguments:
+if nargin > 6
+    % take care of additional arguments
+    h.comp = varargin{4};
+else
+    h.comp = 1;
+end
+
+
+% checking ICAw
+f = ICAw_checkfields(ICAw, h.r, {'ICA_desc'});
+
+if ~f.fnonempt(1)
+    for cc = 1:h.ncomp
+    ICAw(h.r).ICA_desc(cc).reject = false;
+    ICAw(h.r).ICA_desc(cc).ifreject = false;
+    ICAw(h.r).ICA_desc(cc).type = '?';
+    ICAw(h.r).ICA_desc(cc).subtype = 'what am I ?';
+    ICAw(h.r).ICA_desc(cc).rank = [];
+    ICAw(h.r).ICA_desc(cc).notes = [];
+    end
+end
+
+% default:
+h.opt.ICA.types = {'artifact';'brain';'?'};
+h.opt.ICA.subtypes{1} = {'blink'; 'horiz eye movement';...
+    'heart'; 'muscle'; 'neck'};
+h.opt.ICA.subtypes{2} = {'brrrain'};
+h.opt.ICA.subtypes{3} = {'what am I ?'};
+h.opt.ICA.ranks = {'NoRank';'5';'4';'3';'2';'1'};
+h.opt.ICA.rejcol = [0.2 0.85 0.15; 0.92 0.28 0.15; 0.78 0.78 0.21];
+h.opt.ICA.rejs = {'spare';'reject';'maybe'};
+
+% ADD:
+% [ ] scan across ICAw to add subtypes etc.
+
+% [ ] CHANGE? - should it be a cell for different
+% individual selections?
+h.spct.startpoint = [];
+h.spct.endpoint = [];
+h.spct.patch = [];
+h.spct.line = [];
+h.spct.freqsel = [];
+
+h.triaxhndls = [];
+
+%% initial options:
+h.opt.topo.numcont = 4;
+h.opt.tri.smooth = 1;
+h.opt.spect.freqlim = [1 60];
+h.opt.plot.winl = 3;
+h.opt.plot.remall = false;
+h.opt.plot.sigall = false;
+
+%% if no icaact - create:
+if isempty(h.EEG.icaact)
+    h.EEG.icaact = eeg_getdatact(h.EEG, ...
+        'component', 1:size(h.EEG.icaweights, 1));
+end
+
+% [ ] ADD - use inputname() and declare corresponding
+%     ICAw as global variable
+
+% maybe use narginchk(minargs, maxargs) ?
+
+% set spectrum axis callback
+set(h.freq, 'ButtonDownFcn',@start_getrange);
+
+% Update handles structure
+guidata(hObject, h);
+
+% refresh gui
+refresh_comp_explore(h);
+
+
+
+% UIWAIT makes comp_explore wait for user response (see UIRESUME)
+% uiwait(handles.figure1);
+
+% --- Outputs from this function are returned to the command line.
+function varargout = comp_explore_OutputFcn(hObject, eventdata, handles)  %#ok<INUSL>
+% varargout  cell array for returning output args (see VARARGOUT);
+% hObject    handle to figure
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Get default command line output from handles structure
+varargout{1} = handles.output;
+
+%
+function refresh_comp_explore(h, varargin)
+
+refr = {'topo'; 'spect'; 'scatter'; 'tri'; 'compinfo'};
+
+% refreshes the GUI
+if nargin > 1
+    refr = varargin;
+end
+
+%% === component info ===
+if sum(strcmp('compinfo', refr)) > 0
+    global ICAw %#ok<TLEV>
+    
+    % type of comp:
+    compt = ICAw(h.r).ICA_desc(h.comp).type;
+    alltps = h.opt.ICA.types;
+    compi = find(strcmp(compt, alltps));
+    
+    if isempty(compi)
+        ICAw(h.r).ICA_desc(h.comp).type = '?';
+        compi = 3;
+    end
+    
+    ht = [h.artif; h.brain; h.dontknow];
+    set(ht(compi), 'Value', 1);
+    
+    % component subtype:
+    compt = ICAw(h.r).ICA_desc(h.comp).subtype;
+    alltps = h.opt.ICA.subtypes{compi};
+    
+    compi = find(strcmp(compt, alltps));
+    if isempty(compi)
+        alltps = [alltps{:}, compt];
+        h.opt.ICA.subtypes{compi} = alltps;
+        compi = length(alltps);
+    end
+    
+    set(h.compsubtype, 'String', alltps, 'Value', compi);
+    
+    % reject button
+    if ICAw(h.r).ICA_desc(h.comp).reject
+        ICAw(h.r).ICA_desc(h.comp).ifreject = false;
+        set(h.rejbut, 'BackGroundColor', h.opt.ICA.rejcol(2,:), ...
+            'String', h.opt.ICA.rejs{2});
+    elseif ICAw(h.r).ICA_desc(h.comp).ifreject
+        set(h.rejbut, 'BackGroundColor', h.opt.ICA.rejcol(3,:), ...
+            'String', h.opt.ICA.rejs{3});
+    else
+                set(h.rejbut, 'BackGroundColor', h.opt.ICA.rejcol(1,:), ...
+            'String', h.opt.ICA.rejs{1});
+    end
+    
+    % rank?
+    
+    % notes
+    set(h.componotes, 'String', ICAw(h.r).ICA_desc(h.comp).notes);
+    
+    % comp number
+    set(h.ICnb, 'String', ['IC ', num2str(h.comp)]);
+end
+
+%% === topo map plot ===
+if sum(strcmp('topo', refr)) > 0
+    axes(h.topo);
+    % clear axes here?
+    topoplot( h.EEG.icawinv(:,h.comp), h.EEG.chanlocs, 'chaninfo', h.EEG.chaninfo, ...
+        'shading', 'interp', 'numcontour', h.opt.topo.numcont);
+    axis square;
+end
+
+%% ===check variance===
+if sum(strcmp('scatter', refr)) > 0
+    if isempty(h.varia{h.comp})
+        h.varia{h.comp} = var(squeeze(h.EEG.icaact(h.comp,:,:)), 1)';
+    end
+    
+    scatter(h.scatter, [1:length(h.varia{h.comp})]', h.varia{h.comp}, 30, ...
+     [0 0.45 0.95],'fill'); %#ok<NBRAK>
+    
+    % set limits
+    set(h.scatter, 'XLim', [1, length(h.varia{h.comp})]);
+    
+    %set labels
+    xlabel(h.scatter, 'Trial');
+    ylabel(h.scatter, 'Variance');
+    
+    % fix lines
+    % tick = repmat(round(h.EEG.trials/4)*[1,2,3,4],2,1);
+    % lims=repmat(get(h.scatter, 'Ylim'), size(tick,2),1)';
+    % line(tick, lims ,'LineStyle','--', 'Color',[0 0.75 0.75], 'Parent', h.scatter);
+end
+
+%% ===spectrum checks===:
+if sum(strcmp('spect', refr)) > 0
+    % compute spectra
+    % now very simply
+    if isempty(h.spect{h.comp})
+        % [ ] ADD option changes
+        opt.compo = true;
+        opt.elec = h.comp;
+        opt.verbose = false;
+        opt.overlap = 0;
+        opt.padto = 2^nextpow2(h.EEG.pnts);
+        
+        % compute spectrum
+        h.spect{h.comp} = SpectPwelch(h.EEG, opt);
+        
+        % scale spectrum (RMS - root mean square)
+        h.spect{h.comp}.powspctrm = sqrt(mean(...
+            h.EEG.icawinv(:,h.comp).^4)) * h.spect{h.comp}.powspctrm;
+        
+        % turn power to 10*log10(power)
+        h.spect{h.comp}.powspctrm = 10*log10(h.spect{h.comp}.powspctrm);
+        
+    end
+    
+    %% plot spectrum
+    % [ ] ADD - check for replot
+    hold off
+    h.spct.specline = plot(h.freq, h.spect{h.comp}.freq, squeeze(mean(h.spect{h.comp}.powspctrm...
+        (:, 1, :), 1)), 'LineWidth', 2.5, 'Color', [0.32, 0.78, 0.22],...
+        'LineSmoothing', 'on');
+    if ~isempty(h.opt.spect.freqlim)
+        set(h.freq, 'XLim', h.opt.spect.freqlim);
+    end
+    
+    h.spct.XLim = get(h.freq, 'XLim');
+    h.spct.YLim = get(h.freq, 'YLim');
+    
+    xlabel('Frequency (Hz)');
+    % [ ] ADD - options to plot power or log power etc.
+    ylabel('Log-power');
+    set(h.freq, 'ButtonDownFcn',@start_getrange);
+end
+
+%% plot trimap
+
+if sum(strcmp('tri', refr)) > 0
+
+% clear tri
+    cla(h.tri);
+
+if ~isempty(h.triaxhndls)
+    % delete tri co-occuring axes
+    delh = h.triaxhndls(2:end);
+    delh = delh(~isnan(delh));
+    delh = delh(ishandle(delh));
+    delete(delh);
+end
+
+    axes(h.tri);
+    if isempty(h.EEG.times)
+        h.EEG.times = linspace(h.EEG.xmin,...
+            h.EEG.xmax, h.EEG.pnts);
+    end
+    
+    ei_smooth = h.opt.tri.smooth;
+    
+    
+    offset = nan_mean(h.EEG.icaact(h.comp,:));
+    era = nan_mean(squeeze(h.EEG.icaact(h.comp,:,:))')-offset;
+    era_limits=get_era_limits(era);
+    % erpimage deletes current axis :( - we must use its altered version
+    [~,~,~,~,h.triaxhndls] = erpimage2( h.EEG.icaact(h.comp,:,:) ...
+        - offset, ones(1,h.EEG.trials)*10000,...
+        h.EEG.times*1000, '', ei_smooth, 1, 'caxis', 2/3, 'cbar', 'erp',...
+        'yerplabel', '','erp_vltg_ticks', era_limits);
+end
+%%
+
+% update GUI data:
+guidata(h.freq, h);
+
+function start_getrange(hObject, ev) %#ok<INUSD>
+h = guidata(hObject);
+
+if isempty(h.spct.startpoint)
+    % if patchobj present - destroy
+    if ~isempty(h.spct.patch) && ishandle(h.spct.patch)
+        delete(h.spct.patch)
+    end
+    
+    % get cursor position
+    h.spct.startpoint = get(h.freq, 'CurrentPoint');
+    
+    % plot line there
+    Xpos = h.spct.startpoint(1,1);
+    hold on
+    h.spct.line = plot([Xpos, Xpos], h.spct.YLim, 'LineWidth', 2, ...
+        'Color', [0.68, 0.42, 0.12]);
+    hold off
+    
+    % retaining axis limits (should be updateICAw in
+    % a different way)
+    set(h.freq, 'XLim', h.spct.XLim);
+    set(h.freq, 'YLim', h.spct.YLim);
+    
+    guidata(hObject, h);
+else
+    h.spct.endpoint = get(h.freq, 'CurrentPoint');
+    
+    % delete line
+    if ~isempty(h.spct.line)
+        delete(h.spct.line);
+        h.spct.line = [];
+    end
+    
+    % find the points
+    lowX = min([h.spct.endpoint(1,1), h.spct.startpoint(1,1)]);
+    % lowY = min([h.endpoint(1,2), h.startpoint(1,2)]);
+    hiX = max([h.spct.endpoint(1,1), h.spct.startpoint(1,1)]);
+    % hiY = max([h.endpoint(1,2), h.startpoint(1,2)]);
+    h.spct.freqsel = [lowX, hiX];
+    
+    % plot the patch
+    h.spct.patch = patch('Vertices', [lowX, h.spct.YLim(1); hiX, h.spct.YLim(1);...
+        hiX, h.spct.YLim(2); lowX, h.spct.YLim(2)], 'Faces', 1:4, 'HitTest', ...
+        'on', 'FaceAlpha', 0.3, 'ButtonDownFcn', @del_ptch, ...
+        'EdgeColor', 'none', 'FaceColor', [0.8, 0.5, 0.2]);
+    
+    % set it below the line
+    % children = get(h.ax, 'Children');
+    
+    % retaining axis limits (should be updateICAw in
+    % a different way)
+    set(h.freq, 'XLim', h.spct.XLim);
+    set(h.freq, 'YLim', h.spct.YLim);
+    
+    
+    % update the other window
+    figscatt(h);
+    
+    h.spct.startpoint = [];
+    h.spct.endpoint = [];
+end
+
+% disp(h.startpoint);
+guidata(hObject, h);
+
+% update scatter data
+function figscatt(h)
+
+if ~isempty(h.spct.freqsel)
+    % get freqs:
+    for fr = 1:2
+        [~, freqadr(fr)] = min((abs(h.spect{h.comp}.freq - h.spct.freqsel(fr)))); %#ok<AGROW>
+        % frq(fr) = h.spect.freq(freqadr);
+    end
+    
+    % take average power in freq range across epochs
+    h.scattdat = squeeze(mean(h.spect{h.comp}.powspctrm(:,1, ...
+        freqadr(1):freqadr(2)), 3));
+    
+    scatter(h.scatter, [1:length(h.scattdat)]', h.scattdat(:),30, ...
+     [0 0.45 0.95],'fill');
+    
+    % set limits
+    set(h.scatter, 'XLim', [1, length(h.scattdat)]);
+    
+    %set labels
+    xlabel(h.scatter, 'Trial');
+    ylabel(h.scatter, 'Variance');
+    
+    % update gui data
+    guidata(h.scatter, h);
+end
+
+
+
+
+function del_ptch(hObj, e) %#ok<INUSD>
+
+h = guidata(hObj);
+if ~isempty(h.spct.patch)
+    delete(h.spct.patch)
+    h.spct.patch = [];
+end
+guidata(h.scatter, h);
+
+% --- Executes on button press in prev.
+function prev_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
+% hObject    handle to prev (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+h = guidata(hObject);
+
+if h.comp > 1
+    cla(h.topo);
+    
+    if ishandle(h.spct.patch)
+        delete(h.spct.patch);
+        h.spct.patch = [];
+    end
+    
+    h.comp = h.comp - 1;
+    guidata(hObject, h);
+    refresh_comp_explore(h);
+end
+
+
+% --- Executes on button press in pushbutton3.
+function pushbutton3_Callback(hObject, eventdata, handles) %#ok<INUSD>
+% hObject    handle to pushbutton3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on button press in next.
+function next_Callback(hObject, eventdata, handles) %#ok<INUSD>
+
+h = guidata(hObject);
+
+if h.comp < size(h.EEG.icaweights,1)
+    cla(h.topo);
+    
+    % delete patch object?
+    % [ ] - other option - save info
+    %       to recover when back to this
+    %       componenet
+    if ishandle(h.spct.patch)
+        delete(h.spct.patch);
+        h.spct.patch = [];
+    end
+    
+    h.comp = h.comp + 1;
+    guidata(hObject, h);
+    refresh_comp_explore(h);
+end
+
+
+% --- Executes on button press in erpimopt.
+function erpimopt_Callback(hObject, eventdata, handles) %#ok<INUSD>
+
+% ADD
+% [ ] - option to choose trials
+% [ ] - frequency range from freqplot displays it
+h = guidata(hObject);
+hs = gui_multiedit('ERPimage options', {'smoothing'},...
+    {num2str(h.opt.tri.smooth)});
+set(hs.ok, 'Callback', {@tricall, hObject, hs});
+set(hs.cancel, 'Callback', 'close(hs.hf)');
+
+
+function tricall(h, e, hobj, hwin)
+% callback function for erpimopt
+hgui = guidata(hobj);
+optval = get(hwin.edit(1), 'String');
+if ~isempty(optval) 
+    smoothval = str2num(optval);
+    if isnumeric(smoothval)
+        hgui.opt.tri.smooth = smoothval;
+        refresh_comp_explore(hgui, 'tri');
+    end
+end    
+
+delete(hwin.hf);
+
+
+% --- Executes on button press in freqdisplayopt.
+function freqdisplayopt_Callback(hObject, eventdata, handles) %#ok<INUSD>
+% hObject    handle to freqdisplayopt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on selection change in compsubtype.
+function compsubtype_Callback(hObject, eventdata, handles) %#ok<INUSD>
+% hObject    handle to compsubtype (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+h = guidata(hObject);
+global ICAw
+strval = get(hObject,'String');
+ICAw(h.r).ICA_desc(h.comp).subtype = strval{get(hObject,'Value')};
+
+
+% --- Executes during object creation, after setting all properties.
+function compsubtype_CreateFcn(hObject, eventdata, handles) %#ok<INUSD>
+% hObject    handle to compsubtype (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function componotes_Callback(hObject, eventdata, handles)
+% hObject    handle to componotes (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global ICAw
+h = guidata(hObject);
+ICAw(h.r).ICA_desc(h.comp).notes =  get(hObject,'String');
+%        str2double(get(hObject,'String')) returns contents of componotes as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function componotes_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to componotes (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in addtype.
+function addtype_Callback(hObject, eventdata, handles)
+% hObject    handle to addtype (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes on selection change in popupmenu2.
+function popupmenu2_Callback(hObject, eventdata, handles)
+% hObject    handle to popupmenu2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns popupmenu2 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from popupmenu2
+
+
+% --- Executes during object creation, after setting all properties.
+function popupmenu2_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to popupmenu2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: popupmenu controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in rejbut.
+function rejbut_Callback(hObject, eventdata, handles)
+% hObject    handle to rejbut (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+h = guidata(hObject);
+
+butopt = h.opt.ICA.rejs;
+currstr = get(hObject, 'String');
+
+stri = find(strcmp(currstr, butopt));
+if stri == 3
+    stri = 0;
+end
+
+stri = stri + 1;
+set(hObject, 'String', h.opt.ICA.rejs{stri});
+set(hObject, 'BackGroundColor', h.opt.ICA.rejcol(stri, :));
+
+global ICAw
+
+% introduce changes to ICAw
+if stri == 1
+    ICAw(h.r).ICA_desc(h.comp).reject = false;
+    ICAw(h.r).ICA_desc(h.comp).ifreject = false;
+elseif stri == 2
+    ICAw(h.r).ICA_desc(h.comp).reject = true;
+    ICAw(h.r).ICA_desc(h.comp).ifreject = false;
+else
+    ICAw(h.r).ICA_desc(h.comp).reject = false;
+    ICAw(h.r).ICA_desc(h.comp).ifreject = true;
+end
+
+% --- Executes on button press in comp_signal.
+function comp_signal_Callback(hObject, eventdata, handles)
+% hObject    handle to comp_signal (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+h = guidata(hObject);
+global ICAw 
+if h.opt.plot.sigall;
+eegplot(h.EEG.icaact(:,:,:), 'srate', h.EEG.srate, ...
+    'winlength', h.opt.plot.winl ,'limits', [h.EEG.times(1), h.EEG.times(end)],...
+    'events', h.EEG.event, 'title', 'Component Timecourse');
+else
+    eegplot(h.EEG.icaact(h.comp,:,:), 'srate', h.EEG.srate, ...
+    'winlength', h.opt.plot.winl ,'limits', [h.EEG.times(1), h.EEG.times(end)],...
+    'events', h.EEG.event, 'title', 'Component Timecourse');
+end
+
+
+% --- Executes on button press in eeg_changes.
+function eeg_changes_Callback(hObject, eventdata, handles)
+% hObject    handle to eeg_changes (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+h = guidata(hObject);
+global ICAw
+allelecs = 1:size(h.EEG.data,1); 
+goodelecs = allelecs;
+corrs=badchan_ind(ICAw, h.r ,h.EEG.chanlocs); 
+goodelecs(corrs) = [];
+
+if h.opt.plot.remall;
+    rejects = find([ICAw(h.r).ICA_desc.reject]);
+else
+    rejects = h.comp;
+end
+
+h.EEG2 = pop_subcomp(h.EEG, rejects, 0);
+% open window:
+eegplot(h.EEG.data(goodelecs,:,:), 'srate', h.EEG.srate, ...
+    'winlength', h.opt.plot.winl, 'eloc_file', h.EEG.chanlocs(goodelecs), ...
+    'limits', [h.EEG.times(1), h.EEG.times(end)], 'data2',...
+    h.EEG2.data(goodelecs,:,:), 'events', h.EEG.event, ...
+    'title', ['Signal change after removing IC ', num2str(rejects)], 'tag', 'befaft');
+
+% === the subfunctions below are copied from EEGlab pop_prop:
+function era_limits=get_era_limits(era)
+%function era_limits=get_era_limits(era)
+%
+% Returns the minimum and maximum value of an event-related
+% activation/potential waveform (after rounding according to the order of
+% magnitude of the ERA/ERP)
+%
+% Inputs:
+% era - [vector] Event related activation or potential
+%
+% Output:
+% era_limits - [min max] minimum and maximum value of an event-related
+% activation/potential waveform (after rounding according to the order of
+% magnitude of the ERA/ERP)
+
+mn=min(era);
+mx=max(era);
+mn=orderofmag(mn)*round(mn/orderofmag(mn));
+mx=orderofmag(mx)*round(mx/orderofmag(mx));
+era_limits=[mn mx];
+
+
+function ord=orderofmag(val)
+%function ord=orderofmag(val)
+%
+% Returns the order of magnitude of the value of 'val' in multiples of 10
+% (e.g., 10^-1, 10^0, 10^1, 10^2, etc ...)
+% used for computing erpimage trial axis tick labels as an alternative for
+% plotting sorting variable
+
+val=abs(val);
+if val>=1
+    ord=1;
+    val=floor(val/10);
+    while val>=1,
+        ord=ord*10;
+        val=floor(val/10);
+    end
+    return;
+else
+    ord=1/10;
+    val=val*10;
+    while val<1,
+        ord=ord/10;
+        val=val*10;
+    end
+    return;
+end
+
+
+% --------------------------------------------------------------------
+function compotype_panel_ButtonDownFcn(hObject, eventdata, handles)
+
+% dont know if this iss the best way to manage radiobutton groups
+
+h = guidata(hObject);
+global ICAw
+
+% get selected
+vals = find(get([h.artif, h.brain, h.dontknow], 'Value'));
+ICAw(h.r).ICA_desc(h.comp).type = h.opt.ICA.types{vals};
+refresh_comp_explore(h, 'compinfo');
+
+
+
+% --- Executes on button press in updateICAw.
+function updateICAw_Callback(hObject, eventdata, handles)
+% hObject    handle to updateICAw (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+% Update handles structure
+
+h = guidata(hObject);
+global ICAw
+assignin('base', 'ICAw', ICAw);
+time=gettime();
+set(h.lastUpdate, 'String', ['Last update:' time]);
+
+
+% --- Executes on button press in plot_opt.
+function plot_opt_Callback(hObject, eventdata, handles)
+% hObject    handle to plot_opt (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+h = guidata(hObject);
+h = plotopt(h);
