@@ -1,6 +1,6 @@
 function ICAw = ICAw_newrejtype(ICAw, newtypes)
 
-% NOHELP
+% NOHELPINFO
 
 if isempty(newtypes)
     ex = evalin('base', 'exist(''TMPNEWREJ'', ''var'');');
@@ -17,8 +17,8 @@ end
 % CHANGE - this should be only performed
 %          for consistency checks one time
 %          (at the beginning)
-%          !! use persistent option :)
-rejt = ICAw_scanrejtypes(ICAw);
+%          !! use persistent option?
+rejt = ICAw_scanrejtypes(ICAw); % <-- consider moving this to C maybe...
 
 % take only userrem types:
 urem = strcmp('userrem', rejt.infield);

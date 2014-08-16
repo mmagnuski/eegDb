@@ -1,6 +1,7 @@
 function r = ICAw_find(ICAw, lookfor, varargin)
 
 % r = ICAw_find(ICAw, lookfor)
+% 
 % Looks for a specific ICAw entry (or entries)
 % and returns their adress in vector r.
 %

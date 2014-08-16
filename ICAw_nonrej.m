@@ -1,6 +1,6 @@
 function nonrejid = ICAw_nonrej(ICAw, r, varargin)
 
-% help description coming soon
+% NOHELPINFO
 
 % TODOs:
 % [ ] - the function should check segment by itself

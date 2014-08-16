@@ -1,8 +1,12 @@
 function log = ICAw_testfiles(ICAw)
 
 % log = ICAw_testfiles(ICAw)
-% tests for file presence of all ICAw records
-% (checks whether .set file is present)
+%
+% tests for file presence in all ICAw records
+% (checks whether .set file referenced by 
+% filepath and filename is present)
+% log is a boolean vector where true means 
+% that the file was present
 
 len = length(ICAw);
 log = false(1, len);

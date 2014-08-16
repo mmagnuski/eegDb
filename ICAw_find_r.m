@@ -1,8 +1,9 @@
 function r = ICAw_find_r(ICAw, fld, val)
 
 % r = ICAw_find_r(ICAw, fld, val)
+%
 % looks for a record that has field 'fld'
-% filled with value 'val'.
+% set to value 'val'.
 % Returns all indices that fulfill these
 % constaints.
 

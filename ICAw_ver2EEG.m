@@ -1,9 +1,13 @@
 function EEG = ICAw_ver2EEG(ICAw, r, EEG)
 
+% EEG = ICAw_ver2EEG(ICAw, r, EEG)
 % transports current version to EEG.etc.recov
 % this is for the interface to know later whether
 % currently recovered EEG corresponds to currently
 % active version
+
+% CHANGE - this may not be the best way
+%          to do it...
 
 % current version:
 cvf = ICAw(r).versions.current;

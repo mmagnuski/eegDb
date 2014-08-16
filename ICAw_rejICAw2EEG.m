@@ -1,5 +1,7 @@
 function EEG = ICAw_rejICAw2EEG(ICAw, r, EEG, prerej)
 
+% NOHELPINFO
+
 % taking care of rejections
 % in and out from ICAw/EEG
 ICAw_present = true;

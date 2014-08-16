@@ -1,9 +1,12 @@
 function tags = ICAw_search_by_tag(ICAw, r, varargin)
 
 % tags = ICAw_search_by_tag(ICAw, r);
+% 
 % searches given ICAw record for component
 % tags (that is text of format '[tag_text]'
 % present in component notes.
+
+% CHECK ICAw_search_by_tag vs ICAw_tag_search
 
 % check if ICA_desc has any info:
 if ~femp(ICAw(r), 'ICA_desc')

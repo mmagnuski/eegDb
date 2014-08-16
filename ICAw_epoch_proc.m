@@ -5,6 +5,8 @@
 % optionally remove additional epochs after IC
 % removal and add channels to badchan structure
 
+% BRANCH
+% CHECK
 
 % checking for 'laststep':
 cnt = true;

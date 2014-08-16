@@ -1,6 +1,7 @@
 function ICAw = ICAw_onechan_comp(ICAw, r)
 
 % ICAw = ICAw_onechan_comp(ICAw);
+% 
 % adds a field ica_onechan to ICAw
 % structure that contains ICs that
 % are most probably explaining only
@@ -9,6 +10,9 @@ function ICAw = ICAw_onechan_comp(ICAw, r)
 % variance unexplained by any other
 % component)
 %
+
+% BRANCH
+% CHANGE - this does not work that well, should be changed
 
 opt.sd = 4;
 opt.multip_more = 3;

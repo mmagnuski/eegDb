@@ -1,5 +1,6 @@
 function ICAw = ICAw_updatetonewformat(ICAw)
 
+% OUTDATED
 % updates ICAw structure to its most current form
 
 

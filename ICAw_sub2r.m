@@ -1,5 +1,7 @@
 function sub2r = ICAw_sub2r(ICAw, varargin)
 
+% sub2r = ICAw_sub2r(ICAw, varargin)
+%
 % ICAw_sub2r() retruns cell matrix
 % subjects X 2 representing for each
 % subject (first column) registries of 
@@ -23,7 +25,7 @@ function sub2r = ICAw_sub2r(ICAw, varargin)
 %         this subject
 % 
 % Usage 2:
-% sub2r = ICAw_sub2r(ICAw);
+% sub2r = ICAw_sub2r(ICAw, s);
 %
 % where :
 % ICAw  - ICAw structure (as used by ICAw
@@ -34,6 +36,10 @@ function sub2r = ICAw_sub2r(ICAw, varargin)
 %         corresponding to this subject
 %
 % coded by M. Magnuski, august, 2013
+
+% CHANGE - check for subjectcode etc.
+% NOTUSED - possibly this is not used in the
+%           core eegDb
 
 %% defaults
 sub = false;

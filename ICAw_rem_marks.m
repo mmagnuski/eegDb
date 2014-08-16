@@ -1,4 +1,6 @@
-function ICAw = ICAw_rem_marks(ICAw);
+function ICAw = ICAw_rem_marks(ICAw)
+
+% NOHELPINFO
 
 not = {'color', 'name'};
 

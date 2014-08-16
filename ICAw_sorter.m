@@ -1,6 +1,11 @@
 function ICAw = ICAw_sorter(ICAw)
 
+% NOHELPINFO
 % sort fields of ICAw:
+
+% CHANGE - once eegDb field structure is settled upon
+%          this function should be changed to reflect
+%          that structure
 
 fldord = {'subjectcode'; 'filename'; 'filepath'; 'datainfo';...
     'tasktype'; 'badchan'; 'filter'; 'usecleanline'; 'onesecepoch'; 'winlen';

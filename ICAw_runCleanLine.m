@@ -1,8 +1,15 @@
 function ICAw = ICAw_runCleanLine(ICAw)
 
-% runs CleanLine for file with field usecleanline set
-% to true. Updates ICAw structure
-% add new filepath argument?
+% ICAw = ICAw_runCleanLine(ICAw)
+%
+% runs CleanLine for records where field 
+% usecleanline is set to true. 
+% Updates ICAw structure.
+% FIXHELPINFO - add info about creation of
+%               \CleanLine\ folder etc.
+
+% CHANGE - add new filepath argument?
+% CHANGE - other options? (parameter scan?)
 
 % TODOs:
 % [ ] check for datainfo.cleanline - if true do not run (?)

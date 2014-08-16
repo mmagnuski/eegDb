@@ -1,6 +1,6 @@
 function [isICAw, moreinfo] = ICAw_isbase(somevar)
 
-% PARTIALHELPINFO
+% FIXHELPINFO
 % determines whether given variable is 
 % an ICAw structure
 

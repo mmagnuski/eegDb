@@ -1,4 +1,6 @@
 function varargout = ICAw_gui_epoch(varargin)
+
+% NOHELPINFO
 % ICAW_GUI_EPOCH
 %
 % See also: GUIDE, GUIDATA, GUIh

@@ -1,6 +1,7 @@
 function ICAw = ICAw_moverej(ICAw, r, epoch_info, perc, varargin)
 
 % ICAw = ICAw_moverej(ICAw, epoch_info, perc, varargin)
+%
 % Moves rejections from onesecepoch to any other
 % event-based epoching.
 % ICAw - the database
@@ -9,7 +10,8 @@ function ICAw = ICAw_moverej(ICAw, r, epoch_info, perc, varargin)
 %              and new epoch above (and equal to) which
 %              the new epoch is rejected
 
-% copy bad windows to bad epochs:
+% ADD some tests and options...
+% TEST thoroughly
 
 % load original (unepoched) file:
 % eeg_path('add');

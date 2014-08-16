@@ -1,5 +1,7 @@
 function pattern = ICAw_scan4patterns(DIR, pat, varargin)
 
+% NOHELPINFO
+
 %%
 % default parameters
 verbose = true;

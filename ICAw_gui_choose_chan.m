@@ -1,5 +1,7 @@
 function [f] = ICAw_gui_choose_chan(chan_names, chan_sel, varargin)
 
+% NOHELPINFO
+
 color = [0.85 0.90 0.95];
 if nargin > 2
     color = varargin{1};

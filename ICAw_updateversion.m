@@ -1,11 +1,16 @@
 function ICAw = ICAw_updateversion(ICAw, r, verf)
 
+% ICAw = ICAw_updateversion(ICAw, r, verf)
+%
 % ICAw_updateversion updates version whose
 % field or name has been given
 % that is it updates the version field of a
 % given ICAw(r) registry with its current main
 % content that is the contents of ICAw(r)
 % nonempty fields
+% 
+% FIXHELPINFO
+% verf is not explained - version field name?
 
 
 %% check version field:

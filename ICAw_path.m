@@ -1,6 +1,7 @@
 function pth = ICAw_path(PTH, varargin)
 
 % pth = ICAw_path(PTH);
+% 
 % goes through path strings in PTH and
 % finds pth - the string that is a valid
 % directory on the current computer.

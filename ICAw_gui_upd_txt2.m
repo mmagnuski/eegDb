@@ -1,5 +1,7 @@
 function ICAw_gui_upd_txt2(addinf, h)
 
+% NOHELPINFO
+
 % ICAw_txt = {'filename: '; 'badchans: '; 'rejected comps: ';...
 %     'comments: '};
 ICAw_txt2 = {'all ifrej comps num: '; 'current comp: '; 'comps left: ';...

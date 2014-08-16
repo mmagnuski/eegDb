@@ -1,5 +1,7 @@
 function [ICAw, EEG] = ICAw_rejTMP(ICAw, r, EEG, TMPREJ)
 
+% NOHELPINFO
+
 % taking care of rejections
 % in and out from ICAw/EEG
 ICAw_present = true;

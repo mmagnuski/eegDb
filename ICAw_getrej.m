@@ -1,6 +1,7 @@
 function outlist = ICAw_getrej(ICAw, r, varargin)
 
 % rejlist = ICAw_getrej(ICAw, r)
+%
 % returns a list of markings that are present for a given file
 % rejlist.name - displayed name of the marking
 % rejlist.color - color of the marking
@@ -8,7 +9,8 @@ function outlist = ICAw_getrej(ICAw, r, varargin)
 
 % CHANGE
 % [ ] clear up ICAw_getrej
-% [ ] ICAw_checkfields takes up about 80% of execution time
+% [ ] profile and change/rewrite
+% [X] ICAw_checkfields takes up about 80% of execution time
 %     - should we resign from ICAw_checkfields?
 %     it shouldn't be called so often...
 

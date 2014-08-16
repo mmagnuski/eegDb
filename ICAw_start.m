@@ -1,7 +1,9 @@
 function ICAw_start(PTH, varargin)
 
 % function for starting your work with ICAw
-%
+% FIXHELPINFO
+
+% CHECK, CHANGE this function and to a stable, relatively final form
 
 % TODOs:
 % [ ] add some more options

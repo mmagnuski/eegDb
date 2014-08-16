@@ -1,5 +1,7 @@
 function ICAw_gui_upd_txt(ICAw, r, h)
 
+% NOHELPINFO
+
 ICAw_txt = {'filename: '; 'badchans: '; 'rejected comps: ';...
     'comments: '};
 

@@ -1,5 +1,7 @@
 function iseq = ICAw_vers_compare(ver01, ver02)
 
+% NOHELPINFO
+
 % compare non-empty fields of databases
 ign = {'subjectcode', 'tasktype', 'filename', 'filepath',...
     'datainfo', 'session', 'versions', 'version_name', ...

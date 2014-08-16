@@ -1,6 +1,6 @@
 function rejt = ICAw_scanrejtypes(ICAw)
 
-% NOHELP
+% NOHELPINFO
 
 % TODOs:
 % [ ] this is not a particulary fast way to check this

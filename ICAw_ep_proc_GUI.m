@@ -1,4 +1,6 @@
 function varargout = ICAw_ep_proc_GUI(varargin)
+
+% NOHELPINFO
 % ICAW_EP_PROC_GUI MATLAB code for ICAw_ep_proc_GUI.fig
 %      ICAW_EP_PROC_GUI, by itself, creates a new ICAW_EP_PROC_GUI or raises the existing
 %      singleton*.
