@@ -4,11 +4,11 @@
 % change in the code, write down these
 % tags in a cell format:
 mytags = {'ADD', 'CHECK', 'CHANGE', 'TODO',...
-    '[  ]', '[ ]', 'CONSIDER', 'FIX'};
+    'CONSIDER', 'FIX'};
 
 % then use comment_search to check a 
 % specific function:
-tgs = comment_search('maskitsweet.m', tags);
+tgs = comment_search('maskitsweet.m', mytags);
 
 % when you also want all comments following
 % a given tag in a continuous way (all comments
