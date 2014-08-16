@@ -59,10 +59,10 @@ switch opt
     case 'on'
         add = addp;
         cd(addp{1});
-        %rem = rmp;
+        rem = rmp;
         
     case 'off'
-        %add = rmp;
+        add = rmp;
         rem = addp;
 end
 
