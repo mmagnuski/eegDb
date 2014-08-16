@@ -20,6 +20,9 @@ function [answer, ans_adr] = ICAw_checkbase_present(ICAbase, filename, varargin)
 %                     not)
 %                     
 % ans_adr = 
+%
+% FIXHELPINFO
+% FINISH UP
 
 if nargin>2
     fields_to_check = varargin{1};

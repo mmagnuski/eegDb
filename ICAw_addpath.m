@@ -13,6 +13,7 @@ function ICAw = ICAw_addpath(ICAw, path)
 % TODOs:
 % [ ] 'ignore cleanline' when all files have been
 %      brought to a single folder
+% CONSIDER - how intermediate files should be treated and located
 
 cll = 'CleanLine\';
 for r = 1:length(ICAw)

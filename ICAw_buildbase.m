@@ -4,6 +4,9 @@ function ICAw = ICAw_buildbase(PTH, varargin)
 % from files in a given folder
 %
 % ICAw = ICAw_buildbase(filepath)
+%
+% FIXHELPINFO
+% CHANGE - PRIORITY
 
 % TODOS:
 % [ ] change from loop to one call to

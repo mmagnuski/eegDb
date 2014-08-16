@@ -1,5 +1,9 @@
 function [answer, ans_adr] = ICAw_checkbase(ICAbase, EEG, varargin)
 
+% Its a shitty function that noone really uses.
+% Needs to be changed/rewritten to be useful.
+% One possibility - recursion instead of those dumb nested ifs
+%
 % [answer, ans_adr] = ICAw_checkbase(ICAbase, EEG, varargin)
 % Function used for checking whether given EEG structure is
 % represented in a database and to what degree.

@@ -3,6 +3,12 @@
 %     deleted
 % 
 %     (MZ)
+%
+%
+%     Potentially problematic if used more than once on such a file
+%     I don't think we should support undocumented missing channels.
+%     CHANGE - add field informing about missing channels to datainfo field
+%     (MM)
 
 function corrected=badchan_ind(newICAw,r, chanlocs)
 

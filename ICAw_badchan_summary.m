@@ -1,8 +1,11 @@
 function badelec = ICAw_badchan_summary(ICAw, chanloc)
 
+% badelec = ICAw_badchan_summary(ICAw, chanloc)
 % checks bad channels as stated in
 % ICAw.badchan and plots the summary
 % - topoplot of bad channels occurrance
+%
+% FIXHELPINFO
 
 % get number of electrodes
 elen = length(chanloc);

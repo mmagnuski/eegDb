@@ -1,9 +1,12 @@
 function ICAw = ICAw_addrej(ICAw, r, rej)
 
+% ICAw = ICAw_addrej(ICAw, r, rej)
 % function that adds rejection info to ICAw database
 % this is different from changing 'userrem' or 'autorem'
 % fields - the rejections added by ICAw_addrej are final
 % (or accepted in other words)
+%
+% FIXHELPINFO
 
 % TODOs:
 % [ ] compare with ICAw_add_remep

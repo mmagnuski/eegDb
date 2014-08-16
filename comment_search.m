@@ -1,5 +1,7 @@
 function comm_events = comment_search(filename, evnts, varargin)
 
+% NOHELPINFO
+
 %% input checks
 if ~exist('evnts', 'var') || isempty(evnts)
     error(['Second argument of the function (',...

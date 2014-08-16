@@ -1,7 +1,10 @@
 function fldch = ICAw_checkfields(ICAw, r, flds, varargin)
 
-% ADD help text
+% NOHELPINFO
+%
 % function used to check fields of ICAw (or any other structure)
+
+% CHANGE - establish copyright and license info (everywhere)
 % written by Miko³aj Magnuski, imponderabilion@gmail.com
 
 %% defaults

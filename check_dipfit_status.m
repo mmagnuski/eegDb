@@ -1,5 +1,8 @@
 function check_dipfit_status
 
+% NOHELPINFO
+% NON-UNIVERSAL
+
 ld = load(['D:\Dropbox\Dropbox\CURRENT PROJECTS\CUTTING\',...
     'DIPfit filled\ICAw_dipfit.mat']);
 ICAw = ld.ICAw;

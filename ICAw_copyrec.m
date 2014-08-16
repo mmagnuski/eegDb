@@ -1,5 +1,7 @@
 function ICAw = ICAw_copyrec(ICAw, num)
 
+% NOHELPINFO
+
 len = length(ICAw);
 newf = len + 1;
 fld = fields(ICAw);

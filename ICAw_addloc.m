@@ -1,5 +1,8 @@
 function ICAw_addloc(ICAw, varargin)
 
+% NOHELPINFO
+% NON-UNIVERSAL
+
 %% ustaw mastref i avgref:
 % oba na false je¿eli bez rereferencji (tylko lokalizacje elektr)
 % tylko avref je¿eli referencja do œredniej

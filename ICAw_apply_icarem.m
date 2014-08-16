@@ -2,6 +2,8 @@ function  ICAw = ICAw_apply_icarem(ICAw, rec)
 
 % Applies remove and ifremove info from ICA_desc
 % to ICAw, cool stuff!
+% 
+% FIXHELPINFO
 
 % if r's not given - assume all records:
 if ~exist('rec', 'var')

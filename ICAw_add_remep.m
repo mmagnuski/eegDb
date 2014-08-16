@@ -1,12 +1,12 @@
 function ICAw = ICAw_add_remep(ICAw, r, ep_rem)
 
 % ICAw_add_remep() function allows for adding
-% additiona removals to the ICAw structure database
+% additional removals to the ICAw structure database
 % 
 % ICAw = ICAw_add_remep(ICAw, r, rem_ep)
 % Where ICAw is the ICAw structure, r is
-% register index to update and rem_ep is
-% a 1 by N vector with info on rejections
+% the record index to update and rem_ep is
+% a 1 by N vector with epoch indices to remove
 
 % create vector with epoch indices:
 eps = 1:max([max(ICAw(r).removed), max(ep_rem)])+1;

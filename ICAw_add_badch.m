@@ -9,6 +9,8 @@ function ICAw = ICAw_add_badch(ICAw, r, badch)
 % channel labels:
 
 if ~isnumeric(badch) && ischar(badch)
+    % CHANGE - doesn't make sense to require EEG in base workspace for this
+    % CHANGE - chanlocs should be in datainfo
     chans = strsplit(badch, ' ');
     badch = zeros(size(chans));
     

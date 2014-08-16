@@ -1,7 +1,9 @@
 function varargout = ICAw_create_base(varargin)
+
 % ICAW_CREATE_BASE - GUI for creating ICAw database
 % The same can be performed using specific calls
 % to functions like ICAw_buildbase etc.
+% FIXHELPINFO
 
 % Last Modified by GUIDE v2.5 24-May-2014 17:54:02
 

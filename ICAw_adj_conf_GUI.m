@@ -1,4 +1,8 @@
 function varargout = ICAw_adj_conf_GUI(varargin)
+
+% NOHELPINDO
+% GUIDE SUCKS
+%
 % ICAW_ADJ_CONF_GUI MATLAB code for ICAw_adj_conf_GUI.fig
 %      ICAW_ADJ_CONF_GUI, by itself, creates a new ICAW_ADJ_CONF_GUI or raises the existing
 %      singleton*.

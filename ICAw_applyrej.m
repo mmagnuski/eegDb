@@ -1,6 +1,6 @@
 function ICAw = ICAw_applyrej(ICAw, rs, varargin)
 
-% ADD help text
+% NOHELPINFO
 % function used to apply rejections to ICAw database
 
 % written by M Magnuski, imponderabilion@gmail.com

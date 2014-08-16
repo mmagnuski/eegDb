@@ -23,7 +23,7 @@ function ICAw = ICAw_copybase(ICAw, opt, varargin)
 %         some content then this content is copied
 %         rather than the content of the other data-
 %         base's field. (see example 2)
-% ICAw2 - structure which to copy fields from
+% ICAw2 - structure to copy fields from
 % 
 % ===EXAMPLES===
 %    Example 1:

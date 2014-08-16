@@ -1,5 +1,7 @@
 function ICAw = ICAw_dipfit(ICAw, varargin)
 
+% NOHELPINFO
+
 % =================
 % info for hackers:
 % 
