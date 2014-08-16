@@ -45,8 +45,10 @@ addp{2} = 'D:\DATA\eegDb\eeglabsubst\';
 % remove paths when in devel (add when in user)
 % these paths are checked for existence and added
 % when going to user mode
-%rmp{1} = ['D:\Dropbox\MATLAB scripts & projects\',...
-%    'EEGlab scripts\ICAw\'];
+rmp{1} = ['D:\Dropbox\MATLAB scripts & projects\',...
+    'EEGlab scripts\ICAw\'];
+rmp{2} = ['D:\Dropbox\MATLAB scripts & projects\',...
+    'EEGlab scripts\ICAw\tests\'];
 %
 % <=== add your rmp here
 
