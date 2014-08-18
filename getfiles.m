@@ -26,12 +26,14 @@ function file_list = getfiles(PTH, whatfiles, regex)
 %				regular expression       --> '.\.set'
 %				not a regular expression --> '*.set')
 
-% check if regex exists
-if ~exist('regex', 'var')
-	regex = false;
-end
+% check if whatfiles exists
 if ~exist('whatfiles', 'var')
 	whatfiles = '';
+	regex = false;
+end
+
+% check if regex exists
+if ~exist('regex', 'var')
 	regex = false;
 end
 
