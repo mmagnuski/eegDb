@@ -8,6 +8,10 @@ function file_list = getfiles(PTH, whatfiles, regex)
 % by default whatfiles requirements are understood
 % as a system-level string like '*.set'.
 %
+%
+% ARGUMENTS
+% ---------
+%
 % file_list is returned as a cell matrix (N-files by one)
 % PTH       is a string specifying full or relative path
 %              of a directory
@@ -19,12 +23,19 @@ function file_list = getfiles(PTH, whatfiles, regex)
 %              whatfiles is understood as a regular expression
 %			   The default value of regex is false.
 %
+%
 % EXAMPLES:
-% FIXHELPINFO
-% Using regex parameter:
-%              (to look for all set files with:
-%				regular expression       --> '.\.set'
-%				not a regular expression --> '*.set')
+% ---------
+%
+% 1. list all files in a directory
+% fls = getfiles('D:\DATA\eegDb');
+%
+% 2. list all *.m files
+% fls = getfiles('D:\DATA\eegDb', '*.m');
+%
+% 3. list all files that fulfill a given regular expression
+% fls = getfiles('D:\DATA\eegDb', 'ICAw.+\.m', true);
+
 
 % check if whatfiles exists
 if ~exist('whatfiles', 'var')
