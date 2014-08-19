@@ -1,5 +1,7 @@
 function [outp, ifcancel] = gui_chooselist(optnames, varargin)
 
+% NOHELPINFO
+
 if isempty(optnames)
     outp = [];
     ifcancel = true;

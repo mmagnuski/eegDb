@@ -8,6 +8,11 @@ function ICAw = ICAw_add_remep(ICAw, r, ep_rem)
 % the record index to update and rem_ep is
 % a 1 by N vector with epoch indices to remove
 
+% CONSIDER - one high-level function for marks management
+%          - multiple low-level functions used by it
+%          - now there are many different functions for this
+%            and it gets messy
+
 % create vector with epoch indices:
 eps = 1:max([max(ICAw(r).removed), max(ep_rem)])+1;
 % remove already removed indices:

@@ -7,6 +7,7 @@ function ICAw = ICAw_add_badch(ICAw, r, badch)
 % if badchans are not given as numericals
 % assumes that they are space delimited
 % channel labels:
+% FIXHELPINFO
 
 if ~isnumeric(badch) && ischar(badch)
     % CHANGE - doesn't make sense to require EEG in base workspace for this

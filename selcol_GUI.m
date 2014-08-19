@@ -1,4 +1,6 @@
 function varargout = selcol_GUI(varargin)
+
+% NOHELPINFO
 % SELCOL_GUI MATLAB code for selcol_GUI.fig
 %      SELCOL_GUI, by itself, creates a new SELCOL_GUI or raises the existing
 %      singleton*.

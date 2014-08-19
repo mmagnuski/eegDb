@@ -1,5 +1,7 @@
 function rejf = eeg_getrej(EEG)
 
+% NOHELPINFO
+
 % out.fld = [];
 % out.col = [];
 % out.isica = [];

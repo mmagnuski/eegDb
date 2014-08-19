@@ -1,5 +1,7 @@
 function outstr = gui_editbox(varargin)
 
+% NOHELPINFO
+
 if nargin > 0
     start_txt = varargin{1};
 else

@@ -1,5 +1,7 @@
 function hs = gui_multiedit(maintext, opts, optval)
 
+% NOHELPINFO
+
 % this gui is useful for gathering options
 % also one needs to specify: text options on one side
 % (and on the second something else?)

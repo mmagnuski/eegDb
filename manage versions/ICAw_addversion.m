@@ -1,5 +1,7 @@
 function ICAw = ICAw_addversion(ICAw, rr, opt)
 
+% NOHELPINFO
+
 % version name must be given
 f = ICAw_checkfields(opt, 1, {'version_name'});
 if ~f.fnonempt

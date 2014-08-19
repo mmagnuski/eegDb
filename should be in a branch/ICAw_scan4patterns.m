@@ -1,6 +1,8 @@
 function pattern = ICAw_scan4patterns(DIR, pat, varargin)
 
 % NOHELPINFO
+% BRANCH
+% uses event_pattern_search on multiple files
 
 %%
 % default parameters
