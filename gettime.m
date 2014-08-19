@@ -1,10 +1,21 @@
 function time = gettime(varargin)
 
+% time = gettime(varargin)
+%
+% Gives time in string format.
+% 
+% 
+% EXAMPLES
+% --------
+%
+% 1. Get current time in hh:mm 
+%   gettime()
+%   17:19
+%
+% 2. Get extended time information
+%   gettime(true)
+%   2014.08.19 17:21:56.877
 
-% MM - default is as it used to work
-% if any argument is passed gettime
-% returns time and date (in string for-
-% mat)
 fullopt = false;
 getcurr = 4:5;
 if nargin > 0
@@ -13,29 +24,28 @@ if nargin > 0
 end
 
 curr = clock;
-
-curr = num2cell(curr(getcurr));
+curr = curr(getcurr);
 
 if ~fullopt
-    time = num2str(curr{1});
-    if curr{2}<10
-        time=[ time ':0', num2str(curr{2})];
+    time = num2str(curr(1));
+    if curr(2)<10
+        time = [ time ':0', num2str(curr(2)) ];
     else
-        time=[ time ':', num2str(curr{2})];
+        time = [ time ':', num2str(curr(2)) ];
     end
 else
     % 'empty' date to fill
     filldate = {'0000','.00','.00', ' 00', ':00', ':00', '.000'};
     
     % split seconds and milliseconds
-    secmsec = curr{6};
-    sec = floor(secmsec);
-    msec = floor((secmsec - sec) * 1000);
-    curr{6} = sec; curr{7} = msec;
+    secmsec = curr(6);
+    secnds = floor(secmsec);
+    msec = floor((secmsec - secnds) * 1000);
+    curr(6) = secnds; curr(7) = msec;
     
     % fill the empty date
     for dt = 1:length(curr)
-        dgts = num2str(curr{dt});
+        dgts = num2str(curr(dt));
         filldate{dt}(end - length(dgts) + 1 : end) = dgts;
     end
     
