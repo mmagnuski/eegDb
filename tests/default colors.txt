@@ -1,4 +1,0 @@
-g.labels = {'reject', 'maybe', 'dontknow'}; 
-g.labcol = [252 177 158; 254 239 156; 196 213 253]./255; 
-
-g.wincolor = g.labcol(1,:); 
