@@ -1,3 +1,6 @@
+% This seems to have been used for workspace checks
+% - comparing differences between versions, may be of
+%   use in a branch extending versions management
 
 flds{1} = fields(ICAw(6).versions.rej);
 flds{2} = fields(ICAw(6).versions.ver01);
