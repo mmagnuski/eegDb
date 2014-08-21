@@ -9,7 +9,7 @@ function ICAw = ICAw_buildbase(PTH, varargin)
 % CHANGE - PRIORITY
 
 % TODOS:
-% [ ] change from loop to one call to
+% [X] change from loop to one call to
 %     struct()
 % [ ] redefine ICA part...
 %     for example: one filed ICA
