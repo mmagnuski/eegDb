@@ -37,7 +37,7 @@ if nargin > 1
     fls = varargin{1};
 else
     % get file names:
-    fls = prep_list(PTH, '*.set');
+    fls = getfiles(PTH, '*.set');
 end
 
 %% ~~~ welcome to the code ~~~
