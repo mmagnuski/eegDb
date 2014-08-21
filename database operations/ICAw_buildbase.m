@@ -18,6 +18,13 @@ function ICAw = ICAw_buildbase(PTH, varargin)
 %        - removals, ifremovals
 %        - classifications, notes etc.
 
+
+% optional/undecided fields:
+% ---------
+% ICAw(f).subjectcode = [];
+% ICAw(f).cleanline = [];
+
+
 %% options for now:
 verbose = true;
 cnt.per = 1;
@@ -44,25 +51,78 @@ g.labels = {'userreject', 'usermaybe', ...
 g.labcol = [252 177 158; ...
     254 239 156; 196 213 253]./255;
 
-% preallocate base:
-% maybe next time :)
+
+% BUILDING STRUCTURE ELEMENTS
+% ---------------------------
+
+% inner strucutre of a single mark
+aMark.name = 'somename';
+aMark.color = g.labcol(1,:);
+aMark.value = [];
+aMark.desc = []; % description of the mark (may be as well in more.desc)
+aMark.auto = []; % used for automatic marking
+aMark.more = []; % used for special marks for example badchan
+
+% inner structure of marks:
+flds = {'reject', 'maybe'};
+for f = 1:length(flds)
+    mrk.(flds{f}) = aMark;
+    mrk.(flds{f}).name = flds{f};
+    mrk.(flds{f}).color =  g.labcol(f,:);
+end
+
+% inner structure of ICA
+ica.icaweights = [];
+ica.icasphere = [];
+ica.icawinv = [];
+ica.icachansind = [];
+ica.desc = [];
+ica.remove = [];
+ica.ifremove = [];
+
+% your inner epoch
+epo.locked = [];
+epo.events = [];
+epo.limits = [];
+epo.winlen = [];
+epo.distance = [];
+epo.distance = [];
+
+% inner reject
+rej.pre = [];
+rej.post = [];
+rej.all = [];
+
+% chan
+ch.labels = [];
+ch.reref = [];
+ch.bad = [];
 
 
+% CREATE STRUCTURE
+% ----------------
+
+% create obligatory fields:
+ICAw = struct('filename', fls, 'filepath', PTH, ...
+    'datainfo', [], 'filter', [], 'chan', ch, ...
+    'epoch', epo, 'marks', mrk, 'reject', rej, ...
+    'ICA', ica, 'notes', []);
+clear ica mrk aMark epo rej ch
+
+
+% add info from files
+% -------------------
 for f = 1:length(fls)
-    %% load set file
+
+    % load set file
+    % -------------
     loaded = load([PTH, fls{f}], '-mat');
     EEG = loaded.EEG;
     clear loaded
     
-    %% construct fields
-    % basic
-    ICAw(f).subjectcode = []; %#ok<*AGROW>
-    ICAw(f).filename = fls{f};
-    ICAw(f).filepath = PTH;
-    ICAw(f).tasktype = [];
-    ICAw(f).session = [];
     
     % datainfo
+    % --------
     ICAw(f).datainfo.ref = [];
     ICAw(f).datainfo.ref_name = unique({EEG.chanlocs.ref});
     ICAw(f).datainfo.srate = EEG.srate;
@@ -70,50 +130,6 @@ for f = 1:length(fls)
     ICAw(f).datainfo.cleanline = [];
     ICAw(f).datainfo.chanlocs = EEG.chanlocs;
     
-    % filter/cleanline fields
-    ICAw(f).badchan = [];
-    ICAw(f).filter = [];
-    ICAw(f).usecleanline = [];
-    
-    % prefun
-    ICAw(f).prefun = [];
-    
-    % epoching options
-    ICAw(f).onesecepoch = [];
-    ICAw(f).epoch_events = [];
-    ICAw(f).epoch_limits = [];
-    ICAw(f).segment = [];
-    
-    % removal options
-    ICAw(f).prerej = [];
-    ICAw(f).autorem = [];
-    ICAw(f).userrem = [];
-    ICAw(f).postrej = [];
-    ICAw(f).removed = [];
-    
-    % colors for rejection types:
-    for b = 1:length(g.labels)
-        ICAw(f).userrem.(g.labels{b}) = [];
-        ICAw(f).userrem.color.(g.labels{b}) = g.labcol(b,:);
-    end
-    
-    % autorem colors:
-    ICAw(f).autorem.color.prob = EEG.reject.rejjpcol;
-    ICAw(f).autorem.color.mscl = EEG.reject.rejfreqcol;
-    
-    % ICA options
-    ICAw(f).icaweights = [];
-    ICAw(f).icasphere = [];
-    ICAw(f).icawinv = [];
-    ICAw(f).icachansind = [];
-    
-    % ICA classification options:
-    ICAw(f).ica_remove = [];
-    ICAw(f).ica_ifremove = [];
-    ICAw(f).ICA_desc = [];
-    
-    % notes
-    ICAw(f).notes = [];
     
     % notify about progress
     if verbose
