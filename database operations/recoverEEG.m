@@ -352,15 +352,15 @@ end
 
 
 %% adding ICA info
-if ~noICA && isfield(ICAw, 'icaweights') && ...
-        ~isempty(ICAw(r).icaweights)
+if ~noICA && isfield(ICAw.ICA, 'icaweights') && ...
+        ~isempty(ICAw(r).ICA.icaweights)
     
     % =====================
     % add weights and stuff:
-    EEG.icaweights = ICAw(r).icaweights;
-    EEG.icasphere = ICAw(r).icasphere;
-    EEG.icawinv = ICAw(r).icawinv;
-    EEG.icachansind = ICAw(r).icachansind;
+    EEG.icaweights = ICAw(r).ICA.icaweights;
+    EEG.icasphere = ICAw(r).ICA.icasphere;
+    EEG.icawinv = ICAw(r).ICA.icawinv;
+    EEG.icachansind = ICAw(r).ICA.icachansind;
     
     % add dipfit info:
     fld = ICAw_checkfields(ICAw, r, {'dipfit'});
