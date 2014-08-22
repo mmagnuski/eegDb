@@ -316,7 +316,7 @@ else
         % operations (apply rejections, multisel, etc.)
         if f.fsubf(1) && ~isempty(isprerej) ...
                 && f.subfnonempt{1}(isprerej)
-            handles.ICAw(handles.r).prerej = handles...
+            handles.ICAw(handles.r).reject.pre = handles...
                 .EEG.onesecepoch.prerej;
             handles.recov(handles.r) = true;
         end
@@ -345,11 +345,11 @@ else
     badchadr = find(strcmp('badchan', handles.cooleegopts));
     if ~isempty(badchadr)
         handles.cooleegopts{badchadr + 1} = handles.ICAw(handles.r)...
-            .badchan;
+            .chan.bad;
     else
-        if ~isempty(handles.ICAw(handles.r).badchan)
+        if ~isempty(handles.ICAw(handles.r).chan.bad)
             handles.cooleegopts = [handles.cooleegopts, 'badchan', ...
-                handles.ICAw(handles.r).badchan];
+                handles.ICAw(handles.r).chan.bad];
         else
             handles.cooleegopts = [handles.cooleegopts, 'badchan'];
             handles.cooleegopts{end + 1} = [];
@@ -428,7 +428,7 @@ uiresume(handles.figure1);
 function CL_checkbox_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of CL_checkbox
-handles.ICAw(handles.r).usecleanline = logical(get(hObject, 'Value'));
+handles.ICAw(handles.r).cleanline = logical(get(hObject, 'Value'));
 
 % Update handles structure
 guidata(hObject, handles);
@@ -454,14 +454,14 @@ end
 function badel_butt_Callback(hObject, eventdata, handles)
 
 chanlab = {handles.ICAw(handles.r).datainfo.chanlocs.labels};
-badchan = handles.ICAw(handles.r).badchan;
+badchan = handles.ICAw(handles.r).chan.bad;
 
 f_cha = ICAw_gui_choose_chan(chanlab, badchan);
 
 if ishandle(f_cha)
     selchan = get(f_cha, 'UserData');
-    handles.ICAw(handles.r).badchan = selchan{1};
-    handles.ICAw(handles.r).badchanlab = selchan{2};
+    handles.ICAw(handles.r).chan.bad = selchan{1};
+    handles.ICAw(handles.r).chan.badlab = selchan{2};
     
     close(f_cha);
     
@@ -556,6 +556,7 @@ end
 function EEGreco_Callback(hObject, eventdata, handles)
 
 % check selection
+% ADD - selection checks should be in a separate function
 if isempty(handles.selected)
     sel = handles.r;
 else
@@ -584,13 +585,13 @@ for c = 1:length(cansel)
     
     % CHANGE - it should work both ways:
     % now we remove by prerej, not distance
-    if isfield(handles.ICAw, 'onesecepoch') && ~isempty(...
-            handles.ICAw(r).onesecepoch) && isfield(...
-            handles.ICAw(r).onesecepoch, 'distance') &&...
-            ~isempty(handles.ICAw(r).onesecepoch.distance)
+    % WHAT should be done here??
+    if femp(handles.ICAw(r).epoch, 'locked') && ...
+        ~handles.ICAw(r).epoch.locked && ...
+        femp(handles.ICAw(r).epoch, 'distance')
         
         % clear distance option
-        handles.ICAw(r).onesecepoch.distance = [];
+        handles.ICAw(r).epoch.distance = [];
         % Update handles structure
         guidata(hObject, handles);
     end
@@ -721,7 +722,7 @@ seltypes = rej.name;
 % if some have applied rejections 
 % - allow for removal
 remopt =false;
-remhas = ~cellfun(@isempty, {handles.ICAw(cansel).removed});
+remhas = ~cellfun(@isempty, {handles.ICAw(cansel).reject.all});
 remhas = sum(remhas) > 0;
 if remhas
     remopt = true;
@@ -871,11 +872,11 @@ for c = 1:length(cansel)
         % recover the other
         handles.ICAw = ICAw_bringversion(handles.ICAw, s, strv);
         
-        if isempty(handles.ICAw(s).icaweights)
+        if isempty(handles.ICAw(s).ICA.icaweights)
             EEG = recoverEEG(handles.ICAw, s, 'local');
             % good channels:
             allchan = 1:size(EEG.data,1);
-            allchan(handles.ICAw(s).badchan) = [];
+            allchan(handles.ICAw(s).chan.bad) = [];
             
             %ICA
             EEG = pop_runica(EEG, 'extended', 1, 'interupt',...

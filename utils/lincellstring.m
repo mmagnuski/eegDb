@@ -13,7 +13,12 @@ function str = lincellstring(cellstr)
 % >> str = lincellstring(cstr);
 %    
 % str =
+% 
 % 'somthing', 'rabarbar', 'rimba'
+%    
+% see also: cellstr, cellfun
+% 
+% Copyright 2014 Mikolaj Magnuski
 
 str = cellfun(@(x) ['''', x, ''', '], cellstr, 'uni', false);
 str = [str{:}];
