@@ -211,8 +211,9 @@ set(handles.info_text, 'String', infotext);
 
 % --- CL_checkbox ---
 useclean = false;
-if isfield(handles.ICAw, 'usecleanline') && ~isempty(handles.ICAw(handles.r)...
-        .usecleanline) && handles.ICAw(handles.r).usecleanline
+if femp(handles.ICAw, 'cleanline') && ...
+        (isstruct(handles.ICAw(handles.r).cleanline) ...
+        || handles.ICAw(handles.r).cleanline)
     useclean = true;
 end
 
@@ -239,8 +240,9 @@ end
 % check if this record has versions
 f = ICAw_checkfields(handles.ICAw, handles.r, {'versions'});
 
-% no versions whatsoever:
+% no versions whatsoever (no subfields in 'versions'):
 if ~f.fsubf
+    % add main version
     handles.ICAw = ICAw_mainversion(handles.ICAw, handles.r);
     
     guidata(handles.figure1, handles);
