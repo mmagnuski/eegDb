@@ -142,7 +142,7 @@ handles.last_recovered_opts = handles.recovopts;
 
 % CHANGE - now we check recov by nonempty prerej
 %          but this is not optimal
-handles.recov = ~cellfun(@isempty, {handles.ICAw.prerej});
+handles.recov = ~cellfun(@isempty, {handles.ICAw.reject.pre});
 
 % Update handles structure
 guidata(hObject, handles);
@@ -189,55 +189,9 @@ set(handles.title_text, 'String', {'ICAw data cleaner'; ...
 maxlines = 8;
 current_slider_pos = round(3 - (get(handles.slider, 'Value'))) + 1;
 
-infotext = {'filename:   '; 'pre-rejected:  ';...
-    'post-rejected:  '; ...
-    'bad channels:  '; 'user marks:';...
-    '-reject:  '; '-maybe:  '; '-?:  ';...
-    ''; 'ICA weights:  '};
-fld = {'filename', 'prerej', 'postrej', 'badchan', '',...
-    'userrem.userreject', 'userrem.usermaybe',...
-    'userrem.userdontknow', '', 'icaweights'};
-count = [false, true, true, false, false,...
-    true, true, true, false, false];
-ispres = [false, false, false, false, false,...
-    false, false, false, false, true];
-
-% FILL LOOP
-for lns = 1:length(infotext)
-    if ~isempty(fld{lns})
-        
-        try
-            content = eval(['handles.ICAw(handles.r).', fld{lns}]);
-        catch %#ok<CTCH>
-            content = [];
-        end
-        
-        
-        if count(lns)
-            content = content(:);
-            infotext{lns} = [infotext{lns}, num2str(length(...
-                find(content(:)))), ' windows'];
-        elseif ~ispres(lns)
-            if ~(lns == 4)
-                infotext{lns} = [infotext{lns}, content];
-            else
-                if ~isequal(content, content(:)'); content = content(:)'; end
-                infotext{lns} = [infotext{lns}, num2str(content)];
-            end
-        end
-        
-        if ispres(lns)
-            if ~isempty(handles.ICAw(handles.r)...
-                    .(fld{lns}))
-                infotext{lns} = [infotext{lns}, 'Yes'];
-            else
-                infotext{lns} = [infotext{lns}, 'No'];
-            end
-        end
-        
-    end
-end
-
+% get text from eegDb structure
+infotext = eegDb_struct2text(handles.ICAw(handles.r));
+   
 % wrap the text
 infotext = textwrap(handles.info_text, infotext);
 % check wrapped size:
