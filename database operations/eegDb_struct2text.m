@@ -42,7 +42,7 @@ if length(eegDb) > 1
 end
 
 getfld = {'filename'; 'filter'; 'epoch';...
-    'reject'; 'marks', 'ICA'};
+    'reject'; 'marks'; 'ICA'};
 
 ttl = {'filename:', 'filter:', 'epoch:', ...
     'reject:', 'marks:', 'ICA:'};

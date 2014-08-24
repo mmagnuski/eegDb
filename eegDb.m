@@ -6,6 +6,7 @@
 
 
 pth = fileparts(which('eegDb'));
+
 % fld = {'database operations', 'dependencies', 'eeglabsubst', 'gui', ...
 %     'manage marks', 'manage versions', 'path and file utils', ...
 %     'should be in a branch'};
