@@ -585,11 +585,20 @@ for c = 1:length(cansel)
     
     % CHANGE - it should work both ways:
     % now we remove by prerej, not distance
-    % WHAT should be done here??
+    % CHANGE - previous comment not clear,
+    % howver, this should not probably remove
+    % distance option, epoching should be checking
+    % pre - if it is filled, no need to check
+    % distance again. If we change distance -->
+    % some reworking is needed to save post
+    % but clear pre. May be problematic if
+    % pre is empty after distance was applied
+    % use .distUsed or internal.distUsed ??
     if femp(handles.ICAw(r).epoch, 'locked') && ...
         ~handles.ICAw(r).epoch.locked && ...
         femp(handles.ICAw(r).epoch, 'distance')
         
+        % CHANGE ??
         % clear distance option
         handles.ICAw(r).epoch.distance = [];
         % Update handles structure
@@ -997,7 +1006,7 @@ if femp(handles, 'savepath')
     time1 = regexprep(time, ':', '.');
     time2 = regexp(time, '[0-9]{2}:[0-9]{2}:[0-9]{2}',...
         'match', 'once');
-    save([handles.savepath, '\ICAw ', time1, '.mat'], 'ICAw');
+    save(fullfile(handles.savepath, ['ICAw ', time1, '.mat']), 'ICAw');
     set(handles.savingstruct, 'String', ['Saved (', time2 , ')'] );
 end
 
