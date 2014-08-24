@@ -32,7 +32,6 @@ for r = 1:length(ICAw)
 	end
 end
 
-
 flds = fieldnames(ICAw);
 fldpos = find(strcmp(fieldfrom, flds));
 
