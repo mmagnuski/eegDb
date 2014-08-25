@@ -14,9 +14,9 @@ end
 
 % apply for all r:
 for r = 1:length(rec)
-    if femp(ICAw(rec(r)), 'ICA_desc') % ADD additional checks
-        ICAw(rec(r)).ica_remove = find([ICAw(rec(r)).ICA_desc.reject]);
-        ICAw(rec(r)).ica_ifremove = find([ICAw(rec(r)).ICA_desc.ifreject]);
+    if femp(ICAw(rec(r)).ICA, 'desc') % ADD additional checks
+        ICAw(rec(r)).ICA.remove = find([ICAw(rec(r)).ICA.desc.reject]);
+        ICAw(rec(r)).ICA.ifremove = find([ICAw(rec(r)).ICA.desc.ifreject]);
     end
 end
 %

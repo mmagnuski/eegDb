@@ -94,7 +94,10 @@ function varargout = cooleegplot(EEG, varargin)
 
 
 % TODOS:
-% [ ] update EEG by changing ICAw field
+% [ ] !! CHANGE the way post-window rejection adding
+%        works - it seems not to work now!
+%        possibly winreject adds it differently...
+% [ ] update EEG by changing ICAw field (what?)
 % [ ] returned EEG has less electrodes if
 %     'elec' was defined, origEEG can be
 %     created at the beginning and all
@@ -126,9 +129,11 @@ lsmo = 'on';
 wlen = 4;
 
 ICAw_present = false;
+
 % CHANGE so that other rejection types can be applied
-chckflds = {'rejjp', 'rejmanual', 'rejfreq', 'userreject', 'usermaybe',...
-    'userdontknow'};
+%        may be of use later - to have a connection manual --> reject for example
+% chckflds = {'rejjp', 'rejmanual', 'rejfreq', 'userreject', 'usermaybe',...
+    % 'userdontknow'};
 
 
 
@@ -234,8 +239,8 @@ end
 
 % if badchan not provided
 if isempty(badchan) && ICAw_present
-    if femp(ICAw(r), 'badchan')
-        badchan = ICAw(r).badchan;
+    if femp(ICAw(r), 'chan') && femp(ICAw(r).chan, 'bad')
+        badchan = ICAw(r).chan.bad;
     end
 end
 
@@ -339,6 +344,12 @@ if ~nowait
     
     % update ICAw autorem
     % search by colors
+    
+    % !!!!!!!!!!!!!
+    % FINISHED HERE
+    % !!!!!!!!!!!!!
+    % 1. why is isfield(EEG, fld) used? - does not have any sense!
+
     % CHANGE - is this ever used?, maybe should be
     %          put into a separate function?
     if evalin('base', 'exist(''TMPREJ'', ''var'');') == 1
@@ -349,17 +360,19 @@ if ~nowait
             tmpsz = size(TMPREJ);
             
             % check for segments
-            if ICAw_present && isfield(ICAw, 'segment') && ...
-                    isnumeric(ICAw(r).segment)
-                nseg = floor(ICAw(r).winlen/ICAw(r).segment);
+            if ICAw_present && isfield(ICAw(r).epoch, 'segment') && ...
+                    isnumeric(ICAw(r).epoch.segment)
+                nseg = floor(ICAw(r).epoch.winlen/ICAw(r).epoch.segment);
                 seg_pres = true;
             else
                 seg_pres = false;
             end
             
             % checking rejection methods
+            % CHANGE - this should not work - it looks whether fields are in EEG - bad
             for f = 1:length(chckflds)
                 if isfield(EEG, chckflds{f})
+
                     rejcol = repmat(EEG.reject.([chckflds{f},...
                         'col']), [tmpsz(1), 1]);
                     foundadr = sum(TMPREJ(:, 3:5)...

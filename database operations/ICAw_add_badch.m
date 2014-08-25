@@ -23,8 +23,9 @@ end
 
 if ~isempty(badch)
     if ~isempty(ICAw)
-        ICAw(r).badchan = sort(unique([ICAw(r).badchan, badch]));
+        ICAw(r).chan.bad = sort(unique([ICAw(r).chan.bad, badch]));
     else
+        % CHANGE - !!this is dangerous:
         % evalin base workspace:
         evalin('base', ['ICAw(', num2str(r), ').badchan = ',...
             'sort(unique([ICAw(', num2str(r), ').badchan, ',...
