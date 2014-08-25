@@ -9,7 +9,7 @@ end
 hasFields = isfield(ICAw, flds);
 
 if ~isfield(ICAw, fieldto)
-    ICAw(1).ICA = [];
+    ICAw(1).(fieldto) = [];
 end
 
 if any(hasFields)
