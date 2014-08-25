@@ -175,6 +175,9 @@ if hasFields(1)
     % force merge, because ICAw.epoch could not be 
     % trully present if ICAw.onesecepoch is
     ICAw = ICAw_mergefields(ICAw, flds{1}, 'epoch', true);
+    
+    flds = flds(2:end);
+    hasFields = hasFields(2:end);
 end
 
 % remove fields
