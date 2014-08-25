@@ -18,32 +18,30 @@ function ICAw = ICAw_addrej(ICAw, r, rej)
 %           if nargin > 3
 %               opts = {'overwrite'
 
-f = ICAw_checkfields(ICAw.reject, r, {'pre',...
-    'post', 'all'});
+f = ICAw_checkfields(ICAw, r, {'prerej',...
+    'postrej', 'removed'});
 rej = unique(rej);
 
 
 % if no prerej and no removed
 if ~f.fnonempt(1) && ~f.fnonempt(3)
-    ICAw(r).reject.all = rej;
-    ICAw(r).reject.post = rej;
+    ICAw(r).removed = rej;
+    ICAw(r).postrej = rej;
     
     % ADD - apply segmenting structure?
     return
 end
 
-% CHANGE - previous case has the same code!!
 if ~f.fnonempt(1) && f.fnonempt(3)
     % CHANGE - instead of overwriting?
-    ICAw(r).reject.all = rej;
-    ICAw(r).reject.post = rej;
-    % like rej = unique([ICAw(r).reject.all, rej])
+    ICAw(r).removed = rej;
+    ICAw(r).postrej = rej;
+    
     return
 end
 
-% if pre is present:
 if f.fnonempt(1)
-    prej = ICAw(r).reject.pre;
+    prej = ICAw(r).prerej;
     spared = prej(end) - length(prej);
     
     if ~isempty(rej)
@@ -59,7 +57,7 @@ if f.fnonempt(1)
     postwin(prej) = [];
     addrem = postwin(rej);
     
-    ICAw(r).reject.post = rej;
-    ICAw(r).reject.all = union(prej, addrem);
+    ICAw(r).postrej = rej;
+    ICAw(r).removed = union(prej, addrem);
 end
     

@@ -1,4 +1,4 @@
-function ICAw = ICAw_refield(ICAw, fieldfrom, fieldto, ifsort)
+function ICAw = ICAw_refield(ICAw, fieldfrom, fieldto)
 
 % ICAw = ICAw_refield(ICAw, fieldfrom, fieldto)
 % 
@@ -14,12 +14,6 @@ function ICAw = ICAw_refield(ICAw, fieldfrom, fieldto, ifsort)
 
 % FIXHELPINFO - add examples
 % CHANGE, ADD - not possible to rename core fields?
-
-% sort by default
-if ~exists('ifsort', 'var')
-	ifsort = true;
-end
-
 
 flds = fieldnames(ICAw);
 fldpos = find(strcmp(fieldfrom, flds));
@@ -38,7 +32,5 @@ end
 ICAw = rmfield(ICAw, fieldfrom);
 
 % orderfields
-if ifsort
-	flds{fldpos} = fieldto;
-	ICAw = ICAw_sorter(ICAw, flds);
-end
+flds{fldpos} = fieldto;
+ICAw = ICAw_sorter(ICAw, flds);

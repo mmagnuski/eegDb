@@ -137,14 +137,12 @@ if length(ICAw) == 1
 end
 
 % is segment given:
-if isfield(ICAw.epoch, 'segment') && ...
-        ~isempty(ICAw(r).epoch.segment) && isnumeric(ICAw(r).epoch.segment)
+if isfield(ICAw, 'segment') && ...
+        ~isempty(ICAw(r).segment) && isnumeric(ICAw(r).segment)
     segment = true;
 end
 
 %% if 'loaded'
-% CONSIDER moving checks for EEG presence to a separate function
-% CONSIDER - loaded does not seem to be used much now...
 % if EEG is loaded: look for it in the
 % ICAw database:
 if loaded
@@ -222,7 +220,6 @@ end
 
 
 %% checking EEGlab:
-% CONSIDER encapsulating eeglab checks
 if ~loaded
     % path availability and
     % eeglab inteface presence should be
@@ -355,15 +352,15 @@ end
 
 
 %% adding ICA info
-if ~noICA && isfield(ICAw.ICA, 'icaweights') && ...
-        ~isempty(ICAw(r).ICA.icaweights)
+if ~noICA && isfield(ICAw, 'icaweights') && ...
+        ~isempty(ICAw(r).icaweights)
     
     % =====================
     % add weights and stuff:
-    EEG.icaweights = ICAw(r).ICA.icaweights;
-    EEG.icasphere = ICAw(r).ICA.icasphere;
-    EEG.icawinv = ICAw(r).ICA.icawinv;
-    EEG.icachansind = ICAw(r).ICA.icachansind;
+    EEG.icaweights = ICAw(r).icaweights;
+    EEG.icasphere = ICAw(r).icasphere;
+    EEG.icawinv = ICAw(r).icawinv;
+    EEG.icachansind = ICAw(r).icachansind;
     
     % add dipfit info:
     fld = ICAw_checkfields(ICAw, r, {'dipfit'});
@@ -393,7 +390,7 @@ end
 
 %% interpolating bad channels
 if interp
-    EEG = eeg_interp(EEG, ICAw(r).chan.bad, 'spherical');
+    EEG = eeg_interp(EEG, ICAw(r).badchan, 'spherical');
     if ~isempty(EEG.icaweights)
         
         % add weights etc. after interpolation
@@ -422,7 +419,7 @@ if femp(ICAw(r), 'postfilter')
 end
 
 %% epoching
-if femp(ICAw.epoch, 'locked') && ~ICAw(r).onesecepoch.locked
+if isfield(ICAw, 'onesecepoch') && ~isempty(ICAw(r).onesecepoch)
     
     % ==============
     % onesec options
@@ -434,15 +431,18 @@ if femp(ICAw.epoch, 'locked') && ~ICAw(r).onesecepoch.locked
     
     % checking fields for onesecepoch
     for f = 1:length(flds)
-        if femp(ICAw(r).epoch, flds{f})
-            options.(flds{f}) = ICAw(r).epoch.(flds{f});
+        if isfield(ICAw(r).onesecepoch, flds{f}) && ...
+                ~isempty(ICAw(r).onesecepoch.(flds{f}))
+            options.(flds{f}) = ICAw(r).onesecepoch.(flds{f});
         end
     end
     
     % if prerej is present then no need to use distance
-    if femp(ICAw(r).reject, r, 'pre')
+    fldch = ICAw_checkfields(ICAw, r, {'prerej'});
+    if fldch.fnonempt
         options.distance = [];
     end
+    clear fldch
     
     % ===================
     % call to onesecepoch
@@ -454,7 +454,7 @@ elseif ~isempty(ICAw(r).epoch_events) && ...
     
     % ==================
     % classical epoching
-    epoc = ICAw(r).epoch.events;
+    epoc = ICAw(r).epoch_events;
     
     % checking for code generator of epochs
     % ADD - function handle for epoching?
@@ -473,7 +473,7 @@ elseif ~isempty(ICAw(r).epoch_events) && ...
             epoch_ind = true;
         elseif ~iscell(epoc)
             % checking whether is cell:
-            epoc = {ICAw(r).epoch.events};
+            epoc = {ICAw(r).epoch_events};
         end
         
         % =======================================
@@ -481,11 +481,11 @@ elseif ~isempty(ICAw(r).epoch_events) && ...
         if ~epoch_ind
             % epoching with respect to given
             % event types and limits:
-            EEG = pop_epoch( EEG, epoc, ICAw(r).epoch.limits);
+            EEG = pop_epoch( EEG, epoc, ICAw(r).epoch_limits);
         else
             % epoching with respect to given
             % event indices and limits:
-            EEG = pop_epoch( EEG, {}, ICAw(r).epoch.limits,...
+            EEG = pop_epoch( EEG, {}, ICAw(r).epoch_limits,...
                 'eventindices', epoc);
         end
     end
@@ -493,7 +493,7 @@ elseif ~isempty(ICAw(r).epoch_events) && ...
     % =======================
     % checking for segmenting
     if segment && ~nosegment
-        EEG = segmentEEG(EEG, ICAw(r).epoch.segment);
+        EEG = segmentEEG(EEG, ICAw(r).segment);
     end
 end
 
@@ -521,30 +521,30 @@ end
 EEG.etc.orig_numep = size(EEG.data, 3);
 
 % if onesecepoch was perfromed add onesec info
-if femp(ICAw(r).epoch.locked) && ICAw(r).epoch.locked
+if isfield(ICAw, 'onesecepoch') && ~isempty(ICAw(r).onesecepoch)
     
     % either prerej is nonempty  % or what?
-    if femp(ICAw(r).reject, 'pre')
+    if femp(ICAw(r), 'prerej')
         % there is some info about prerej,
         % we correct orig_numep
-        EEG.etc.orig_numep = EEG.etc.orig_numep - length(ICAw(r).reject.pre);
+        EEG.etc.orig_numep = EEG.etc.orig_numep - length(ICAw(r).prerej);
     end
 end
 
 %% removing bad epochs
-if ~prerej && ~isempty(ICAw(r).reject.all)
+if ~prerej && ~isempty(ICAw(r).removed)
     if segment
-        EEG = eeg_rmepoch(EEG, ICAw(r).reject.all(:)');
+        EEG = eeg_rmepoch(EEG, ICAw(r).removed(:)');
         
     else
-        EEG = pop_selectevent( EEG, 'epoch', ICAw(r).reject.all(:)' ,...
+        EEG = pop_selectevent( EEG, 'epoch', ICAw(r).removed(:)' ,...
             'deleteevents','off','deleteepochs','on','invertepochs','on');
     end
-elseif ~isempty(ICAw(r).reject.pre)
+elseif ~isempty(ICAw(r).prerej)
     if segment
-        EEG = eeg_rmepoch(EEG, ICAw(r).reject.pre(:)');
+        EEG = eeg_rmepoch(EEG, ICAw(r).prerej(:)');
     else
-        EEG = pop_selectevent( EEG, 'epoch', ICAw(r).reject.pre(:)' ,...
+        EEG = pop_selectevent( EEG, 'epoch', ICAw(r).prerej(:)' ,...
             'deleteevents','off','deleteepochs','on','invertepochs','on');
     end
 end
@@ -570,7 +570,7 @@ EEG.reject.ICAw = ICAw_getrej(ICAw, r);
 
 maxlen = EEG.etc.orig_numep;
 
-if ~(prerej || isempty(ICAw(r).reject.all))
+if ~(prerej || isempty(ICAw(r).removed))
     % we have to correct for removed epochs:
     for f = 1:length(EEG.reject.ICAw.value)
         if isempty(EEG.reject.ICAw.value{f})
