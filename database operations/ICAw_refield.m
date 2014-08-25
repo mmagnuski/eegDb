@@ -1,4 +1,4 @@
-function ICAw = ICAw_refield(ICAw, fieldfrom, fieldto, ifsort)
+function ICAw = ICAw_refield(ICAw, fieldfrom, fieldto)
 
 % ICAw = ICAw_refield(ICAw, fieldfrom, fieldto)
 % 
@@ -6,26 +6,18 @@ function ICAw = ICAw_refield(ICAw, fieldfrom, fieldto, ifsort)
 % fieldfrom fileds are renamed to fieldto fields
 % respectively.
 % 
-% Currently it simply works by renaming the
-% fields - so renaming 'core' fields of ICAw (like
-% 'removed' will cause ICAw to break - this will be
-% later changed so that the fields cannot be renamed
-% using this function)
+% Currently it simply works by moving the contents of
+% `fieldfrom` to `fieldto` and then deleting `fieldfrom`.
+%
+% You can perform ICAw_refield on any field - so re-
+% naming 'core' fields of ICAw (like 'reject') will 
+% cause ICAw to break.
 
-% FIXHELPINFO - add examples
-% CHANGE, ADD - not possible to rename core fields?
-
-% sort by default
-if ~exists('ifsort', 'var')
-	ifsort = true;
-end
+% FIXHELPINFO - add examples, correct structure
 
 
-flds = fieldnames(ICAw);
-fldpos = find(strcmp(fieldfrom, flds));
-
-if isempty(fldpos)
-    warning('no such field present in ICAw base');
+if ~isfield(ICAw, fieldfrom)
+    warning('no field %s present in ICAw base', fieldfrom);
     return
 end
 
@@ -36,9 +28,3 @@ end
 
 % now - removing old field:
 ICAw = rmfield(ICAw, fieldfrom);
-
-% orderfields
-if ifsort
-	flds{fldpos} = fieldto;
-	ICAw = ICAw_sorter(ICAw, flds);
-end
