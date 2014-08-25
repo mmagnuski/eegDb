@@ -43,19 +43,6 @@ for r = 1:length(ICAw)
 	end
 end
 
-flds = fieldnames(ICAw);
-fldpos = find(strcmp(fieldfrom, flds));
-
-if isempty(fldpos)
-    warning('no such field present in ICAw base');
-    return
-end
-
-% otherwise - field is present
-for rec = 1:length(ICAw)
-    ICAw(rec).(fieldto) = ICAw(rec).(fieldfrom);
-end
-
 % now - removing old field:
 ICAw = rmfield(ICAw, fieldfrom);
 

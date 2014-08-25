@@ -126,7 +126,7 @@ flds = {'onesecepoch', 'epoch_events', 'epoch_limits', 'segment'};
 toFlds = {'', 'events', 'limits', 'segment'};
 
 % now we use marks:
-hasFields = cellfun(@(x) isfield(ICAw, x), flds);
+hasFields = isfield(ICAw, flds);
 
 if any(hasFields)
 for r = 1:length(ICAw)
