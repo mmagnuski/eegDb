@@ -54,7 +54,7 @@ for r = 1:length(ICAw)
 
             % check subfields:
             subf = fields(ICAw(r).(flds{i}));
-            subf = setdiff(subf, inflds{i})
+            subf = setdiff(subf, inflds{i});
 
             for f = 1:length(subf)
 
@@ -79,7 +79,7 @@ for r = 1:length(ICAw)
 end
 
 % remove fields
-rmfield(ICAw, flds(hasFields));
+ICAw = rmfield(ICAw, flds(hasFields));
 
 end
 
@@ -154,6 +154,7 @@ for r = 1:length(ICAw)
             end
                 
         end
+    end
 
     if copyEp
 
@@ -177,7 +178,7 @@ if hasFields(1)
 end
 
 % remove fields
-rmfield(ICAw, flds(hasFields));
+ICAw = rmfield(ICAw, flds(hasFields));
 
 
 
