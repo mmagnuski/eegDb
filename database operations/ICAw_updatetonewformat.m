@@ -17,8 +17,11 @@ function ICAw = ICAw_updatetonewformat(ICAw)
 
 % MOVE ICA
 % --------
-flds = {'icaweights', 'icasphere', 'icawinv', 'icachansind'};
-ICAw = ICAw_pushfields(ICAw, flds, 'ICA');
+flds = {'icaweights', 'icasphere', 'icawinv', 'icachansind',...
+    'ica_remove', 'ica_ifremove', 'ICA_desc'};
+asflds = {'icaweights', 'icasphere', 'icawinv', 'icachansind',...
+    'remove', 'ifremove', 'desc'};
+ICAw = ICAw_pushfields(ICAw, flds, 'ICA', asflds);
 
 
 % MOVE BADCHAN and BADCHANLAB
