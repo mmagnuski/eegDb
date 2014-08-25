@@ -7,8 +7,8 @@
 
 pth = fileparts(which('eegDb'));
 fld = {'database operations', 'dependencies', 'eeglabsubst', 'gui', ...
-    'manage marks', 'manage versions', 'path and file', ...
-    'should be in a branch', 'utils'};
+    'manage marks', 'manage versions', 'path and file utils', ...
+    'should be in a branch'};
 
 % add folders to path
 for f = fld

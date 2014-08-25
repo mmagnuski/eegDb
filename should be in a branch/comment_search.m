@@ -64,7 +64,6 @@ fpth = which(filename);
 % open connection to the file:
 fID = fopen(fpth);
 
-
 %% get comments
 % set up loop
 % how to allocate output?
@@ -88,10 +87,6 @@ while ischar(line)
 end
 
 %% look for events in comments:
-
-% only if there are any comments
-if exist('comments', 'var')
-    
 ifev = false(size(comments, 1), 1);
 
 for ev = 1:length(evnts)
@@ -124,8 +119,4 @@ if allcom
 end
 
 comm_events = comments(ifev,:);
-else
-    comm_events = cell(0,0);
-end
-
 fclose(fID);

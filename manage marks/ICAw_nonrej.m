@@ -2,15 +2,11 @@ function nonrejid = ICAw_nonrej(ICAw, r, varargin)
 
 % NOHELPINFO
 
-% CHECK - where is this function used, what should it do?
-
 % TODOs:
 % [ ] - the function should check segment by itself
 % [ ] - the function should check removed / prerej / postrej / autorem
 %       depending on the context (?); now only autorem checks are
 %       implemented
-
-% CHANGE - should be rewritten!
 
 %% defaults
 giveseg = false; segment = false;
@@ -37,9 +33,7 @@ end
   
 %% initial input checks
 % checking segment:
-% CHANGE - ICAw.segment may also be ICAw.epoch.segment
-if ~segment && isfield(ICAw.epoch, 'segment') && ...
-    isnumeric(ICAw(r).epoch.segment)
+if ~segment && isfield(ICAw, 'segment') && isnumeric(ICAw(r).segment)
     segment = true;
 end
 
@@ -47,8 +41,6 @@ end
 
     % we assume that autorem has fields
     flds = fields(ICAw(r).autorem);
-
-    % CHANGE - now there is no ICAw.autorem by default
     
     for f = 1:length(flds)
         nonrejid_temp = [];

@@ -72,7 +72,7 @@ end
 for r = rs
     %% preliminary checks
     % check if ICA weights present
-    ICApres = ~isempty(ICAw(r).ICA.icaweights);
+    ICApres = ~isempty(ICAw(r).icaweights);
     
     % if no ICA weights then check next file
     if ~ICApres

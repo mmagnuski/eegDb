@@ -142,7 +142,7 @@ handles.last_recovered_opts = handles.recovopts;
 
 % CHANGE - now we check recov by nonempty prerej
 %          but this is not optimal
-handles.recov = ~cellfun(@isempty, {handles.ICAw.reject.pre});
+handles.recov = ~cellfun(@isempty, {handles.ICAw.prerej});
 
 % Update handles structure
 guidata(hObject, handles);
@@ -189,9 +189,55 @@ set(handles.title_text, 'String', {'ICAw data cleaner'; ...
 maxlines = 8;
 current_slider_pos = round(3 - (get(handles.slider, 'Value'))) + 1;
 
-% get text from eegDb structure
-infotext = eegDb_struct2text(handles.ICAw(handles.r));
-   
+infotext = {'filename:   '; 'pre-rejected:  ';...
+    'post-rejected:  '; ...
+    'bad channels:  '; 'user marks:';...
+    '-reject:  '; '-maybe:  '; '-?:  ';...
+    ''; 'ICA weights:  '};
+fld = {'filename', 'prerej', 'postrej', 'badchan', '',...
+    'userrem.userreject', 'userrem.usermaybe',...
+    'userrem.userdontknow', '', 'icaweights'};
+count = [false, true, true, false, false,...
+    true, true, true, false, false];
+ispres = [false, false, false, false, false,...
+    false, false, false, false, true];
+
+% FILL LOOP
+for lns = 1:length(infotext)
+    if ~isempty(fld{lns})
+        
+        try
+            content = eval(['handles.ICAw(handles.r).', fld{lns}]);
+        catch %#ok<CTCH>
+            content = [];
+        end
+        
+        
+        if count(lns)
+            content = content(:);
+            infotext{lns} = [infotext{lns}, num2str(length(...
+                find(content(:)))), ' windows'];
+        elseif ~ispres(lns)
+            if ~(lns == 4)
+                infotext{lns} = [infotext{lns}, content];
+            else
+                if ~isequal(content, content(:)'); content = content(:)'; end
+                infotext{lns} = [infotext{lns}, num2str(content)];
+            end
+        end
+        
+        if ispres(lns)
+            if ~isempty(handles.ICAw(handles.r)...
+                    .(fld{lns}))
+                infotext{lns} = [infotext{lns}, 'Yes'];
+            else
+                infotext{lns} = [infotext{lns}, 'No'];
+            end
+        end
+        
+    end
+end
+
 % wrap the text
 infotext = textwrap(handles.info_text, infotext);
 % check wrapped size:
@@ -211,9 +257,8 @@ set(handles.info_text, 'String', infotext);
 
 % --- CL_checkbox ---
 useclean = false;
-if femp(handles.ICAw, 'cleanline') && ...
-        (isstruct(handles.ICAw(handles.r).cleanline) ...
-        || handles.ICAw(handles.r).cleanline)
+if isfield(handles.ICAw, 'usecleanline') && ~isempty(handles.ICAw(handles.r)...
+        .usecleanline) && handles.ICAw(handles.r).usecleanline
     useclean = true;
 end
 
@@ -240,9 +285,8 @@ end
 % check if this record has versions
 f = ICAw_checkfields(handles.ICAw, handles.r, {'versions'});
 
-% no versions whatsoever (no subfields in 'versions'):
+% no versions whatsoever:
 if ~f.fsubf
-    % add main version
     handles.ICAw = ICAw_mainversion(handles.ICAw, handles.r);
     
     guidata(handles.figure1, handles);
@@ -316,7 +360,7 @@ else
         % operations (apply rejections, multisel, etc.)
         if f.fsubf(1) && ~isempty(isprerej) ...
                 && f.subfnonempt{1}(isprerej)
-            handles.ICAw(handles.r).reject.pre = handles...
+            handles.ICAw(handles.r).prerej = handles...
                 .EEG.onesecepoch.prerej;
             handles.recov(handles.r) = true;
         end
@@ -345,11 +389,11 @@ else
     badchadr = find(strcmp('badchan', handles.cooleegopts));
     if ~isempty(badchadr)
         handles.cooleegopts{badchadr + 1} = handles.ICAw(handles.r)...
-            .chan.bad;
+            .badchan;
     else
-        if ~isempty(handles.ICAw(handles.r).chan.bad)
+        if ~isempty(handles.ICAw(handles.r).badchan)
             handles.cooleegopts = [handles.cooleegopts, 'badchan', ...
-                handles.ICAw(handles.r).chan.bad];
+                handles.ICAw(handles.r).badchan];
         else
             handles.cooleegopts = [handles.cooleegopts, 'badchan'];
             handles.cooleegopts{end + 1} = [];
@@ -428,7 +472,7 @@ uiresume(handles.figure1);
 function CL_checkbox_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of CL_checkbox
-handles.ICAw(handles.r).cleanline = logical(get(hObject, 'Value'));
+handles.ICAw(handles.r).usecleanline = logical(get(hObject, 'Value'));
 
 % Update handles structure
 guidata(hObject, handles);
@@ -454,14 +498,14 @@ end
 function badel_butt_Callback(hObject, eventdata, handles)
 
 chanlab = {handles.ICAw(handles.r).datainfo.chanlocs.labels};
-badchan = handles.ICAw(handles.r).chan.bad;
+badchan = handles.ICAw(handles.r).badchan;
 
 f_cha = ICAw_gui_choose_chan(chanlab, badchan);
 
 if ishandle(f_cha)
     selchan = get(f_cha, 'UserData');
-    handles.ICAw(handles.r).chan.bad = selchan{1};
-    handles.ICAw(handles.r).chan.badlab = selchan{2};
+    handles.ICAw(handles.r).badchan = selchan{1};
+    handles.ICAw(handles.r).badchanlab = selchan{2};
     
     close(f_cha);
     
@@ -556,7 +600,6 @@ end
 function EEGreco_Callback(hObject, eventdata, handles)
 
 % check selection
-% ADD - selection checks should be in a separate function
 if isempty(handles.selected)
     sel = handles.r;
 else
@@ -585,22 +628,13 @@ for c = 1:length(cansel)
     
     % CHANGE - it should work both ways:
     % now we remove by prerej, not distance
-    % CHANGE - previous comment not clear,
-    % howver, this should not probably remove
-    % distance option, epoching should be checking
-    % pre - if it is filled, no need to check
-    % distance again. If we change distance -->
-    % some reworking is needed to save post
-    % but clear pre. May be problematic if
-    % pre is empty after distance was applied
-    % use .distUsed or internal.distUsed ??
-    if femp(handles.ICAw(r).epoch, 'locked') && ...
-        ~handles.ICAw(r).epoch.locked && ...
-        femp(handles.ICAw(r).epoch, 'distance')
+    if isfield(handles.ICAw, 'onesecepoch') && ~isempty(...
+            handles.ICAw(r).onesecepoch) && isfield(...
+            handles.ICAw(r).onesecepoch, 'distance') &&...
+            ~isempty(handles.ICAw(r).onesecepoch.distance)
         
-        % CHANGE ??
         % clear distance option
-        handles.ICAw(r).epoch.distance = [];
+        handles.ICAw(r).onesecepoch.distance = [];
         % Update handles structure
         guidata(hObject, handles);
     end
@@ -731,7 +765,7 @@ seltypes = rej.name;
 % if some have applied rejections 
 % - allow for removal
 remopt =false;
-remhas = ~cellfun(@isempty, {handles.ICAw(cansel).reject.all});
+remhas = ~cellfun(@isempty, {handles.ICAw(cansel).removed});
 remhas = sum(remhas) > 0;
 if remhas
     remopt = true;
@@ -881,11 +915,11 @@ for c = 1:length(cansel)
         % recover the other
         handles.ICAw = ICAw_bringversion(handles.ICAw, s, strv);
         
-        if isempty(handles.ICAw(s).ICA.icaweights)
+        if isempty(handles.ICAw(s).icaweights)
             EEG = recoverEEG(handles.ICAw, s, 'local');
             % good channels:
             allchan = 1:size(EEG.data,1);
-            allchan(handles.ICAw(s).chan.bad) = [];
+            allchan(handles.ICAw(s).badchan) = [];
             
             %ICA
             EEG = pop_runica(EEG, 'extended', 1, 'interupt',...
@@ -1006,7 +1040,7 @@ if femp(handles, 'savepath')
     time1 = regexprep(time, ':', '.');
     time2 = regexp(time, '[0-9]{2}:[0-9]{2}:[0-9]{2}',...
         'match', 'once');
-    save(fullfile(handles.savepath, ['ICAw ', time1, '.mat']), 'ICAw');
+    save([handles.savepath, '\ICAw ', time1, '.mat'], 'ICAw');
     set(handles.savingstruct, 'String', ['Saved (', time2 , ')'] );
 end
 
