@@ -19,8 +19,8 @@ if any(hasFields)
 for r = 1:length(ICAw)
     for f = 1:length(flds)
         % if moved field not empty and field moved to not present or empty
-        if ~empty(ICAw.(flds{f})) && ~femp(ICAw.(fieldto), (asflds{f}))
-            ICAw.(fieldto).(asflds{f}) = ICAw.(flds{f});
+        if ~isempty(ICAw(r).(flds{f})) && ~femp(ICAw(r).(fieldto), (asflds{f}))
+            ICAw(r).(fieldto).(asflds{f}) = ICAw(r).(flds{f});
         end
     end
 end
