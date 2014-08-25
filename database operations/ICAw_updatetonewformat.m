@@ -31,6 +31,13 @@ asflds = {'bad', 'badlab'};
 ICAw = ICAw_pushfields(ICAw, flds, 'chan', asflds);
 
 
+% MOVE PREREJ and POSTREJ etc
+% ---------------------------
+flds = {'prerej', 'postrej', 'removed'};
+asflds = {'pre', 'post', 'all'};
+ICAw = ICAw_pushfields(ICAw, flds, 'reject', asflds);
+
+
 % REFIELD usecleanline to cleanline
 % ---------------------------------
 ICAw = ICAw_refield(ICAw, 'usecleanline', 'cleanline');
@@ -187,6 +194,23 @@ end
 ICAw = rmfield(ICAw, flds(hasFields));
 
 
+% REMOVE if present and none is nonempty:
+% chansind, tasktype, subjectcode
+% ---------------------------------------
+flds = {'chansind', 'tasktype', 'subjectcode', 'session', 'prefun'};
+
+for f = 1:length(flds)
+    if isfield(ICAw, flds{f})
+        
+        % look for nonempty fields
+        em = ~cellfun(@isempty, {ICAw.(flds{f})});
+        
+        % if no nonempty - delete field
+        if ~any(em)
+            ICAw = rmfield(ICAw, flds{f});
+        end
+    end
+end
 
 
 
