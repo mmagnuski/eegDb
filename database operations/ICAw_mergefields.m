@@ -59,11 +59,6 @@ end
 % now - removing old field:
 ICAw = rmfield(ICAw, fieldfrom);
 
-% orderfields
-if ifsort
-	flds{fldpos} = fieldto;
-	ICAw = ICAw_sorter(ICAw, flds);
-end
 
 function dbto = merger_movefield(dbfrom, dbto, fld)
 
