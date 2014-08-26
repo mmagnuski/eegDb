@@ -50,8 +50,6 @@ if return_nonempt
     % outlist.name(kill) = [];
     % outlist.color(kill,:) = [];
     % outlist.value(kill) = [];
-    % outlist.field(kill) = [];
-    % outlist.infield(kill) = [];
 end
         
 

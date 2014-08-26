@@ -743,8 +743,8 @@ end
 % if no selections present:
 if isempty(seltypes)
     % we cannot apply rejs - no seltypes
-    set(handles.addit_text, 'String', {'Sorry, no markings found, you need to'; ...
-        'mark the data first'});
+    set(handles.addit_text, 'String', {'Sorry, no data could'; ...
+        'be selected'});
     drawnow;
     return
 end
@@ -758,6 +758,11 @@ sel = gui_chooselist(seltypes, 'text', ...
 % reject selections
 % ADD handling for choosing clearing rejections
 %     with some other rejections
+%
+% isequal(sel, length(seltypes)) because
+% clear rejections is the last option in seltypes
+% while sel is what the user selects
+
 if remopt && isequal(sel, length(seltypes))
     % apply rejections
     handles.ICAw = ICAw_applyrej(handles.ICAw, cansel,...
@@ -781,14 +786,15 @@ if remopt && isequal(sel, length(seltypes))
     return
 end
 
-seltypes = rej.field(sel);
+seltypes = rej.name(sel);
 
 if ~isempty(seltypes)
     
     % apply rejections
     handles.ICAw = ICAw_applyrej(handles.ICAw, cansel,...
-        'fields', unique(rej.infield(sel)), 'subfields', seltypes);
+        'byname', seltypes);
     
+    % ADD - we need a function for mass update versions
     % update versions
     for c = cansel(:)'
         % current version
