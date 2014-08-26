@@ -55,21 +55,16 @@ g.labcol = [252 177 158; ...
 % BUILDING STRUCTURE ELEMENTS
 % ---------------------------
 
-% inner strucutre of a single mark
-aMark.name = 'somename';
-aMark.color = g.labcol(1,:);
-aMark.value = [];
-aMark.desc = []; % description of the mark (may be as well in more.desc)
-aMark.auto = []; % used for automatic marking
-aMark.more = []; % used for special marks for example badchan
+% inner strucutre of marks
+mrk = struct(
+    'name',  {'reject', 'maybe'},...
+    'color', {g.labcol(1,:), g.labcol(2,:)},...
+    'value', [], ...
+    'desc',  [], ... % description of the mark (may be as well in more.desc)
+    'auto',  [], ... % used for automatic marking
+    'more',  []  ... % used for special marks for example badchan
+);
 
-% inner structure of marks:
-flds = {'reject', 'maybe'};
-for f = 1:length(flds)
-    mrk.(flds{f}) = aMark;
-    mrk.(flds{f}).name = flds{f};
-    mrk.(flds{f}).color =  g.labcol(f,:);
-end
 
 % inner structure of ICA
 ica.icaweights = [];

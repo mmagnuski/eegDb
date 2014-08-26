@@ -11,7 +11,13 @@ function ICAw = ICAw_updatetonewformat(ICAw)
 
 % Copyright 2014 Mikołaj Magnuski (mmagnuski@swps.edu.pl)
 
-% INPROGRESS
+% TODOs:
+% [ ] - add a new function ICAw_checkbase that checks 
+%       if base is correct, ensures marks.value is logical 
+%       and same length etc. 
+%       currently ICAw_checkbase is doing something else
+%       -that function should be renamed to searchbase
+%       for example
 
 
 
@@ -58,6 +64,14 @@ hasFields = cellfun(@(x) isfield(ICAw, x), flds);
 if any(hasFields)
 for r = 1:length(ICAw)
 
+    % enum fields
+    if ~femp(ICAw(r), 'marks')
+        ff = 0;
+    elseif isstruct(ICAw(r).marks)
+        % not likely
+        ff = length(ICAw(r).marks);
+    end
+
     % check if given is present
     for i = 1:length(flds)
         if femp(ICAw(r), flds{i})
@@ -68,21 +82,14 @@ for r = 1:length(ICAw)
 
             for f = 1:length(subf)
 
-                % field name
-                fname = subf{f};
-
-                % remove 'user'
-                u = strfind(fname, 'user');
-
-                if ~isempty(u)
-                    fname(u:u+3) = [];
-                end
+                % increment ff
+                ff = ff + 1;
 
                 % move from current field (for example userrem.userreject)
                 % to relevant marks       (for example   marks.reject    )
-                ICAw(r).marks.(fname).name = ICAw(r).(flds{i}).name.(subf{f});
-                ICAw(r).marks.(fname).color = ICAw(r).(flds{i}).color.(subf{f});
-                ICAw(r).marks.(fname).value = ICAw(r).(flds{i}).(subf{f});
+                ICAw(r).marks(ff).name = ICAw(r).(flds{i}).name.(subf{f});
+                ICAw(r).marks(ff).color = ICAw(r).(flds{i}).color.(subf{f});
+                ICAw(r).marks(ff).value = ICAw(r).(flds{i}).(subf{f});
             end
         end
     end
