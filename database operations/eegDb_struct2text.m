@@ -173,6 +173,24 @@ end
 [infotext, currentRow] = addtotext(infotext, addtx, ...
     currentRow, startCol);
 
+
+% REJECTIONS
+% ----------
+currentRow = currentRow + 1;
+
+if eptp == 1
+    unit = 'windows';
+else
+    unit = 'epochs';
+end          
+
+is.pre = femp(ICAw.reject, 'pre');
+is.post = femp(ICAw.reject, 'post');
+is.all = femp(ICAw.reject, 'all');
+
+% CHANGE it later!
+
+
 % ---------------
 % ADD reject
 % ADD ICA
