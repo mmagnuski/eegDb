@@ -30,9 +30,13 @@ function infotext = eegDb_struct2text(eegDb)
 %    
 % see also: eegDb_buildbase
 
-% ADD
-% if no 'r' passed it is assumed to be 1:length(eegDb) (?)
-% if r > 1 - present a text summary of all chosen entries
+% TODOs:
+% [ ] - add reject display
+% [ ] - add option to change marks display 
+%       so that only marks in unrejected 
+%       data are shown
+% [ ] - if no 'r' passed it is assumed to be 1:length(eegDb) (?)
+% [ ] - if r > 1 - present a text summary of all chosen entries
 
 % currently we assume eegDb is one chosen entry
 if length(eegDb) > 1
@@ -42,12 +46,12 @@ if length(eegDb) > 1
 end
 
 getfld = {'filename'; 'filter'; 'epoch';...
-    'reject'; 'marks'; 'ICA'};
+    'marks'; 'reject'; 'ICA'};
 
 ttl = {'filename:', 'filter:', 'epoch:', ...
-    'reject:', 'marks:', 'ICA:'};
+    'marks:', 'reject:', 'ICA:'};
 
-infotext = addblanks_samelength(ttl, 2);
+infotext = addblanks_samelength(ttl, 2)';
 startCol = length(infotext{1});
 
 
@@ -58,15 +62,15 @@ currentRow = 1;
 %style.copy = [1]; %#ok<NBRAK>
 
 for i = currentRow
-    ttl{i} = [ttl{i}, eegDb_getfield(eegDb, getfld{i})];
+    infotext{i} = [infotext{i}, eegDb_getfield(eegDb, getfld{i})];
 end
 
 
 % epochs:
 % -------
-currentRow = 2;
+currentRow = 3;
 addtx{1} = 'no epoching defined';
-[ep, eptp, dtinf] = eegDb_getepoching(eegDb);
+[ep, eptp] = eegDb_getepoching(eegDb);
 
 if eptp == 1
     addtx{1} = 'cut into consecutive windows';
@@ -107,7 +111,7 @@ elseif eptp == 2
     addtx{1} = 'event-locked epoching';
     % ADD addtx{1} = sprintf('%d event-locked epochs', ep.winlen);
     
-    addtx{2} = sprintf('%d to %d ms', ep.limits(1), ep.limits(2));
+    addtx{2} = sprintf('%4.2f to %4.2f s', ep.limits(1), ep.limits(2));
     addtx{3} = 'with respect to:';
     
     % format event types
@@ -121,7 +125,7 @@ elseif eptp == 2
 end
 
 % add the addtx:
-[infotext, currentRow] = addtotext(infotext, addtx, ...
+[infotext, currentRow] = addtotext(infotext, addtx', ...
     currentRow, startCol);
 
 % marks:
@@ -132,7 +136,7 @@ addtx = {};
 addtx{1}  = 'no marks';
 
 if nmarks > 0
-    mrkNums = structfun(@(x) sum(x.value), eegDb.marks);
+    mrkNums = cellfun(@sum, {eegDb.marks.value});
     
     nonzero = find(mrkNums > 0);
     nonzerN = length(nonzero);
@@ -151,11 +155,12 @@ if nmarks > 0
             
             % no marked
             marked = eegDb.marks(nonzero(i)).value;
-            markedN = str2num(sum(marked));
+            markedN = sum(marked);
             % marked perc
             markedP = sprintf('%3.1f%%', markedN/length(marked) * 100);
             
-            addtx{3 * (i-1) + 2} = [markedN, '  (', markedP, ')'];
+            addtx{3 * (i-1) + 2} = [num2str(markedN),...
+                '  (', markedP, ')'];
             addtx{3 * (i-1) + 3} = '';
         end
         
@@ -187,12 +192,10 @@ function [infotext, currentRow] = addtotext(infotext, addtx, ...
         end
         
         infotext = [infotext(1:currentRow);...
-            addtx(2:end)'; infotext(currentRow+1:end)];
+            addtx(2:end); infotext(currentRow+1:end)];
         currentRow = currentRow + txlen - 1;
         
     end
-end
 
-end
 
 
