@@ -7,21 +7,19 @@ function [ICAw, EEG] = ICAw_rejTMP(ICAw, r, EEG, TMPREJ)
 ICAw_present = true;
 
 % check for segments
-if ICAw_present && isfield(ICAw, 'segment') && ...
-        isnumeric(ICAw(r).segment) && ~isempty(ICAw(r).segment)
+% THIS is kept but segmenting is not officially supported
+if ICAw_present && isfield(ICAw.epoch, 'segment') && ...
+        isnumeric(ICAw(r).epoch.segment) && ~isempty(ICAw(r).epoch.segment)
     
     
-    if (~isfield(ICAw(r), 'winlen') ||...
-            isempty(ICAw(r).winlen)) && ...
-            (isfield(ICAw(r), 'onesecepoch') && ...
-            (isempty(ICAw(r).onesecepoch) || ...
-            ~isfield(ICAw(r).onesecepoch, 'winlen') || ...
-            isempty(ICAw(r).onesecepoch.winlen)))
+    if (~isfield(ICAw(r).epoch, 'winlen') ||...
+            isempty(ICAw(r).epoch.winlen)) && ...
+            (isfield(ICAw(r).epoch, 'locked')
         winlen = 1;
     end
     
     
-    nseg = floor(winlen/ICAw(r).segment);
+    nseg = floor(winlen/ICAw(r).epoch.segment);
     seg_pres = true;
 else
     seg_pres = false;
@@ -45,19 +43,23 @@ tmpsz = size(TMPREJ);
 % known_auto = {'prob', 'mscl', 'freq'};
 % goes_to    = {'rejjp', 'rejfreq', 'rejfreq'};
 
+rejCol = cell2mat({ICAw(r).marks.color}');
+
+
 % checking rejection methods
-for rmf = 1:size(rejt.color, 1)
+for f = 1:size(rejCol, 1)
     
     % color matrix to test for color place
-    rejcol = repmat(ICAw(r).(rejt.infield{rmf}).color...
-        .(rejt.field{rmf}), [tmpsz(1), 1]);
+    rejcol = repmat(rejCol(f,:), [tmpsz(1), 1]);
     
     foundadr = sum(TMPREJ(:, 3:5)...
         - rejcol, 2) == 0;
+    clear rejcol
     
-    newrej = TMPREJ(foundadr, 2)/ EEG.pnts;%EEG.pnts instead of EEG.srate MZ
-    zerovec = zeros(EEG.trials,1);
-    zerovec(newrej) = 1;
+    newrej = TMPREJ(foundadr, 2) / EEG.pnts; %EEG.pnts instead of EEG.srate MZ
+    zerovec = false(EEG.trials, 1);
+    zerovec(newrej) = true;
+
     clear foundadr newrej
     
     if ICAw_present
@@ -77,49 +79,48 @@ for rmf = 1:size(rejt.color, 1)
         % method - autorem is for automatic remo-
         % val userrem is for removal done by the
         % user
-        if isempty(ICAw(r).userrem.(rejt.field{rmf}))
-        ICAw(r).userrem.(rejt.field{rmf}) =...
-            zeros(EEG.etc.orig_numep, 1);
+        if isempty(ICAw(r).marks(f).value)
+            ICAw(r).marks(f).value = false(EEG.etc.orig_numep, 1);
             orig_numep = EEG.etc.orig_numep;
         else
-            orig_numep = length(ICAw(r).userrem.(rejt.field{rmf}));
+            orig_numep = length(ICAw(r).marks(f).value);
         end
         
         adr = 1:orig_numep;
         
-%         if femp(ICAw(r), 'prerej') || ~(length(adr) == ...
-%                 size(EEG.data, 3))
-%             adr(ICAw(r).prerej) = [];
-%         end
+        % CHANGE - some commented out code - probably not needed
+        % if femp(ICAw(r), 'prerej') || ~(length(adr) == ...
+        %         size(EEG.data, 3))
+        %     adr(ICAw(r).prerej) = [];
+        % end
         
-        if femp(ICAw(r), 'postrej') || ~(length(adr) == ...
+        % CHANGE
+        % this is some quick bugfix, that could 
+        % not work / have much sens / etc.
+        % it seems to be used to work for adding selections 
+        % even when some epochs have been rejected
+        if femp(ICAw(r).reject, 'post') || ~(length(adr) == ...
                 size(EEG.data, 3))
-            adr(ICAw(r).postrej) = [];
+            adr(ICAw(r).reject.post) = [];
         end
         
-        try
-        ICAw(r).userrem.(rejt.field{rmf})(adr) =...
-            rejected;
-        catch %#ok<CTCH>
-            disp(['SprawdŸ co siê dzieje w workspace',...
-                'szczególne uwzglêdniaj¹c zmienn¹ ''adr''',...
-                'i daj mi (tzn. ko³ajowi) znaæ co jest nie tak.']);
-            keyboard
-        end
+        ICAw(r).marks(f).value(adr) = rejected;
         
-        % CHANGE - add use of autorem !!
-        
-        clear rejected rejcol
+        clear rejected
     end
 end
 
 % update EEG:
 EEG.reject.ICAw = ICAw_getrej(ICAw, r);
 
+% CHANGE - this should also be changed
+% EEG.reject.ICAw is used but there are no 
+% precise rules for this and it is untracked
+%
 % cut out postrej (prerej are not in
 % removed):
 for v = 1:length(EEG.reject.ICAw.value)
-    EEG.reject.ICAw.value{v}(ICAw(r).postrej) = [];
+    EEG.reject.ICAw.value{v}(ICAw(r).reject.post) = [];
 end
 
 clear tmpsz nseg
