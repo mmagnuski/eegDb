@@ -1,6 +1,6 @@
 function varargout = winreject(varargin)
 
-% WINREJECT - GUI that allows for basic operations on ICAw.
+% WINREJECT - GUI that allows for basic operations on ICAw.`
 %             Adding notes, marking epochs in different ways
 %             as well as listing bad channels is easy with
 %             winreject GUI. It is also possible to create
@@ -719,13 +719,6 @@ end
 rej = ICAw_getrej(handles.ICAw, handles.r, 'nonempt');
 seltypes = rej.name;
 
-% out = ICAw_applyrej(handles.ICAw, cansel,...
-%     'checksel', true);
-%
-% seltypes = [];
-% for o = 1:length(out.fields)
-%     seltypes = union(seltypes, out.subfields{o});
-% end
 
 % ===============================
 % if some have applied rejections 
