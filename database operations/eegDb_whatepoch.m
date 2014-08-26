@@ -43,15 +43,21 @@ end
 if whatepoching == 0
     f1 = {'winlen', 'distance'};
     f2 = {'events', 'limits'};
+    epochfields = fields(eegDb.epoch);
     
-    t1 = cellfun(@(x) sum(strcmp(x, eegDb.epoch)), f1);
-    t2 = cellfun(@(x) sum(strcmp(x, eegDb.epoch)), f2);
+    t1 = cellfun(@(x) sum(strcmp(x, epochfields)), f1);
+    t2 = cellfun(@(x) sum(strcmp(x, epochfields)), f2);
     
-    if t1 > 0 && t2 == 0
+    an = [any(t1), any(t2)];
+    
+    if an(1) && ~an(2)
         whatepoching = 1;
-    elseif t1 == 0 && t2 > 0
+    elseif ~an(1) && an(2)
         whatepoching = 2;
-    else
+    elseif ~an(1) && ~an(2)
         whatepoching = 0;
+    else
+        % some strage mix of epoching
+        whatepoching = 3;
     end
 end
