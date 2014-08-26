@@ -32,24 +32,26 @@ if nargin > 2
     clear isit
 end
 
-% 
+% so simple now:
 outlist.name = {ICAw(r).marks.name};
 outlist.color = {ICAw(r).marks.name};
 outlist.value = {ICAw(r).marks.value};
 
 if return_nonempt
-    kill = false(length(outlist.value), 1);
+
+    kill = cellfun(@(x) isempty(x) || sum(x) == 0, {outlist.value});
     
-    for v = 1:length(outlist.value)
-        kill(v) = isempty(outlist.value{v}) || ...
-            sum(outlist.value{v}) == 0;
+    flds = fields(outlist);
+
+    for f = 1:length(flds)
+        outlist.(flds{f})(kill) = [];
     end
-    
-    outlist.name(kill) = [];
-    outlist.color(kill,:) = [];
-    outlist.value(kill) = [];
-    outlist.field(kill) = [];
-    outlist.infield(kill) = [];
+
+    % outlist.name(kill) = [];
+    % outlist.color(kill,:) = [];
+    % outlist.value(kill) = [];
+    % outlist.field(kill) = [];
+    % outlist.infield(kill) = [];
 end
         
 
