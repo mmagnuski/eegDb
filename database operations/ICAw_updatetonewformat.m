@@ -43,6 +43,16 @@ flds = {'prerej', 'postrej', 'removed'};
 asflds = {'pre', 'post', 'all'};
 ICAw = ICAw_pushfields(ICAw, flds, 'reject', asflds);
 
+% ensure fields:
+for r = 1:length(ICAw)
+    for f = 1:length(asflds)
+        if ~isfield(ICAw(r).reject, asflds{f})
+            ICAw(r).reject.(asflds{f}) = [];
+        end
+    end
+end
+
+
 
 % REFIELD usecleanline to cleanline
 % ---------------------------------
@@ -90,6 +100,10 @@ for r = 1:length(ICAw)
                 ICAw(r).marks(ff).name = ICAw(r).(flds{i}).name.(subf{f});
                 ICAw(r).marks(ff).color = ICAw(r).(flds{i}).color.(subf{f});
                 ICAw(r).marks(ff).value = ICAw(r).(flds{i}).(subf{f});
+                ICAw(r).marks(ff).desc = [];
+                ICAw(r).marks(ff).auto = [];
+                ICAw(r).marks(ff).more = [];
+
             end
         end
     end

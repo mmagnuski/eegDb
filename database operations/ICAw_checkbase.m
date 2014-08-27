@@ -1,6 +1,7 @@
 function [answer, ans_adr] = ICAw_checkbase(ICAbase, EEG, varargin)
 
-% Its a shitty function that noone really uses.
+% Its a shitty function that noone really uses 
+% (unfortunatelly it is used in a few places).
 % Needs to be changed/rewritten to be useful.
 % One possibility - recursion instead of those dumb nested ifs
 %
@@ -29,6 +30,9 @@ function [answer, ans_adr] = ICAw_checkbase(ICAbase, EEG, varargin)
 % coded by M. Magnuski, march 2013
 % imponderabilion@gmail.com
 % :)
+
+% TODOs
+% This has been reworked a little bit but it needs a rewrite!
 
 filename_mod = false;
 filter_mod = false; full_mod = true;
@@ -87,22 +91,23 @@ if ~isempty(samef)
             ans_adr{2} = samef(fltr);
             
             if rst
-                % if so: checking for windowing/epoching
+                % CHANGE - epoching or windowing is not checked now
                 % CHANGE - ADD epoch checks!
-                wincheck = find(EEG.winlen == ICAbase(ans_adr{2}).winlen);
+                % wincheck = find(EEG.winlen == ICAbase(ans_adr{2}).winlen);
                 
-                if ~isempty(wincheck) && ~  filename_mod
-                    if ~silent
-                        disp('same window length.');
-                    end
+                if  ~ filename_mod
+                    % if ~silent
+                    %     disp('same window length.');
+                    % end
                     
                     answer(3) = true;
-                    ans_adr{3} = ans_adr{2}(wincheck);
+                    ans_adr{3} = ans_adr{2};
+                    % ans_adr{3} = ans_adr{2}(wincheck);
                     samerej = false(1,length(ans_adr{3}));
                     
                     % checking rejections:
                     for i = 1:length(ans_adr{3})
-                        rejcheck(i) = mean(EEG.removed == ICAbase(ans_adr{3}(i)).removed); %#ok<AGROW>
+                        rejcheck(i) = mean(EEG.removed == ICAbase(ans_adr{3}(i)).reject.all); %#ok<AGROW>
                         if rejcheck(i) == 1; samerej(i) = true; end
                     end
                     
@@ -143,14 +148,14 @@ if check_icaw && rst % rst can be omitted here
     icas_to_check = ans_adr{4};
     for i = 1:length(icas_to_check)
         % checking if icaweights are present
-        if ~isempty(ICAbase(icas_to_check(i)).icaweights)
+        if ~isempty(ICAbase(icas_to_check(i)).ICA.icaweights)
             if ~silent
                 disp('icaweights present');
             end
             answer(5) = true;
             if isfield(EEG.icaweights) && ~isempty(EEG.icaweights)
                 % checking if icaweights are the same
-                if isequal(ICAbase(icas_to_check(i)).icaweights,...
+                if isequal(ICAbase(icas_to_check(i)).ICA.icaweights,...
                         EEG.icaweights)
                     if ~silent
                         disp('icaweights are different...');
