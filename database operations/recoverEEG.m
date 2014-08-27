@@ -137,7 +137,7 @@ if length(ICAw) == 1
 end
 
 % is segment given:
-if isfield(ICAw.epoch, 'segment') && ...
+if isfield(ICAw(r).epoch, 'segment') && ...
         ~isempty(ICAw(r).epoch.segment) && isnumeric(ICAw(r).epoch.segment)
     segment = true;
 end
