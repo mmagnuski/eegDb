@@ -1,4 +1,4 @@
-function infotext = eegDb_struct2text(eegDb)
+function infotext = eegDb_struct2text(eegDb, h)
 
 % EEGDB_STRUCT2TEXT returns a string representation of eegDb contents
 %
@@ -19,7 +19,7 @@ function infotext = eegDb_struct2text(eegDb)
 %              3 (02.0%)
 %            check later
 %              12 (08.0%)
-% ICA:       done (took 00:15:08)
+% ICA:       done (took 15 min 8.23 s)
 %            mutual info: +2.5 z
 %            rejected components:
 %            13
@@ -31,6 +31,7 @@ function infotext = eegDb_struct2text(eegDb)
 % see also: eegDb_buildbase
 
 % TODOs:
+% [ ] - add text-wrapping with respect to h uicontrol
 % [ ] - add reject display
 % [ ] - add option to change marks display 
 %       so that only marks in unrejected 
@@ -45,6 +46,11 @@ if length(eegDb) > 1
     eegDb = eegDb(1);
 end
 
+% check for h
+if ~exist('h', 'var')
+    h = [];
+end
+
 getfld = {'filename'; 'filter'; 'epoch';...
     'marks'; 'reject'; 'ICA'};
 
@@ -56,13 +62,21 @@ startCol = length(infotext{1});
 
 
 
-% straight copying:
+% filename:
 % -----------------
 currentRow = 1;
 %style.copy = [1]; %#ok<NBRAK>
 
 for i = currentRow
     infotext{i} = [infotext{i}, eegDb_getfield(eegDb, getfld{i})];
+end
+
+% filter:
+% --------
+currentRow = 2;
+
+if femp(eegDb, 'filter')
+    infotext{currentRow} = [infotext{currentRow}, sprintf('[ %3.2f   %3.2f ]', eegDb.filter(1,1), eegDb.filter(1,2))];
 end
 
 
@@ -184,17 +198,165 @@ else
     unit = 'epochs';
 end          
 
-is.pre = femp(ICAw.reject, 'pre');
-is.post = femp(ICAw.reject, 'post');
-is.all = femp(ICAw.reject, 'all');
-
-% CHANGE it later!
+is.pre = femp(eegDb.reject, 'pre');
+is.post = femp(eegDb.reject, 'post');
+is.all = femp(eegDb.reject, 'all');
 
 
-% ---------------
-% ADD reject
-% ADD ICA
-% ---------------
+% CHANGE - currently we do not ensure that reject.pre is logical
+%          so it is displayed without % if we do not know the ori-
+%          ginal number of epochs (from EEG.etc.orig_numep kept
+%          as epochNum or origNum ?)
+is.orig = femp(eegDb.epoch, 'origNum');
+
+tracker = 1;
+addtx = {};
+
+% PRE-REJECTIONS
+% -------------
+if is.pre 
+    prelen = length(eegDb.reject.pre);
+    if is.orig
+        addtx{tracker} = sprintf(['pre-rejected:  %d  (%3.2f%%) ', unit],...
+            prelen, prelen/eegDb.epoch.origNum * 100);
+    else
+        addtx{tracker} = sprintf(['pre-rejected:  %d  ', unit], prelen);
+    end
+    tracker = tracker + 1;
+end
+
+% POST-REJECTIONS
+% -------------
+if is.post
+    postlen = length(eegDb.reject.post);
+    % postrej = sum(eegDb.epoch.post);
+    % addtx{tracker} = fprintf(['pre-rejected:  %d  (%3.2f%%) ', unit],...
+    %      prelen, prelen/eegDb.epoch.origNum * 100);
+    if is.orig
+        if is.pre
+            origNumAfterPre = eegDb.epoch.origNum - prelen;
+        else
+            origNumAfterPre = eegDb.epoch.origNum;
+        end
+        addtx{tracker} = sprintf(['rejected:  %d  (%3.2f%%) ', unit],...
+            postlen, postlen/origNumAfterPre * 100);
+    else
+        addtx{tracker} = sprintf(['rejected:  %d  ', unit], postlen);
+    end
+    tracker = tracker + 1;
+end
+
+% ALL (pre + post)
+% ----------------
+if is.post && is.pre && is.all && ~isequal(eegDb.reject.pre, eegDb.reject.all)
+   alllen = length(eegDb.reject.all);
+   if is.orig
+        addtx{tracker} = sprintf(['alltogether:  %d  (%3.2f%%) ', unit],...
+            alllen, alllen/eegDb.epoch.origNum * 100);
+    else
+        addtx{tracker} = sprintf(['alltogether:  %d  ', unit], alllen);
+    end
+    tracker = tracker + 1;
+end 
+
+% if none
+% -------
+
+if ~is.post && ~is.pre && ~is.all
+    addtx{tracker} = ['no ', unit, ' rejected'];
+end
+
+% add to infotext
+[infotext, currentRow] = addtotext(infotext, addtx, ...
+    currentRow, startCol);
+
+
+
+%     ICA
+% -------
+currentRow = currentRow + 1;
+if femp(eegDb.ICA, 'icaweights')
+    if femp(eegDb.ICA, 'time')
+        time = seconds2time(eegDb.ICA.time);
+        addtx{1} = ['done  (took ', time, ')'];
+    else
+        addtx{1} = 'done';
+    end
+else
+    addtx{1} = 'not done';
+end
+
+% add to infotext
+[infotext, currentRow] = addtotext(infotext, addtx, ...
+    currentRow, startCol);
+
+
+
+if ~isempty(h)
+
+    % we need to do some wrapping!
+
+    % 1. assume the text is monospaced:
+    % 2. get the longest line:
+    lineLen = cellfun(@length, infotext);
+    [maxLines, maxLenInd] = max(lineLen);
+
+    % 3. wrap the longest line
+    testwrap = textwrap(h, infotext(maxLenInd));
+    % 4. get the length of the first line of wrapped text
+    wrapLen = length(testwrap{1});
+
+    % 5. check which original text lines are longer than that
+    tooLong = lineLen > wrapLen;
+
+    if any(tooLong)
+
+        % 6. check which are too long
+        % whichTooLong = find(tooLong);
+
+        % 7. see by how too long
+        tooLongBy = lineLen(tooLong) - wrapLen;
+
+        % 8. how many second column characters fit
+        secColChar = wrapLen - startCol; % this MUST be positive!
+
+        % CHANGE, TEMPORARY; currently - give error, FUTURE - resize window etc.
+        if secColChar < 5
+            error('Second column is shorter than 5 characters, this is too short :(');
+        end
+
+        % 9. see how many new rows:
+        newLines = ceil(tooLongBy / secColChar);
+
+        % 10. allocate new cell matrix
+        newtext = cell(length(lineLen) + sum(newLines), 1);
+
+        tracker = 1;
+        % now, fill it up!
+        for l = 1:length(lineLen)
+            if ~tooLong(l)
+                % just add the line
+                newtext{tracker} = infotext{l};
+                tracker = tracker + 1;
+            else
+                % add first line (trimmed)
+                newtext{tracker} = infotext{l}(1:wrapLen);
+                tracker = tracker + 1;
+
+                % get the rest of the text 
+                % wrapped the way we prefer
+                textfit = wrapThisText(infotext{l}(wrapLen+1:end), ...
+                    secColChar, startCol);
+                
+                %
+                len = length(textfit);
+                newtext(tracker : tracker+len-1) = textfit;
+                tracker = tracker + len;
+            end
+        end
+        infotext = newtext;
+    end
+end
 
 function [infotext, currentRow] = addtotext(infotext, addtx, ...
     currentRow, startCol)
@@ -216,4 +378,15 @@ function [infotext, currentRow] = addtotext(infotext, addtx, ...
     end
 
 
+function tx = wrapThisText(text, toLen, front)
 
+    textLen = length(text);
+    div = textLen / toLen;
+    nLines = ceil(div);
+    
+    % CHECK - this SHOULD be integer but sometimes is not
+    addblanks = round((nLines - div)* toLen);
+    tx = reshape([text, blanks(addblanks)], [toLen, nLines])';
+    tx = [reshape(blanks(nLines * front),...
+        [nLines, front]), tx];
+    tx = mat2cell(tx, ones(nLines, 1), size(tx,2));

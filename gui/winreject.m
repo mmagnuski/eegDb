@@ -35,7 +35,7 @@ function varargout = winreject(varargin)
 %     does work for ICA but not yet for other options 
 % [ ] ...
 
-% Last Modified by GUIDE v2.5 20-Jan-2014 16:32:14
+% Last Modified by GUIDE v2.5 27-Aug-2014 16:41:04
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -139,10 +139,16 @@ handles.cooleegopts = {'ecol', 'off', 'winlen', 3, 'badplot', 'grey', ...
     'lsmo', 'on'};
 handles.last_recovered_opts = handles.recovopts;
 
+% set info_text to FiexedWidth
+set(handles.info_text ,'FontName','FixedWidth');
+% set slider position:
+set(handles.slider, 'Value', get(handles.slider, 'Max'));
+set(handles.slider, 'SliderStep', [1 3]);
 
 % CHANGE - now we check recov by nonempty prerej
 %          but this is not optimal
-handles.recov = ~cellfun(@isempty, {handles.ICAw.reject.pre});
+handles.recov = ~cellfun(@(x) isempty(x.pre),...
+    {handles.ICAw.reject});
 
 % Update handles structure
 guidata(hObject, handles);
@@ -185,24 +191,60 @@ set(handles.title_text, 'String', {'ICAw data cleaner'; ...
 % --- info_text ---
 % =================
 
+
+% text stuff
+% ----------
+
 % Fill info_text:
 maxlines = 8;
-current_slider_pos = round(3 - (get(handles.slider, 'Value'))) + 1;
 
-% get text from eegDb structure
-infotext = eegDb_struct2text(handles.ICAw(handles.r));
-   
-% wrap the text
-infotext = textwrap(handles.info_text, infotext);
+% get text from eegDb structure, already wrapped
+infotext = eegDb_struct2text(handles.ICAw(handles.r), handles.info_text);
+
 % check wrapped size:
 all_lines = length(infotext);
-%
+
+
+% get slider vars
+% ---------------
+sliderVal = get(handles.slider, 'Value');
+sliderMax = get(handles.slider, 'Max');
+current_slider_pos = round(sliderMax - sliderVal) + 1;
+
+% set active lines (scrollable)
+active_lines = all_lines - maxlines;
+if active_lines < 1
+    active_lines = 1;
+end
+
+% slider cannot be off max
+if current_slider_pos > sliderMax + 1
+    current_slider_pos = sliderMax + 1;
+end
+
+% see what part of the text to present
 lastlin = current_slider_pos + maxlines - 1;
 if lastlin > all_lines
+    % but never more than there are lines
     lastlin = all_lines;
 end
 
-% trim text:
+
+% Slider stuff
+% ------------
+
+set(handles.slider, 'Max', active_lines);
+set(handles.slider, 'SliderStep', 1/active_lines * [1, 3])
+if sliderVal > active_lines
+    set(handles.slider, 'Value', active_lines);
+else
+    set(handles.slider, 'Value', max([0, active_lines - current_slider_pos + 1]));
+end
+
+
+% 
+% trim text and show:
+% -------------------
 infotext = infotext(current_slider_pos:lastlin);
 
 % set the text
@@ -211,7 +253,7 @@ set(handles.info_text, 'String', infotext);
 
 % --- CL_checkbox ---
 useclean = false;
-if femp(handles.ICAw, 'cleanline') && ...
+if femp(handles.ICAw(handles.r), 'cleanline') && ...
         (isstruct(handles.ICAw(handles.r).cleanline) ...
         || handles.ICAw(handles.r).cleanline)
     useclean = true;
@@ -245,9 +287,9 @@ if ~f.fsubf
     % add main version
     handles.ICAw = ICAw_mainversion(handles.ICAw, handles.r);
     
-    guidata(handles.figure1, handles);
 end
 
+guidata(handles.figure1, handles);
 clear f
 
 % --- version names ---
