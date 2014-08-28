@@ -340,7 +340,7 @@ if ~loaded
     % ==============
     % good channels:
     allchan = 1:size(EEG.data,1);
-    allchan(ICAw(r).badchan) = [];
+    allchan(ICAw(r).chan.bad) = [];
     
     % ============================
     % cleanline for good channels:
@@ -355,7 +355,7 @@ end
 
 
 %% adding ICA info
-if ~noICA && isfield(ICAw.ICA, 'icaweights') && ...
+if ~noICA && isfield(ICAw(r).ICA, 'icaweights') && ...
         ~isempty(ICAw(r).ICA.icaweights)
     
     % =====================
@@ -373,11 +373,11 @@ if ~noICA && isfield(ICAw.ICA, 'icaweights') && ...
     
     % =======================
     % removing bad components:
-    if ~isempty(ICAw(r).ica_remove) && ...
+    if ~isempty(ICAw(r).ICA.remove) && ...
             ~ICAnorem
         % removing comps:
         EEG = pop_subcomp( EEG, ICAw(r)...
-            .ica_remove, 0);
+            .ICA.remove, 0);
     end
     
     % save temp icainfo
@@ -422,7 +422,7 @@ if femp(ICAw(r), 'postfilter')
 end
 
 %% epoching
-if femp(ICAw.epoch, 'locked') && ~ICAw(r).onesecepoch.locked
+if femp(ICAw(r).epoch, 'locked') && ~ICAw(r).onesecepoch.locked
     
     % ==============
     % onesec options
@@ -449,8 +449,8 @@ if femp(ICAw.epoch, 'locked') && ~ICAw(r).onesecepoch.locked
     EEG = onesecepoch(options);
     clear options
     
-elseif ~isempty(ICAw(r).epoch_events) && ...
-        ~isempty(ICAw(r).epoch_limits)
+elseif ~isempty(ICAw(r).epoch.events) && ...
+        ~isempty(ICAw(r).epoch.limits)
     
     % ==================
     % classical epoching
@@ -521,7 +521,7 @@ end
 EEG.etc.orig_numep = size(EEG.data, 3);
 
 % if onesecepoch was perfromed add onesec info
-if femp(ICAw(r).epoch.locked) && ICAw(r).epoch.locked
+if femp(ICAw(r).epoch, 'locked') && ~ICAw(r).epoch.locked
     
     % either prerej is nonempty  % or what?
     if femp(ICAw(r).reject, 'pre')
@@ -578,7 +578,7 @@ if ~(prerej || isempty(ICAw(r).reject.all))
         end
         
         % remove postrej
-        EEG.reject.ICAw.value{f}(ICAw(r).postrej) = [];
+        EEG.reject.ICAw.value{f}(ICAw(r).reject.post) = [];
     end
 end
 

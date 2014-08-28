@@ -36,6 +36,12 @@ flds = {'badchan', 'badchanlab'};
 asflds = {'bad', 'badlab'};
 ICAw = ICAw_pushfields(ICAw, flds, 'chan', asflds);
 
+% ensure field:
+for r = 1:length(ICAw)
+        if ~isfield(ICAw(r).chan, 'bad')
+            ICAw(r).chan.bad = [];
+        end
+end
 
 % MOVE PREREJ and POSTREJ etc
 % ---------------------------
