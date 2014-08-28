@@ -8,13 +8,13 @@ ICAw_present = true;
 
 % check for segments
 % THIS is kept but segmenting is not officially supported
-if ICAw_present && isfield(ICAw.epoch, 'segment') && ...
+if ICAw_present && isfield(ICAw(r).epoch, 'segment') && ...
         isnumeric(ICAw(r).epoch.segment) && ~isempty(ICAw(r).epoch.segment)
     
     
     if (~isfield(ICAw(r).epoch, 'winlen') ||...
             isempty(ICAw(r).epoch.winlen)) && ...
-            (isfield(ICAw(r).epoch, 'locked')
+            isfield(ICAw(r).epoch, 'locked')
         winlen = 1;
     end
     

@@ -34,12 +34,12 @@ end
 
 % so simple now:
 outlist.name = {ICAw(r).marks.name};
-outlist.color = {ICAw(r).marks.name};
+outlist.color = {ICAw(r).marks.color};
 outlist.value = {ICAw(r).marks.value};
 
 if return_nonempt
 
-    kill = cellfun(@(x) isempty(x) || sum(x) == 0, {outlist.value});
+    kill = cellfun(@(x) isempty(x) || sum(x) == 0, outlist.value);
     
     flds = fields(outlist);
 

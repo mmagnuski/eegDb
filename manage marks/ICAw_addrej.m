@@ -18,7 +18,7 @@ function ICAw = ICAw_addrej(ICAw, r, rej)
 %           if nargin > 3
 %               opts = {'overwrite'
 
-f = ICAw_checkfields(ICAw.reject, r, {'pre',...
+f = ICAw_checkfields(ICAw(r).reject, 1, {'pre',...
     'post', 'all'});
 rej = unique(rej);
 

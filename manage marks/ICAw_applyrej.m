@@ -37,9 +37,9 @@ for r = rs
         ICAw(r).reject.all = ICAw(r).reject.pre;
         continue
     end
-     
+    
     % no inds
-    inds = [];
+    ind = [];
     
     % checking fields
     % fldch = ICAw_checkfields(ICAw, r, flds,...
@@ -56,37 +56,37 @@ for r = rs
             mrknames = {ICAw(r).marks.name};
             marknums = cellfun(@(x) strcmp(x, mrknames), byname, 'uni', false);
             marknums = reshape(cell2mat(marknums), [length(byname), length(mrknames)]);
-            marknums = find( sum(marknums, 1) );
-
-            mrkvals = {ICAw(r).marks(marknums).val};
+            marknums = sum(marknums, 1) > 0;
+            
+            mrkvals = {ICAw(r).marks(marknums).value};
             clear marknums mrknames
-
+            
             % check mark length:
             mrklen = cellfun(@length, mrkvals);
             if sum(diff(mrklen)) > 0
                 error('Mark value lengths are not equal! :(');
             end
-
+            
             % CHANGE later - if we are sure they are column vectors
             %                then find(sum(reshape(cellfun), 1))
             for m = 1:length(mrkvals)
                 ind = unique([ind, find(mrkvals{m})]);
             end
+            
+            % fill 'removed' field :)
+            ICAw = ICAw_addrej(ICAw, r, ind);
+        end
         
-        % fill 'removed' field :)
-        ICAw = ICAw_addrej(ICAw, r, inds);
     end
     
+    if checksel
+        outsel.fields = outsel.fields(outsel.fieldpres); %#ok<UNRCH>
+        outsel.subfields = outsel.subfields(outsel.fieldpres);
+        outsel = rmfield(outsel, 'fieldpres');
+        
+        ICAw = outsel;
+    end
 end
-
-if checksel
-    outsel.fields = outsel.fields(outsel.fieldpres); %#ok<UNRCH>
-    outsel.subfields = outsel.subfields(outsel.fieldpres);
-    outsel = rmfield(outsel, 'fieldpres');
-    
-    ICAw = outsel;
-end
-
 % fill scouting structure
 % (scouting structure looks for rejection categories
 %  present in the data before applying these rejections)
