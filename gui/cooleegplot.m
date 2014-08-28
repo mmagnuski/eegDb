@@ -212,7 +212,7 @@ end
 rejmat = eeg_rejmat(EEG);
 
 labels = {'happy bunny'};
-labcol = [0.85 1 0];
+labcol = {[0.85 1 0]};
 % get rejection types (from ICAw field)
 if isfield(EEG.reject, 'ICAw') && ~isempty(EEG.reject.ICAw)...
         && isfield(EEG.reject.ICAw, 'name')
