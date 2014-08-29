@@ -15,6 +15,7 @@ if activeNum > 0
 end
 if activeNum < buttonsNum
 	set(uData.hButton(activeNum+2:end), 'Visible', 'off');
+	set(uData.hText(activeNum + 2:end), 'String', '');
 end
 
 % change text in typed
@@ -25,8 +26,8 @@ for i = 1:length(textActive)
     
     thisText = highlightString(textActive{i}, activeInd{i}, col);
 
-    set(uData.hButton(i + 1), 'backgroundcolor', setCol(i,:));
-    set(uData.hText(i + 1), 'Interpreter','latex', 'String', thisText);
+    set(uData.hButton(i + 1), 'FaceColor', setCol(i,:));
+    set(uData.hText(i + 1), 'String', thisText);
 end
 
 

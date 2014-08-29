@@ -4,7 +4,7 @@ function fuzzy_buttonpress(hObj, evnt)
 
 % a button has been pressed!
 
-% we don't care about case, but we don't want modifiers
+% we don't care about case so we don't want modifiers
 if ~isempty(evnt.Modifier)
 	return
 end
