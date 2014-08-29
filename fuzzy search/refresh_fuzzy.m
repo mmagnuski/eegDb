@@ -1,34 +1,39 @@
-function refresh_fuzzy(hObj, textActive, uData)
+function refresh_fuzzy(hObj, uData)
 
 
 % normal / highlight color
 col = {'\color{black}', '\color{magenta}'};
 
 % set inactive invisible
-activeNum = sum(uData.textActive);
+activeNum = sum(uData.active);
 buttonsNum = length(uData.hButton);
-activeInd = uData.inds(uData.actv);
 
 if activeNum > 0
-	set(uData.hButton(2:activeNum+1), 'Visible', 'on');
-	setCol = uData.color(uData.textActive,:);
+	set(uData.hButton(1:activeNum), 'Visible', 'on');
+	setCol = uData.boxColor(uData.active,:);
 end
 if activeNum < buttonsNum
-	set(uData.hButton(activeNum+2:end), 'Visible', 'off');
-	set(uData.hText(activeNum + 2:end), 'String', '');
+	set(uData.hButton(activeNum + 1 : end), 'Visible', 'off');
+	set(uData.hText  (activeNum + 1 : end), 'String', '');
 end
+
+% get active text
+text = uData.origText(uData.active);
 
 % change text in typed
-set(uData.hText(1), 'String',  uData.typed );
+set(uData.hEditText, 'String',  uData.typed );
 
 % change props of active buttons
-for i = 1:length(textActive)
+for i = 1:length(text)
     
-    thisText = highlightString(textActive{i}, activeInd{i}, col);
+    thisText = highlightString(text{i}, uData.inds{i}, col);
 
-    set(uData.hButton(i + 1), 'FaceColor', setCol(i,:));
-    set(uData.hText(i + 1), 'String', thisText);
+    set(uData.hButton(i), 'FaceColor', setCol(i,:));
+    set(uData.hText(i), 'String', thisText);
 end
+
+% give back user data
+set(hObj, 'UserData', uData);
 
 
 function outstr = highlightString(str, ind, col)
@@ -40,6 +45,7 @@ isHgh(ind) = true;
 outstr = cell(1,length(str));
 lastWas = 2;
 
+% CHANGE - PROFILE and OPTIMIZE:
 for i = 1:strLen
 	issame = lastWas == isHgh(i);
 
@@ -56,6 +62,3 @@ for i = 1:strLen
 end
 
 outstr = [outstr{:}];
-
-
-

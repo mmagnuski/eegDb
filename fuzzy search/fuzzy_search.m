@@ -11,7 +11,7 @@ for i = 1:strLen
     for l = 1:length(match)
         val = find(word(ind(l)+1:end) == match(l), 1, 'first');
         if ~isempty(val)
-            ind(l+1) = val;
+            ind(l+1) = val + ind(l);
         else
             fin = false;
             break
@@ -19,6 +19,6 @@ for i = 1:strLen
     end
     
     if fin
-        inds{i} = cumsum(ind(2:end));
+        inds{i} = ind(2:end);
     end
 end

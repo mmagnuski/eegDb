@@ -9,35 +9,47 @@ if ~isempty(evnt.Modifier)
 	return
 end
 
-% add char to char string
-key = evnt.Character;
+% get pressed character
+ch = evnt.Character;
 
-% test Key for backspace and return
 
-if ~isempty(key)
+if ~isempty(ch)
 	
-	% get active text
+	% get user data
 	uData = get(hObj, 'UserData');
-	textActive = uData.text(uData.textActive);
 
 	% modify uData.typed - typed text
 
-	if strcmp(key, 'backspace')
-
+	if strcmp(evnt.Key, 'backspace')
+		text = uData.lowerText;
+		uData.active(~uData.active) = true;
 		uData.typed = uData.typed(1:end-1);
-		% special case if uData.typed goes empty!
-	elseif length(key) == 1
-		uData.typed = [uData.typed, key];
+	elseif length(ch) == 1
+		% get active text
+		text = uData.lowerText(uData.active);
+		uData.typed = [uData.typed, ch];
 	else
 		return
 	end
 
+
 	% pass text to fuzzy_search
-	uData.inds = fuzzy_search(textActive, uData.typed);
-	% update active 
-	uData.actv = ~cellfun(@isempty, uData.inds);
-	uData.textActive(uData.textActive) = uData.actv;
+	if length(uData.typed) > 0
+
+		% use fuzzy_search
+		uData.inds = fuzzy_search(text, uData.typed);
+
+		% update active 
+		actv = ~cellfun(@isempty, uData.inds);
+		uData.inds = uData.inds(actv);
+		uData.active(uData.active) = actv;
+	else
+		
+		uData.inds = cell(1, uData.textItems);
+	end
+
+	
 
 	% refresh gui:
-	refresh_fuzzy(hObj, textActive(uData.actv), uData);
+	refresh_fuzzy(hObj, uData);
 end
