@@ -1,15 +1,20 @@
 function EEG = recoverEEG(ICAw, r, varargin)
 
-% EEG = recoverEEG(ICAw, file_number);
-% this function recovers a file according to ICAw database
-% for example:
-% EEG = recoverEEG(ICAw, 2);
-% gives back EEG of the second file in the database
-% recoverEEG() performs all modifications (filtering,
+% RECOVEREEG recovers a file from raw data
+% according to ICAw database 
+%
+% EEG = RECOVEREEG(ICAw, r);
+%
+% ICAw - the ICAw database
+% r    - ICAw's record number to recover
+% EEG  - eeglab's EEG structure
+% 
+% RECOVEREEG() performs all modifications (filtering,
 % epoching, rejection of epochs etc.) stated in the
 % database unless asked to omit some of them
 % (cleanline is omitted by default, if you want to
 %  run cleanline, add 'cleanline' to function keys)
+%
 % additional keys:
 % 'prerej'      - remove only the prerejected
 %                 epochs
@@ -31,6 +36,13 @@ function EEG = recoverEEG(ICAw, r, varargin)
 %                 scheduled for removal
 % 'interp'      - interpolate bad channels as the last step
 %                 file recovery.
+%
+% examples
+% 
+% to get back EEG of the second file in the database:
+% >> EEG = recoverEEG(ICAw, 2);
+% 
+% see also: ICAw_buildbase, winreject
 
 % =================
 % info for hackers:
@@ -422,7 +434,7 @@ if femp(ICAw(r), 'postfilter')
 end
 
 %% epoching
-if femp(ICAw(r).epoch, 'locked') && ~ICAw(r).onesecepoch.locked
+if femp(ICAw(r).epoch, 'locked') && ~ICAw(r).epoch.locked
     
     % ==============
     % onesec options
@@ -440,7 +452,7 @@ if femp(ICAw(r).epoch, 'locked') && ~ICAw(r).onesecepoch.locked
     end
     
     % if prerej is present then no need to use distance
-    if femp(ICAw(r).reject, r, 'pre')
+    if femp(ICAw(r).reject, 'pre')
         options.distance = [];
     end
     
