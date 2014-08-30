@@ -4,7 +4,7 @@ function refresh_fuzzy(hObj, uData)
 % normal / highlight color
 col = {'\color{black}', '\color{magenta}'};
 
-% set inactive invisible
+% set inactive to invisible
 activeNum = sum(uData.active);
 buttonsNum = length(uData.hButton);
 
@@ -22,6 +22,54 @@ text = uData.origText(uData.active);
 
 % change text in typed
 set(uData.hEditText, 'String',  uData.typed );
+
+% change highlight position
+if uData.allowHighlight
+
+	% something to highlight
+	if activeNum > 0
+		set(uData.hHighlight, 'Visible', 'on');
+
+		% check position
+		if uData.highlightPosition < 1
+			uData.highlightPosition = 1;
+		elseif uData.highlightPosition > activeNum
+			uData.highlightPosition = activeNum;
+		end
+
+		% set position
+		X = get(uData.hButton...
+			(uData.highlightPosition), 'XData');
+        Y = get(uData.hButton...
+			(uData.highlightPosition), 'YData');
+        X = X + [-uData.highlightRim(1); -uData.highlightRim(1);...
+            uData.highlightRim(3); uData.highlightRim(3)];
+        Y = Y + [uData.highlightRim(2); -uData.highlightRim(4);...
+            -uData.highlightRim(4); uData.highlightRim(2)];
+
+		set(uData.hHighlight, 'XData', X, 'YData', Y);
+
+	else
+		set(uData.hHighlight, 'Visible', 'off');
+    end
+end
+
+% sorting
+% -------
+
+if uData.allowSorting && ~isempty(uData.inds) ...
+	&& ~isempty(uData.inds{1})
+	
+	% sort active text
+	[~, sortVals] = sort(cellfun(@sum, uData.inds));
+	text = text(sortVals);
+	setCol = setCol(sortVals, :);
+	uData.inds = uData.inds(sortVals);
+	uData.sortInds = find(uData.active);
+	uData.sortInds = uData.sortInds(sortVals);
+
+end
+
 
 % change props of active buttons
 for i = 1:length(text)

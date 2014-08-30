@@ -113,5 +113,19 @@ uiwait(h);
 
 udat = get(h, 'UserData');
 
+
 % resume and return
+% -----------------
+if udat.allowSorting
+    inds = udat.sortInds;
+else
+    inds = find(udat.active);
+end
+
 if udat.allowHighlight
+    opt = inds(udat.highlightPosition);
+else
+    opt = inds(1);
+end
+
+close(h);
