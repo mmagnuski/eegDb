@@ -1,11 +1,12 @@
 % TODOs:
-% [ ] scrolling
+% [ ] fix return value with scrolling
 % [ ] adjust box height
 % [ ] text centering
 % [ ] selecting good figure size and position
 % [ ] different color choosing
 % [ ] text color adjustment to background color
 % [ ] (?) allow setting text color
+% [x] fix scrolling
 % [x] enter - accept
 % [x] highlight
 % [x] arrows - move highlight

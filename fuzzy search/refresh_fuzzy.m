@@ -89,6 +89,15 @@ if uData.allowSorting && ~isempty(uData.inds) ...
 
 end
 
+% check scrolling
+% ---------------
+if uData.allowScrolling
+
+	% check if focus needs to be reduced
+	uData.focus = min( uData.focus, max(1, activeNum - uData.numButtons + 1) ); 
+
+end
+
 
 % change props of active buttons
 for i = 1: min(uData.numButtons, activeNum)
