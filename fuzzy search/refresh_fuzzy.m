@@ -9,10 +9,10 @@ activeNum = sum(uData.active);
 buttonsNum = length(uData.hButton);
 
 if activeNum > 0
-	set(uData.hButton(1:activeNum), 'Visible', 'on');
+	set(uData.hButton(1:uData.numButtons), 'Visible', 'on');
 	setCol = uData.boxColor(uData.active,:);
 end
-if activeNum < buttonsNum
+if activeNum < uData.numButtons
 	set(uData.hButton(activeNum + 1 : end), 'Visible', 'off');
 	set(uData.hText  (activeNum + 1 : end), 'String', '');
 end
@@ -32,7 +32,26 @@ if uData.allowHighlight
 
 		% check position
 		if uData.highlightPosition < 1
+
+			% fist visible still selected
 			uData.highlightPosition = 1;
+
+			% check scrolling:
+			if uData.allowScrolling && uData.focus > 1
+				uData.focus = uData.focus - 1;
+			end
+
+		elseif activeNum > uData.numButtons && ...
+			uData.highlightPosition > uData.numButtons
+
+			% last visible is still selected
+			uData.highlightPosition = uData.numButtons;
+			
+			% check scrolling:
+			if uData.allowScrolling && uData.focus < activeNum - uData.numButtons + 1
+				uData.focus = uData.focus + 1;
+			end
+
 		elseif uData.highlightPosition > activeNum
 			uData.highlightPosition = activeNum;
 		end
@@ -72,11 +91,13 @@ end
 
 
 % change props of active buttons
-for i = 1:length(text)
+for i = 1: min(uData.numButtons, activeNum)
     
-    thisText = highlightString(text{i}, uData.inds{i}, col);
+    ind = i + uData.focus - 1;
+    thisText = highlightString(text{ind}, uData.inds{ind}, col);
+    thisColor = setCol(ind,:);
 
-    set(uData.hButton(i), 'FaceColor', setCol(i,:));
+    set(uData.hButton(i), 'FaceColor', thisColor);
     set(uData.hText(i), 'String', thisText);
 end
 

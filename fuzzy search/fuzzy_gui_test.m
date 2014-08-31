@@ -1,30 +1,42 @@
 % TODOs:
-% [ ] enter - accept
-% [ ] highlight
-% [ ] arrows - move highlight
+% [ ] scrolling
+% [ ] adjust box height
 % [ ] text centering
+% [ ] selecting good figure size and position
 % [ ] different color choosing
 % [ ] text color adjustment to background color
-% [ ] allow setting text color
+% [ ] (?) allow setting text color
+% [x] enter - accept
+% [x] highlight
+% [x] arrows - move highlight
 % [x] change ordering basing on match
 % [x] fix blank
 % [x] fix backspace action
 
-function opt = fuzzy_gui_test()
 
-menu_items = {'AkredytacjaWielkiejWierzby',...
-    'to som chyba miesnie', 'bardzo brzydki sygnal',...
-    'dziwne warczenie'};
+% adding information about the 'focus'
+% that is indices of items that are visible
+% active - tells which are 'selected'
+% sortInds (check this) - what is the current order
+% focus - if more elements active than figure
+%         presentation capacity - informs about
+%         the index of first visible element
 
-% create user data structure
+function opt = fuzzy_gui_test(menu_items)
+
+% NOHELPINFO
+
+% create user data structure for the figure
 udat.textItems = length(menu_items);
 udat.boxColor = 0.7 + rand(udat.textItems,3)*0.3;
 udat.origText = menu_items;
 udat.lowerText = cellfun(@lower, menu_items, 'Uni', false);
 udat.active = true(1, udat.textItems);
+udat.focus = 1;
 
 % setup stuff
 udat.allowSorting = true;
+udat.allowScrolling = true;
 udat.allowHighlight = true;
 
 % create figure
@@ -43,7 +55,7 @@ keyh     = 60;
 keyDist  = 15;
 keyStart = 100;
 
-% edit box color
+% 'edit box' color
 EditColor = [0.2, 0.1, 0.0];
 HighlighColor = [255, 255, 100]/255;
 
@@ -52,6 +64,11 @@ udat.hAxis = axes('Position', [0, 0, 1, 1],...
     'Visible', 'off');
 set(udat.hAxis, 'Xlim', [0, figSpace(1)],'YLim', [0, figSpace(2)]);
 
+% check how many 'boxes'
+udat.numButtons = floor( (figSpace(2) - keyStart) / (keyh + keyDist) );
+if udat.numButtons > udat.textItems
+    udat.numButtons = udat.textItems;
+end
 
 
 % create highlight
@@ -82,7 +99,7 @@ udat.hEditText = text('String', '', 'FontSize', 15,...
 
 % create option buttons
 % ---------------------
-for i = 1:udat.textItems
+for i = 1:udat.numButtons
     
     butUp = figSpace(2) - keyStart - (i-1) * (keyh + keyDist);
     
@@ -105,10 +122,14 @@ if udat.allowSorting
     udat.sortInds = 1:udat.textItems;
 end
 
+
 set(h, 'UserData',  udat);
 set(h, 'WindowKeyPressFcn', @fuzzy_buttonpress);
 set(h, 'Visible', 'on');
 
+
+% wait for user reaction
+% ----------------------
 uiwait(h);
 
 udat = get(h, 'UserData');
