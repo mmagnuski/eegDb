@@ -1,11 +1,15 @@
 % TODOs:
-% [ ] fix return value with scrolling
+% [ ] add option to restart highligh and focus with 
+%     new added text
+% [ ] selection by mouse click
+% [ ] add slider info (non-interactive)
 % [ ] adjust box height
 % [ ] text centering
 % [ ] selecting good figure size and position
 % [ ] different color choosing
 % [ ] text color adjustment to background color
 % [ ] (?) allow setting text color
+% [x] fix return value with scrolling
 % [x] fix scrolling
 % [x] enter - accept
 % [x] highlight
@@ -71,6 +75,10 @@ if udat.numButtons > udat.textItems
     udat.numButtons = udat.textItems;
 end
 
+% currently scrolling entails highlight
+if udat.allowScrolling
+    udat.allowHighlight = true;
+end
 
 % create highlight
 % ----------------
@@ -145,7 +153,12 @@ else
 end
 
 if udat.allowHighlight
-    opt = inds(udat.highlightPosition);
+
+    if udat.allowScrolling
+        opt = inds(udat.highlightPosition - 1 + udat.focus);
+    else
+        opt = inds(udat.highlightPosition);
+    end
 else
     opt = inds(1);
 end
