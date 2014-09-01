@@ -3,7 +3,7 @@ function ICAw = ICAw_bringversion(ICAw, r, verf)
 % NOHELPINFO
 
 % TODOs:
-% [ ] CHECK more thoroughly - testing
+% [ ] PROFILE and rewrite
 % [ ] if some fields are filled but are not present
 %     in the version being recovered - clear those fields
 %     this seems to be implemented - CHECK if this is wor-
@@ -27,16 +27,17 @@ if ~isempty(verf)
     f2 = ICAw_checkfields(ICAw, r, [],...
         'ignore', {'subjectcode', 'tasktype', 'filename', 'filepath',...
         'datainfo', 'session', 'versions'});
-    
+
+
+    % clearing fields that are currently
+    % filled but not present in the version
     clearf = setdiff(f2.fields, f.fields);
     
     for c = 1:length(clearf)
         ICAw(r).(clearf{c}) = [];
     end
     
-    % we include empty fields too
-    % (to clear icaweights of another version
-    %  for example)
+    % copy info from version to 'surface'
     fld = f.fields;
     
     for f = 1:length(fld)

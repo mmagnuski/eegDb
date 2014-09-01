@@ -1,6 +1,6 @@
 function varargout = winreject(varargin)
 
-% WINREJECT - GUI that allows for basic operations on ICAw.
+% WINREJECT - GUI that allows for basic operations on ICAw.`
 %             Adding notes, marking epochs in different ways
 %             as well as listing bad channels is easy with
 %             winreject GUI. It is also possible to create
@@ -35,7 +35,7 @@ function varargout = winreject(varargin)
 %     does work for ICA but not yet for other options 
 % [ ] ...
 
-% Last Modified by GUIDE v2.5 20-Jan-2014 16:32:14
+% Last Modified by GUIDE v2.5 27-Aug-2014 16:41:04
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -139,10 +139,16 @@ handles.cooleegopts = {'ecol', 'off', 'winlen', 3, 'badplot', 'grey', ...
     'lsmo', 'on'};
 handles.last_recovered_opts = handles.recovopts;
 
+% set info_text to FiexedWidth
+set(handles.info_text ,'FontName','FixedWidth');
+% set slider position:
+set(handles.slider, 'Value', get(handles.slider, 'Max'));
+set(handles.slider, 'SliderStep', [1 3]);
 
 % CHANGE - now we check recov by nonempty prerej
 %          but this is not optimal
-handles.recov = ~cellfun(@isempty, {handles.ICAw.prerej});
+handles.recov = ~cellfun(@(x) isempty(x.pre),...
+    {handles.ICAw.reject});
 
 % Update handles structure
 guidata(hObject, handles);
@@ -185,70 +191,60 @@ set(handles.title_text, 'String', {'ICAw data cleaner'; ...
 % --- info_text ---
 % =================
 
+
+% text stuff
+% ----------
+
 % Fill info_text:
 maxlines = 8;
-current_slider_pos = round(3 - (get(handles.slider, 'Value'))) + 1;
 
-infotext = {'filename:   '; 'pre-rejected:  ';...
-    'post-rejected:  '; ...
-    'bad channels:  '; 'user marks:';...
-    '-reject:  '; '-maybe:  '; '-?:  ';...
-    ''; 'ICA weights:  '};
-fld = {'filename', 'prerej', 'postrej', 'badchan', '',...
-    'userrem.userreject', 'userrem.usermaybe',...
-    'userrem.userdontknow', '', 'icaweights'};
-count = [false, true, true, false, false,...
-    true, true, true, false, false];
-ispres = [false, false, false, false, false,...
-    false, false, false, false, true];
+% get text from eegDb structure, already wrapped
+infotext = eegDb_struct2text(handles.ICAw(handles.r), handles.info_text);
 
-% FILL LOOP
-for lns = 1:length(infotext)
-    if ~isempty(fld{lns})
-        
-        try
-            content = eval(['handles.ICAw(handles.r).', fld{lns}]);
-        catch %#ok<CTCH>
-            content = [];
-        end
-        
-        
-        if count(lns)
-            content = content(:);
-            infotext{lns} = [infotext{lns}, num2str(length(...
-                find(content(:)))), ' windows'];
-        elseif ~ispres(lns)
-            if ~(lns == 4)
-                infotext{lns} = [infotext{lns}, content];
-            else
-                if ~isequal(content, content(:)'); content = content(:)'; end
-                infotext{lns} = [infotext{lns}, num2str(content)];
-            end
-        end
-        
-        if ispres(lns)
-            if ~isempty(handles.ICAw(handles.r)...
-                    .(fld{lns}))
-                infotext{lns} = [infotext{lns}, 'Yes'];
-            else
-                infotext{lns} = [infotext{lns}, 'No'];
-            end
-        end
-        
-    end
-end
-
-% wrap the text
-infotext = textwrap(handles.info_text, infotext);
 % check wrapped size:
 all_lines = length(infotext);
-%
+
+
+% get slider vars
+% ---------------
+sliderVal = get(handles.slider, 'Value');
+sliderMax = get(handles.slider, 'Max');
+current_slider_pos = round(sliderMax - sliderVal) + 1;
+
+% set active lines (scrollable)
+active_lines = all_lines - maxlines;
+if active_lines < 1
+    active_lines = 1;
+end
+
+% slider cannot be off max
+if current_slider_pos > sliderMax + 1
+    current_slider_pos = sliderMax + 1;
+end
+
+% see what part of the text to present
 lastlin = current_slider_pos + maxlines - 1;
 if lastlin > all_lines
+    % but never more than there are lines
     lastlin = all_lines;
 end
 
-% trim text:
+
+% Slider stuff
+% ------------
+
+set(handles.slider, 'Max', active_lines);
+set(handles.slider, 'SliderStep', 1/active_lines * [1, 3])
+if sliderVal > active_lines
+    set(handles.slider, 'Value', active_lines);
+else
+    set(handles.slider, 'Value', max([0, active_lines - current_slider_pos + 1]));
+end
+
+
+% 
+% trim text and show:
+% -------------------
 infotext = infotext(current_slider_pos:lastlin);
 
 % set the text
@@ -257,8 +253,9 @@ set(handles.info_text, 'String', infotext);
 
 % --- CL_checkbox ---
 useclean = false;
-if isfield(handles.ICAw, 'usecleanline') && ~isempty(handles.ICAw(handles.r)...
-        .usecleanline) && handles.ICAw(handles.r).usecleanline
+if femp(handles.ICAw(handles.r), 'cleanline') && ...
+        (isstruct(handles.ICAw(handles.r).cleanline) ...
+        || handles.ICAw(handles.r).cleanline)
     useclean = true;
 end
 
@@ -285,13 +282,14 @@ end
 % check if this record has versions
 f = ICAw_checkfields(handles.ICAw, handles.r, {'versions'});
 
-% no versions whatsoever:
+% no versions whatsoever (no subfields in 'versions'):
 if ~f.fsubf
+    % add main version
     handles.ICAw = ICAw_mainversion(handles.ICAw, handles.r);
     
-    guidata(handles.figure1, handles);
 end
 
+guidata(handles.figure1, handles);
 clear f
 
 % --- version names ---
@@ -360,7 +358,7 @@ else
         % operations (apply rejections, multisel, etc.)
         if f.fsubf(1) && ~isempty(isprerej) ...
                 && f.subfnonempt{1}(isprerej)
-            handles.ICAw(handles.r).prerej = handles...
+            handles.ICAw(handles.r).reject.pre = handles...
                 .EEG.onesecepoch.prerej;
             handles.recov(handles.r) = true;
         end
@@ -389,11 +387,11 @@ else
     badchadr = find(strcmp('badchan', handles.cooleegopts));
     if ~isempty(badchadr)
         handles.cooleegopts{badchadr + 1} = handles.ICAw(handles.r)...
-            .badchan;
+            .chan.bad;
     else
-        if ~isempty(handles.ICAw(handles.r).badchan)
+        if ~isempty(handles.ICAw(handles.r).chan.bad)
             handles.cooleegopts = [handles.cooleegopts, 'badchan', ...
-                handles.ICAw(handles.r).badchan];
+                handles.ICAw(handles.r).chan.bad];
         else
             handles.cooleegopts = [handles.cooleegopts, 'badchan'];
             handles.cooleegopts{end + 1} = [];
@@ -472,7 +470,7 @@ uiresume(handles.figure1);
 function CL_checkbox_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of CL_checkbox
-handles.ICAw(handles.r).usecleanline = logical(get(hObject, 'Value'));
+handles.ICAw(handles.r).cleanline = logical(get(hObject, 'Value'));
 
 % Update handles structure
 guidata(hObject, handles);
@@ -498,14 +496,14 @@ end
 function badel_butt_Callback(hObject, eventdata, handles)
 
 chanlab = {handles.ICAw(handles.r).datainfo.chanlocs.labels};
-badchan = handles.ICAw(handles.r).badchan;
+badchan = handles.ICAw(handles.r).chan.bad;
 
 f_cha = ICAw_gui_choose_chan(chanlab, badchan);
 
 if ishandle(f_cha)
     selchan = get(f_cha, 'UserData');
-    handles.ICAw(handles.r).badchan = selchan{1};
-    handles.ICAw(handles.r).badchanlab = selchan{2};
+    handles.ICAw(handles.r).chan.bad = selchan{1};
+    handles.ICAw(handles.r).chan.badlab = selchan{2};
     
     close(f_cha);
     
@@ -600,6 +598,7 @@ end
 function EEGreco_Callback(hObject, eventdata, handles)
 
 % check selection
+% ADD - selection checks should be in a separate function
 if isempty(handles.selected)
     sel = handles.r;
 else
@@ -628,13 +627,22 @@ for c = 1:length(cansel)
     
     % CHANGE - it should work both ways:
     % now we remove by prerej, not distance
-    if isfield(handles.ICAw, 'onesecepoch') && ~isempty(...
-            handles.ICAw(r).onesecepoch) && isfield(...
-            handles.ICAw(r).onesecepoch, 'distance') &&...
-            ~isempty(handles.ICAw(r).onesecepoch.distance)
+    % CHANGE - previous comment not clear,
+    % howver, this should not probably remove
+    % distance option, epoching should be checking
+    % pre - if it is filled, no need to check
+    % distance again. If we change distance -->
+    % some reworking is needed to save post
+    % but clear pre. May be problematic if
+    % pre is empty after distance was applied
+    % use .distUsed or internal.distUsed ??
+    if femp(handles.ICAw(r).epoch, 'locked') && ...
+        ~handles.ICAw(r).epoch.locked && ...
+        femp(handles.ICAw(r).epoch, 'distance')
         
+        % CHANGE ??
         % clear distance option
-        handles.ICAw(r).onesecepoch.distance = [];
+        handles.ICAw(r).epoch.distance = [];
         % Update handles structure
         guidata(hObject, handles);
     end
@@ -753,19 +761,12 @@ end
 rej = ICAw_getrej(handles.ICAw, handles.r, 'nonempt');
 seltypes = rej.name;
 
-% out = ICAw_applyrej(handles.ICAw, cansel,...
-%     'checksel', true);
-%
-% seltypes = [];
-% for o = 1:length(out.fields)
-%     seltypes = union(seltypes, out.subfields{o});
-% end
 
 % ===============================
 % if some have applied rejections 
 % - allow for removal
 remopt =false;
-remhas = ~cellfun(@isempty, {handles.ICAw(cansel).removed});
+remhas = ~cellfun(@isempty, {handles.ICAw(cansel).reject.all});
 remhas = sum(remhas) > 0;
 if remhas
     remopt = true;
@@ -777,8 +778,8 @@ end
 % if no selections present:
 if isempty(seltypes)
     % we cannot apply rejs - no seltypes
-    set(handles.addit_text, 'String', {'Sorry, no markings found, you need to'; ...
-        'mark the data first'});
+    set(handles.addit_text, 'String', {'Sorry, no data could'; ...
+        'be selected'});
     drawnow;
     return
 end
@@ -792,6 +793,11 @@ sel = gui_chooselist(seltypes, 'text', ...
 % reject selections
 % ADD handling for choosing clearing rejections
 %     with some other rejections
+%
+% isequal(sel, length(seltypes)) because
+% clear rejections is the last option in seltypes
+% while sel is what the user selects
+
 if remopt && isequal(sel, length(seltypes))
     % apply rejections
     handles.ICAw = ICAw_applyrej(handles.ICAw, cansel,...
@@ -815,14 +821,15 @@ if remopt && isequal(sel, length(seltypes))
     return
 end
 
-seltypes = rej.field(sel);
+seltypes = rej.name(sel);
 
 if ~isempty(seltypes)
     
     % apply rejections
     handles.ICAw = ICAw_applyrej(handles.ICAw, cansel,...
-        'fields', unique(rej.infield(sel)), 'subfields', seltypes);
+        'byname', seltypes);
     
+    % ADD - we need a function for mass update versions
     % update versions
     for c = cansel(:)'
         % current version
@@ -915,11 +922,11 @@ for c = 1:length(cansel)
         % recover the other
         handles.ICAw = ICAw_bringversion(handles.ICAw, s, strv);
         
-        if isempty(handles.ICAw(s).icaweights)
+        if isempty(handles.ICAw(s).ICA.icaweights)
             EEG = recoverEEG(handles.ICAw, s, 'local');
             % good channels:
             allchan = 1:size(EEG.data,1);
-            allchan(handles.ICAw(s).badchan) = [];
+            allchan(handles.ICAw(s).chan.bad) = [];
             
             %ICA
             EEG = pop_runica(EEG, 'extended', 1, 'interupt',...
@@ -1040,7 +1047,7 @@ if femp(handles, 'savepath')
     time1 = regexprep(time, ':', '.');
     time2 = regexp(time, '[0-9]{2}:[0-9]{2}:[0-9]{2}',...
         'match', 'once');
-    save([handles.savepath, '\ICAw ', time1, '.mat'], 'ICAw');
+    save(fullfile(handles.savepath, ['ICAw ', time1, '.mat']), 'ICAw');
     set(handles.savingstruct, 'String', ['Saved (', time2 , ')'] );
 end
 

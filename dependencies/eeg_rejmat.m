@@ -19,8 +19,8 @@ function rejmat = eeg_rejmat(EEG, varargin)
 srt = EEG.srate;
 allrej = 0;
 % change check fields to include other non-standard fields
-chckflds = {'rejjp', 'rejmanual', 'rejfreq', 'userreject',...
-    'usermaybe', 'userdontknow'};
+chckflds = {'rejjp', 'rejmanual', 'rejfreq', 'reject',...
+    'maybe', 'dontknow'};
 
 % check for additional arguments:
 if nargin > 1
@@ -59,4 +59,4 @@ for f = 1:length(chckflds)
     rejsofar = rejsofar + len;
     end
 end
-clear rejsofar len f allrej rejperf numep
+clear rejsofar len numep

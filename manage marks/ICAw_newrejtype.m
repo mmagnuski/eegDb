@@ -14,23 +14,19 @@ if isempty(newtypes)
 end
 
 % scan for rejtypes
+% now scanmarks is MUCH faster so it can be performed every time :)
 % CHANGE - this should be only performed
 %          for consistency checks one time
 %          (at the beginning)
-%          !! use persistent option?
-rejt = ICAw_scanrejtypes(ICAw); % <-- consider moving this to C maybe...
+%          - use persistent option?
+rejt = ICAw_scanmarks(ICAw);
 
 % take only userrem types:
-urem = strcmp('userrem', rejt.infield);
-rejt.field = rejt.field(urem);
-rejt.name = rejt.name(urem);
-clear urem
 
-isnew = false(length(newtypes.name), 1);
+newlen = length(newtypes.name);
+rejNames = rejt.name;
+isnew = cellfun(@(x) ~any(strcmp(x, rejNames)));
 
-for n = 1:length(newtypes.name)
-    isnew(n) = sum(strcmp(newtypes.name{n}, rejt.name)) == 0;
-end
 
 newt = find(isnew);
 clear isnew
@@ -38,40 +34,15 @@ clear isnew
 if ~isempty(newt)
     % there are some new types
     
-    % we code new rejs with rej05, rej12 etc.
-    fbeg = 'rej';
-    fnum = '00';
-    
-    % find free field name
-    freefld = 1:99;
-    fnms = regexp(rejt.field, 'rej[0-9]{2}', 'once');
-    nonemp = ~cellfun(@isempty, fnms);
-    bsfld = rejt.field(nonemp);
-    clear fnms nonemp
-    
-    if ~isempty(bsfld)
-        bsnm = regexp(bsfld, '[0-9][0-9]', 'once','match');
-        bsnm = unique(cellfun(@str2num, bsnm));
-        
-        freefld(bsnm) = [];
-        clear bsnm bsfld
-    end
     
     
-    for n = 1:length(newt)
-        
-        % field name:
-        nm = num2str(freefld(n));
-        nnm = fnum;
-        nnm(end-(length(nm)-1):end) = nm;
-        clear nm
-        fnm = [fbeg, nnm];
-        
-        % apply to all ICAw records
-        for r = 1:length(ICAw)
+    % apply to all ICAw records
+    for r = 1:length(ICAw)
+        for n = 1:length(newt)
             ICAw(r).userrem.(fnm) = [];
-            ICAw(r).userrem.name.(fnm) = newtypes.name{newt(n)};
-            ICAw(r).userrem.color.(fnm) = newtypes.color(newt(n), :);
+            ICAw(r).marks(end + 1).name.(fnm) = newtypes.name{newt(n)};
+            ICAw(r).marks(end + 1).color.(fnm) = newtypes.color{newt(n)};
+            % additional?
         end
         
     end

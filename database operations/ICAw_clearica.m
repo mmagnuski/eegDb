@@ -11,19 +11,24 @@ function ICAw = ICAw_clearica(ICAw, r)
 %
 
 ICAfields = {'icachansind', 'icasphere',...
-    'icaweights', 'icawinv', 'ica_remove',...
-    'ica_ifremove', 'ICA_desc'};
+    'icaweights', 'icawinv', 'remove',...
+    'ifremove', 'desc'};
 
 for f = 1:length(ICAfields)
-    ICAw(r).(ICAfields{f}) = [];
+    ICAw(r).ICA.(ICAfields{f}) = [];
 end
 
 
 % also - remove from the version:
-c_ver = ICAw(r).versions.current;
+if femp(ICAw(r), 'versions') && femp(ICAw(r), 'current')
+	% get current version
+	c_ver = ICAw(r).versions.current;
 
-for f = 1:length(ICAfields)
-    if femp(ICAw(r).versions.(c_ver), ICAfields{f})
-        ICAw(r).versions.(c_ver).(ICAfields{f}) = [];
-    end
+	% remove fields form current version
+	for f = 1:length(ICAfields)
+	    if femp(ICAw(r).versions.(c_ver).ICA, ICAfields{f})
+	        % die, field!
+	        ICAw(r).versions.(c_ver).ICA.(ICAfields{f}) = [];
+	    end
+	end
 end

@@ -300,10 +300,11 @@ if ~isstr(data) % If NOT a 'noui' call or a callback from uicontrols
    try g.labels;            catch, g.labels = {'reject', 'maybe', '?'}; end; % MMagnuski
    
    try 
-       g.labcol; g.wincolor = g.labcol(1,:);       
+       g.labcol; g.wincolor = g.labcol{1};       
    catch 
-           g.labcol = [252 177 158; 254 239 156; 196 213 253]./255; ...
-           g.wincolor = g.labcol(1,:); 
+           g.labcol = {[252 177 158]./255; [254 239 156]./255;...
+               [196 213 253]./255}; ...
+           g.wincolor = g.labcol{1}; 
    end; % MMagnuski
    
    if ~femp(g, 'linesmoothing') || ~ischar(g.linesmoothing) ||...
@@ -2145,7 +2146,7 @@ function choose_rejcol_callb(hObject,eventdata) %#ok<INUSD>
 % assign in caller that color to g.wincol
 nowcol = get(hObject, 'Value');
 g = get(gcbf, 'userdata');
-g.wincolor = g.labcol(nowcol, :);
+g.wincolor = g.labcol{nowcol};
 assignin('caller', 'g', g);
 set(gcbf, 'userdata', g);
 

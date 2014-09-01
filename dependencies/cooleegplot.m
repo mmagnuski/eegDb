@@ -1,6 +1,6 @@
 function varargout = cooleegplot(EEG, varargin)
 
-% help info is in progress
+% FIXHELPINFO
 % cooleegplot() is a shortcut to EEGlab's eegplot.
 % It eases up calls to eegplot and adds some fancy
 % features like color palettes for electrode signal.
@@ -126,6 +126,8 @@ if nargin > 1
         if ~isempty(ICAw_adr)
             ICAw_present = true;
             ICAw = varargin{ICAw_adr}; r = 1;
+
+            % CHANGE to_field needs to be changed
             to_field = {'prob', 'manual', 'mscl', 'reject', 'maybe',...
                 'dontknow'};
             % field name within which the ones below are hidden:
@@ -211,6 +213,10 @@ if ~nowait
             
             % checking rejection methods
             for f = 1:length(chckflds)
+                % !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                % CHANGE ? - the code below does not work because
+                %            it checks EEG instead of EEG.reject
+                % !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 if isfield(EEG, chckflds{f})
                     rejcol = repmat(EEG.reject.([chckflds{f},...
                         'col']), [tmpsz(1), 1]);

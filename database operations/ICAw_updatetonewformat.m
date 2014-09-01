@@ -1,116 +1,138 @@
 function ICAw = ICAw_updatetonewformat(ICAw)
 
-% OUTDATED
-% updates ICAw structure to its most current form
+% ICAW_UPDATETONEWFORMAT updates a given ICAw database to
+% most current format.
+%
+% ICAw = ICAw_updatetonewformat(ICAw)
+%
+% ICAw - structure; eegDb database
+%
+% see also: ICAw_buildbase
+
+% Copyright 2014 Mikołaj Magnuski (mmagnuski@swps.edu.pl)
+
+% TODOs:
+% [ ] - add a new function ICAw_checkbase that checks 
+%       if base is correct, ensures marks.value is logical 
+%       and same length etc. 
+%       currently ICAw_checkbase is doing something else
+%       -that function should be renamed to searchbase
+%       for example
 
 
 
-%% check if some fields are present:
+% MOVE ICA
+% --------
+flds = {'icaweights', 'icasphere', 'icawinv', 'icachansind',...
+    'ica_remove', 'ica_ifremove', 'ICA_desc'};
+asflds = {'icaweights', 'icasphere', 'icawinv', 'icachansind',...
+    'remove', 'ifremove', 'desc'};
+ICAw = ICAw_pushfields(ICAw, flds, 'ICA', asflds);
+
+
+% MOVE BADCHAN and BADCHANLAB
+% ---------------------------
+flds = {'badchan', 'badchanlab'};
+asflds = {'bad', 'badlab'};
+ICAw = ICAw_pushfields(ICAw, flds, 'chan', asflds);
+
+% ensure field:
+for r = 1:length(ICAw)
+        if ~isfield(ICAw(r).chan, 'bad')
+            ICAw(r).chan.bad = [];
+        end
+end
+
+% MOVE PREREJ and POSTREJ etc
+% ---------------------------
+flds = {'prerej', 'postrej', 'removed'};
+asflds = {'pre', 'post', 'all'};
+ICAw = ICAw_pushfields(ICAw, flds, 'reject', asflds);
+
+% ensure fields:
+for r = 1:length(ICAw)
+    for f = 1:length(asflds)
+        if ~isfield(ICAw(r).reject, asflds{f})
+            ICAw(r).reject.(asflds{f}) = [];
+        end
+    end
+end
+
+
+
+% REFIELD usecleanline to cleanline
+% ---------------------------------
+ICAw = ICAw_refield(ICAw, 'usecleanline', 'cleanline');
+
+
+
+% RECODE (USER/AUTO)REM to MARKS
+% --------------------------------
+
+% move marks from userrem and autorem
+% previously these fields and subfields where used
 flds = {'userrem', 'autorem'};
 inflds = {{'color', 'name'}, {'color', 'name'}};
 
-for f = 1:length(flds)
-    fp = isfield(ICAw(1), flds{f});
-    if ~fp
-        ICAw(1).(flds{f}) = [];
-        for r = 1:length(ICAw)
-            for ff = 1:length(inflds{f})
-                ICAw(r).(flds{f}).(inflds{f}{ff}) = [];
-            end
-        end
-    else
-        for r = 1:length(ICAw)
-            for ff = 1:length(inflds{f})
-                fp = isfield(ICAw(r).(flds{f}), inflds{f}{ff});
-                
-                if ~fp
-                    ICAw(r).(flds{f}).(inflds{f}{ff}) = [];
-                end
-                
-            end
-        end
-    end
-end
-clear ff fp f flds inflds
+% now we use marks:
+hasFields = cellfun(@(x) isfield(ICAw, x), flds);
 
-% check mscnum - this is no longer needed
-if isfield(ICAw(1).autorem, 'mscnum')
-    for r = 1:length(ICAw)
-        ICAw(r).autorem = rmfield(ICAw(r).autorem, 'mscnum');
-    end
-end
-
-
-
-%% check rejection name and color fields
-
-% known rejection types:
-rejfields = {'autorem', 'userrem'};
-rejsub{1} = {'prob', 'mscl'};
-rejsub{2} = {'userreject', 'usermaybe', 'userdontknow'};
-
-% ADD - take color options from options file
-rejcol{1} = [1, 0.6991, 0.7537; 0.9596 0.7193 1];
-rejcol{2} = [252 177 158; 254 239 156; 196 213 253]./255;
-rejnam{1} = {'low probability', 'muscular artifact'};
-rejnam{2} = {'reject', 'maybe', '?'};
-
-% loop through all entries
+if any(hasFields)
 for r = 1:length(ICAw)
-    for rj = 1:length(rejfields)
-        fld = ICAw_checkfields(ICAw(r).(rejfields{rj}), 1, [], 'ignore',...
-            {'name', 'color'});
-        flds = fld.fields;
-        
-        % for each field:
-        for f = 1:length(flds)
-            % check if its known
-            ifk = find(strcmp(flds{f}, rejsub{rj}));
-            
-            % check if color is present;
-            chf = ICAw_checkfields(ICAw(r).(rejfields{rj})...
-                .color, 1, flds(f));
-            if ~chf.fnonempt(1) || (chf.fnonempt(1) && ...
-                    ~(numel(size(ICAw(r).(rejfields{rj}).color...
-                    .(flds{f}))) == 3))
-                % color is not present or badly formatted
-                if ifk
-                    % color is known
-                    ICAw(r).(rejfields{rj}).color.(flds{f}) = ...
-                        rejcol{rj}(ifk,:);
-                else
-                    % use random color
-                    ICAw(r).(rejfields{rj}).color.(flds{f}) = ...
-                        rand(1,3);
-                end
-            end
-            
-            % check if name is present;
-            chf = ICAw_checkfields(ICAw(r).(rejfields{rj})...
-                .name, 1, flds(f));
-            if ~chf.fnonempt(1) || (chf.fnonempt(1) && ...
-                    ~ischar(ICAw(r).(rejfields{rj}).name...
-                    .(flds{f})))
-                % name is not present or badly formatted
-                if ifk
-                    % name is known
-                    ICAw(r).(rejfields{rj}).name.(flds{f}) = ...
-                        rejnam{rj}{ifk};
-                else
-                    % copy field name as rej name
-                    ICAw(r).(rejfields{rj}).name.(flds{f}) = ...
-                        flds{f};
-                end
+
+    % enum fields
+    if ~femp(ICAw(r), 'marks')
+        ff = 0;
+    elseif isstruct(ICAw(r).marks)
+        % not likely
+        ff = length(ICAw(r).marks);
+    end
+
+    % check if given is present
+    for i = 1:length(flds)
+        if femp(ICAw(r), flds{i})
+
+            % check subfields:
+            subf = fields(ICAw(r).(flds{i}));
+            subf = setdiff(subf, inflds{i});
+
+            for f = 1:length(subf)
+
+                % increment ff
+                ff = ff + 1;
+
+                % move from current field (for example userrem.userreject)
+                % to relevant marks       (for example   marks.reject    )
+                ICAw(r).marks(ff).name = ICAw(r).(flds{i}).name.(subf{f});
+                ICAw(r).marks(ff).color = ICAw(r).(flds{i}).color.(subf{f});
+                ICAw(r).marks(ff).value = ICAw(r).(flds{i}).(subf{f});
+                ICAw(r).marks(ff).desc = [];
+                ICAw(r).marks(ff).auto = [];
+                ICAw(r).marks(ff).more = [];
+
             end
         end
-        
     end
 end
-% for r = 1:length(ICAw)
 
-%% check previous onesecepoch settings:
+% remove fields
+ICAw = rmfield(ICAw, flds(hasFields));
+
+end
+
+
+% RECODE EPOCHING
+% ---------------
+
+% ICAw.winlen --> ICAw.onesecepoch.winlen
+%
+% move old ICAw.winlen ICAw.distance to ICAw.onesecepoch.winlen etc.
+% these are later moved to ICAw.epoch.winlen etc.
+% (this may be done in one single step but this way it is easier)
 flds = {'winlen', 'distance'};
+hasFields = isfield(ICAw, flds);
 
+if any(hasFields)
 for r = 1:length(ICAw)
     if isfield(ICAw, 'onesecepoch') && islogical(ICAw(r).onesecepoch)
         ICAw(r).onesecepoch = [];
@@ -127,6 +149,98 @@ for r = 1:length(ICAw)
     end
 end
 
-if isfield(ICAw,flds)
-    ICAw = rmfield(ICAw, flds);
+% remove fields
+ICAw = rmfield(ICAw, flds(hasFields));
+
 end
+
+
+% ICAw.onesecepoch.winlen (etc.) --> ICAw.epoch.winlen
+flds = {'onesecepoch', 'epoch_events', 'epoch_limits', 'segment'};
+toFlds = {'', 'events', 'limits', 'segment'};
+
+% now we use marks:
+hasFields = isfield(ICAw, flds);
+
+if any(hasFields)
+for r = 1:length(ICAw)
+
+    % check onesec 
+    % -------------
+    copyEp = true;
+    if femp(ICAw(r), flds{1}) 
+        % only cases where it is logical
+        % then - after this loop we merge
+        % onesecepoch with epoch so other
+        % cases are taken care of
+        if islogical(ICAw(r).(flds{1}))
+            if ICAw(r).(flds{1})
+
+                % set locked to false
+                ICAw(r).epoch.locked = false;
+
+                % clear onesecepoch
+                ICAw(r).onesecepoch = [];
+
+                % apply default onesec options:
+                ICAw(r).epoch.winlen = 1;
+
+
+                % do not copy epoching even if present
+                copyEp = false;
+            end
+                
+        end
+    end
+
+    if copyEp
+
+        for f = 2:length(flds)
+
+            % simply copy the contents if present
+            if femp(ICAw(r), flds{f})
+                ICAw(r).epoch.(toFlds{f}) = ICAw(r).(flds{f});
+            end
+
+        end
+    end
+end
+end
+
+% merge onesecepoch and epoch if onesec present
+if hasFields(1)
+    % force merge, because ICAw.epoch could not be 
+    % trully present if ICAw.onesecepoch is
+    ICAw = ICAw_mergefields(ICAw, flds{1}, 'epoch', true);
+    
+    flds = flds(2:end);
+    hasFields = hasFields(2:end);
+end
+
+% remove fields
+ICAw = rmfield(ICAw, flds(hasFields));
+
+
+% REMOVE if present and none is nonempty:
+% chansind, tasktype, subjectcode
+% ---------------------------------------
+flds = {'chansind', 'tasktype', 'subjectcode', 'session', 'prefun'};
+
+for f = 1:length(flds)
+    if isfield(ICAw, flds{f})
+        
+        % look for nonempty fields
+        em = ~cellfun(@isempty, {ICAw.(flds{f})});
+        
+        % if no nonempty - delete field
+        if ~any(em)
+            ICAw = rmfield(ICAw, flds{f});
+        end
+    end
+end
+
+
+
+% SORT fileds as the last step
+% ----------------------------
+ICAw = ICAw_sorter(ICAw);

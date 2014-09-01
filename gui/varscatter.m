@@ -108,16 +108,15 @@ end
 % set limits
 set(h, 'XLim', [1, length(data)]);
 
-% set labels
+% temporary fix of:
+% Warning: RGB color data not yet supported in Painter's mode 
+% CHNAGE - better check if 'Painters' are set and turn off
 warning('off');
+
+% set labels
 xlabel(h, 'Trial');
 ylabel(h, label);
 
-% temporary fix of:
-% Warning: RGB color data not yet supported in Painter's mode 
-%warning('off');
-% MZ - this has to be before functions that create this warning I believe 
-%       so I moved it before xlabel() and ylabel() 
 
 % lines
 tick = repmat(round(length(data)/4)*[1,2,3,4],2,1);
