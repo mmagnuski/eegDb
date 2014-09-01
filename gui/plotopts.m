@@ -1,4 +1,6 @@
 function varargout = plotopts(varargin)
+%
+% NOHELPINFO
 % PLOTOPTS MATLAB code for plotopts.fig
 %      PLOTOPTS, by itself, creates a new PLOTOPTS or raises the existing
 %      singleton*.

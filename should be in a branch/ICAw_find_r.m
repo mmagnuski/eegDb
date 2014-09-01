@@ -7,6 +7,11 @@ function r = ICAw_find_r(ICAw, fld, val)
 % Returns all indices that fulfill these
 % constaints.
 
+% TODOs
+% [ ] PROFILE against cellfun
+% [ ] maybe add options to look deeper than one field
+%     (ICAw_getfield or sth similar?)
+
 if ~isstruct(ICAw)
     error('The variable passed as ICAw is not a structure!');
 end

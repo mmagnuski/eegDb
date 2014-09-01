@@ -191,10 +191,10 @@ end
         % look for record number
         r = ICAw_find_r(ICAw, 'filename', h.EEG.filename);
         if isempty(r)
-            error(['Could not find ICaw entry with the same filename as ',...
+            error(['Could not find ICAw entry with the same filename as ',...
                 'given in your EEG structure.']);
         elseif length(r) > 1
-            warning(['Found multiple ICaw entries with the same filename as ',...
+            warning(['Found multiple ICAw entries with the same filename as ',...
                 'given in your EEG structure. Taking the first one found.']);
             h.r = r(1);
         else
@@ -215,16 +215,16 @@ end
 
 % ============================================
 % checking ICAw - if no ICA_desc field, create
-f = ICAw_checkfields(ICAw, h.r, {'ICA_desc'});
+f = femp(ICAw_checkfields(ICAw(h.r).ICA, 'desc');
 
-if ~f.fnonempt(1)
+if ~f % no such field or empty - create and fill it up!
     for cc = 1:h.ncomp
-        ICAw(h.r).ICA_desc(cc).reject = false;
-        ICAw(h.r).ICA_desc(cc).ifreject = false;
-        ICAw(h.r).ICA_desc(cc).type = '?';
-        ICAw(h.r).ICA_desc(cc).subtype = 'none';
-        ICAw(h.r).ICA_desc(cc).rank = [];
-        ICAw(h.r).ICA_desc(cc).notes = [];
+        ICAw(h.r).ICA.desc(cc).reject = false;
+        ICAw(h.r).ICA.desc(cc).ifreject = false;
+        ICAw(h.r).ICA.desc(cc).type = '?';
+        ICAw(h.r).ICA.desc(cc).subtype = 'none';
+        ICAw(h.r).ICA.desc(cc).rank = [];
+        ICAw(h.r).ICA.desc(cc).notes = [];
     end
 end
 
@@ -453,12 +453,12 @@ if sum(strcmp('compinfo', refr)) > 0
     set(h.ICnb, 'String', ['IC ', num2str(h.comp)]);
     
     % type of comp:
-    compt = ICAw(h.r).ICA_desc(h.comp).type;
+    compt = ICAw(h.r).ICA.desc(h.comp).type;
     alltps = h.opt.ICA.types;
     compi = find(strcmp(compt, alltps));
     
     if isempty(compi)
-        ICAw(h.r).ICA_desc(h.comp).type = '?';
+        ICAw(h.r).ICA.desc(h.comp).type = '?';
         compi = 3;
     end
     
@@ -466,7 +466,7 @@ if sum(strcmp('compinfo', refr)) > 0
     set(ht(compi), 'Value', 1);
     
     % component subtype:
-    compt = ICAw(h.r).ICA_desc(h.comp).subtype;
+    compt = ICAw(h.r).ICA.desc(h.comp).subtype;
     alltps = h.opt.ICA.subtypes{compi};
     
     compiyou = find(strcmp(compt, alltps));
@@ -481,11 +481,11 @@ if sum(strcmp('compinfo', refr)) > 0
     set(h.compsubtype,'Value', compiyou);
     
     % reject button
-    if ICAw(h.r).ICA_desc(h.comp).reject
-        ICAw(h.r).ICA_desc(h.comp).ifreject = false;
+    if ICAw(h.r).ICA.desc(h.comp).reject
+        ICAw(h.r).ICA.desc(h.comp).ifreject = false;
         set(h.rejbut, 'BackGroundColor', h.opt.ICA.rejcol(2,:), ...
             'String', h.opt.ICA.rejs{2});
-    elseif ICAw(h.r).ICA_desc(h.comp).ifreject
+    elseif ICAw(h.r).ICA.desc(h.comp).ifreject
         set(h.rejbut, 'BackGroundColor', h.opt.ICA.rejcol(3,:), ...
             'String', h.opt.ICA.rejs{3});
     else
@@ -502,11 +502,11 @@ if sum(strcmp('compinfo', refr)) > 0
     % ========================
     
     % notes
-    set(h.componotes, 'String', ICAw(h.r).ICA_desc(h.comp).notes);
+    set(h.componotes, 'String', ICAw(h.r).ICA.desc(h.comp).notes);
     
     %sum of rejected components
-    if ~isempty(sum([ICAw(h.r).ICA_desc.reject]))
-        set(h.sumrej, 'String', num2str(sum([ICAw(h.r).ICA_desc.reject])));
+    if ~isempty(sum([ICAw(h.r).ICA.desc.reject]))
+        set(h.sumrej, 'String', num2str(sum([ICAw(h.r).ICA.desc.reject])));
     else
         set(h.sumrej, 'String','None');
     end
@@ -525,7 +525,7 @@ end
 
 if sum(strcmp('rank', refr)) > 0
     
-    rnk = ICAw(h.r).ICA_desc(h.comp).rank;
+    rnk = ICAw(h.r).ICA.desc(h.comp).rank;
     valr = find(strcmp(rnk, h.opt.ICA.ranks));
     if ~isempty(valr) && valr > 0
         set(h.RatingDropDown, 'Value', valr);
@@ -875,7 +875,7 @@ function pushbutton3_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 global ICAw
 h = guidata(hObject);
 prevcomp = h.comp;
-rejected=[ICAw(h.r).ICA_desc.reject];
+rejected=[ICAw(h.r).ICA.desc.reject];
 pop_selectcomps2(h.EEG, 1:length(h.EEG.icawinv),...
     'main', h, 'rejects', rejected);
 
@@ -986,7 +986,7 @@ function compsubtype_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 h = guidata(hObject);
 global ICAw
 strval = get(hObject,'String');
-ICAw(h.r).ICA_desc(h.comp).subtype = strval{get(hObject,'Value')};
+ICAw(h.r).ICA.desc(h.comp).subtype = strval{get(hObject,'Value')};
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1010,7 +1010,7 @@ function componotes_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 global ICAw
 h = guidata(hObject);
-ICAw(h.r).ICA_desc(h.comp).notes =  get(hObject,'String');
+ICAw(h.r).ICA.desc(h.comp).notes =  get(hObject,'String');
 %        str2double(get(hObject,'String')) returns contents of componotes as a double
 
 
@@ -1053,7 +1053,7 @@ h = guidata(hObject);
 val = get(hObject, 'Value');
 stropt = get(hObject, 'String');
 curropt = stropt{val};
-ICAw(h.r).ICA_desc(h.comp).rank = curropt;
+ICAw(h.r).ICA.desc(h.comp).rank = curropt;
 % now refresh GUI:
 refresh_comp_explore(h, 'rank');
 
@@ -1098,16 +1098,16 @@ global ICAw
 
 % introduce changes to ICAw
 if stri == 1
-    ICAw(h.r).ICA_desc(h.comp).reject = false;
-    ICAw(h.r).ICA_desc(h.comp).ifreject = false;
+    ICAw(h.r).ICA.desc(h.comp).reject = false;
+    ICAw(h.r).ICA.desc(h.comp).ifreject = false;
 elseif stri == 2
-    ICAw(h.r).ICA_desc(h.comp).reject = true;
-    ICAw(h.r).ICA_desc(h.comp).ifreject = false;
+    ICAw(h.r).ICA.desc(h.comp).reject = true;
+    ICAw(h.r).ICA.desc(h.comp).ifreject = false;
 else
-    ICAw(h.r).ICA_desc(h.comp).reject = false;
-    ICAw(h.r).ICA_desc(h.comp).ifreject = true;
+    ICAw(h.r).ICA.desc(h.comp).reject = false;
+    ICAw(h.r).ICA.desc(h.comp).ifreject = true;
 end
-set(h.sumrej, 'String', num2str(sum([ICAw(h.r).ICA_desc.reject])))
+set(h.sumrej, 'String', num2str(sum([ICAw(h.r).ICA.desc.reject])))
 
 
 % CHANGE below to a more modern version?
@@ -1142,10 +1142,10 @@ global ICAw
 allelecs = 1:size(h.EEG.data,1);
 goodelecs = allelecs;
 
-goodelecs(ICAw(h.r).badchan) = [];
+goodelecs(ICAw(h.r).chan.bad) = [];
 
 if isfield(h.opt.plot, 'remall') && h.opt.plot.remall;
-    rejects = find([ICAw(h.r).ICA_desc.reject]);
+    rejects = find([ICAw(h.r).ICA.desc.reject]);
 else
     rejects = h.comp;
 end
@@ -1235,7 +1235,7 @@ global ICAw
 
 % get selected
 vals = find(get([h.artif, h.brain, h.dontknow], 'Value'));
-ICAw(h.r).ICA_desc(h.comp).type = h.opt.ICA.types{vals}; %#ok<FNDSB>
+ICAw(h.r).ICA.desc(h.comp).type = h.opt.ICA.types{vals}; %#ok<FNDSB>
 refresh_comp_explore(h, 'compinfo');
 
 
@@ -1276,7 +1276,7 @@ global ICAw
 
 % get selected
 vals = find(cell2mat(get([h.artif, h.brain, h.dontknow], 'Value')));
-ICAw(h.r).ICA_desc(h.comp).type = h.opt.ICA.types{vals}; %#ok<FNDSB>
+ICAw(h.r).ICA.desc(h.comp).type = h.opt.ICA.types{vals}; %#ok<FNDSB>
 refresh_comp_explore(h, 'compinfo');
 
 
@@ -1297,8 +1297,8 @@ global ICAw
 allelecs = 1:size(h.EEG.data,1);
 goodelecs = allelecs;
 
-goodelecs(ICAw(h.r).badchan) = [];
-rejects = find([ICAw(h.r).ICA_desc.reject]);
+goodelecs(ICAw(h.r).chan.bad) = [];
+rejects = find([ICAw(h.r).ICA.desc.reject]);
 
 if isempty(rejects);
     h.EEG2 = h.EEG;
@@ -1357,6 +1357,6 @@ end
 global ICAw
 allelecs = 1:size(h.EEG.data,1);
 goodelecs = allelecs;
-goodelecs(ICAw(h.r).badchan) = [];
+goodelecs(ICAw(h.r).chan.bad) = [];
 
 headplot2(h.EEG.icawinv(:,h.comp), splinefile, 'meshfile', 'mheadnew.mat', 'elecs', goodelecs); 
