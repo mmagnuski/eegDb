@@ -1,6 +1,28 @@
 function hs = gui_multiedit(maintext, opts, optval)
 
-% NOHELPINFO
+% GUI_MULTIEDIT creates a simple gui with multiple
+% edit boxes.
+% 
+% hs = gui_multiedit(maintext, opts, optval)
+% 
+% input:
+% maintext - string; title text visible on top of the gui
+% opts     - cell array of strings; each string is a title
+%            corresponding to one edit box
+% optval   - cell array of strings; each string is the
+%            starting value for the edit box
+% 
+% output:
+% hs          - structure of handles; contains handles to all
+%               elements of the figure
+% hs.hf       - handle; handle to the figure
+% hs.maintxt  - handle; handle to the title text
+% hs.txt      - array of handles; handles to consecutive 
+%               text boxes (serve as titles to edit boxes)
+% hs.edit     - array of handles; handles to consecutive 
+%               edit boxes
+% hs.ok       - handle; handle to the OK button
+% hs.cancel   - handle; handle to the cancel button
 
 % this gui is useful for gathering options
 % also one needs to specify: text options on one side
