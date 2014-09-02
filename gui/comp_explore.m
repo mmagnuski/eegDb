@@ -215,7 +215,7 @@ end
 
 % ============================================
 % checking ICAw - if no ICA_desc field, create
-f = femp(ICAw_checkfields(ICAw(h.r).ICA, 'desc');
+f = femp(ICAw(h.r).ICA, 'desc');
 
 if ~f % no such field or empty - create and fill it up!
     for cc = 1:h.ncomp
