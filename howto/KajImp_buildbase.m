@@ -1,19 +1,24 @@
 % crate database for KajImp:
 
-Pth = 'D:\Dropbox\DANE\KajImp 2013-2014\set\';
-flist = prep_list(Pth, '*.set');
+% variable that holds directory name
+Pth = 'D:\Dropbox\DANE\KajImp 2013-2014\set';
 
-% we only take Eyes Closed condition:
-EC = ~cellfun(@isempty, regexp(flist, ' EC', ...
-    'once', 'match'));
-fls = flist(EC);
+% we only take set files that belong 
+% to Eyes Closed condition:
+fls = getfiles(Pth, ' EC.+\.set', true);
 
+% build empty database
 ICAw = ICAw_buildbase(Pth, fls);
-ICAw = ICAw_updatetonewformat(ICAw);
 
-opts.onesecepoch.winlen = 1;
-opts.onesecepoch.eventname = 'x';
-opts.filter = [1, 0; 48, 52];
+% set epoching to consecutive windows
+% 1-second long, set filtering to 1 Hz
+% highpass and 48 - 52 Hz notch
+opt.epoch.locked = false;
+opt.epoch.winlen = 1;
+opt.epoch.eventname = 'x';
+opt.filter = [1, 0; 48, 52];
 
-ICAw = ICAw_copybase(ICAw, opts);
-clear opts fls flist EC
+ICAw = ICAw_copybase(ICAw, opt);
+
+% clear up unnecessary variables
+clear opt fls flist EC
