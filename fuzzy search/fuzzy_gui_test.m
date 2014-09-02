@@ -141,7 +141,12 @@ set(h, 'Visible', 'on');
 % ----------------------
 uiwait(h);
 
-udat = get(h, 'UserData');
+if ishandle(udat)
+    udat = get(h, 'UserData');
+else
+    opt = 0;
+    return
+end
 
 
 % resume and return
