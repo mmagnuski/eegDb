@@ -91,7 +91,7 @@ if eptp == 1
     % ADD epoch.nwin info (filled after/during epoching)
     % addtx{1} = sprintf('cut into %d consecutive windows', ep.nwin);
     
-    addtx{2} = sprintf('of %4.2 seconds long (each)', ep.winlen);
+    addtx{2} = sprintf('of %4.2f seconds long (each)', ep.winlen);
     
     if femp(ep, 'distance')
         addtx{3} = 'preselected based on distance to';
@@ -161,11 +161,11 @@ if nmarks > 0
         % in format:
         % markname
         %     num   (perc%)
-        addtx = cell(nonzerN * 3, 1);
+        addtx = cell(nonzerN * 2, 1);
         
         for i = 1:nonzerN
             % mark name
-            addtx{3 * (i-1) + 1} = eegDb.marks(nonzero(i)).name;
+            addtx{2 * (i-1) + 1} = eegDb.marks(nonzero(i)).name;
             
             % no marked
             marked = eegDb.marks(nonzero(i)).value;
@@ -173,13 +173,13 @@ if nmarks > 0
             % marked perc
             markedP = sprintf('%3.1f%%', markedN/length(marked) * 100);
             
-            addtx{3 * (i-1) + 2} = [num2str(markedN),...
+            addtx{2 * (i-1) + 2} = ['  ', num2str(markedN),...
                 '  (', markedP, ')'];
-            addtx{3 * (i-1) + 3} = '';
         end
         
+        % NOW there is no btw-mrk spacing
         % delete last between-mark spacing
-        addtx(end) = [];
+        % addtx(end) = [];
     end
 end 
 
@@ -216,13 +216,14 @@ addtx = {};
 % -------------
 if is.pre 
     prelen = length(eegDb.reject.pre);
+    addtx{tracker} = 'pre-rejected:';
     if is.orig
-        addtx{tracker} = sprintf(['pre-rejected:  %d  (%3.2f%%) ', unit],...
+        addtx{tracker + 1} = sprintf(['  %d  (%3.2f%%) ', unit],...
             prelen, prelen/eegDb.epoch.origNum * 100);
     else
-        addtx{tracker} = sprintf(['pre-rejected:  %d  ', unit], prelen);
+        addtx{tracker + 1} = sprintf(['  %d  ', unit], prelen);
     end
-    tracker = tracker + 1;
+    tracker = tracker + 2;
 end
 
 % POST-REJECTIONS
@@ -232,31 +233,35 @@ if is.post
     % postrej = sum(eegDb.epoch.post);
     % addtx{tracker} = fprintf(['pre-rejected:  %d  (%3.2f%%) ', unit],...
     %      prelen, prelen/eegDb.epoch.origNum * 100);
+    addtx{tracker} = 'rejected:';
+
     if is.orig
         if is.pre
             origNumAfterPre = eegDb.epoch.origNum - prelen;
         else
             origNumAfterPre = eegDb.epoch.origNum;
         end
-        addtx{tracker} = sprintf(['rejected:  %d  (%3.2f%%) ', unit],...
+        addtx{tracker + 1} = sprintf(['  %d  (%3.2f%%) ', unit],...
             postlen, postlen/origNumAfterPre * 100);
     else
-        addtx{tracker} = sprintf(['rejected:  %d  ', unit], postlen);
+        addtx{tracker + 1} = sprintf(['  %d  ', unit], postlen);
     end
-    tracker = tracker + 1;
+    tracker = tracker + 2;
 end
 
 % ALL (pre + post)
 % ----------------
 if is.post && is.pre && is.all && ~isequal(eegDb.reject.pre, eegDb.reject.all)
    alllen = length(eegDb.reject.all);
+   addtx{tracker} = 'alltogether:';
+
    if is.orig
-        addtx{tracker} = sprintf(['alltogether:  %d  (%3.2f%%) ', unit],...
+        addtx{tracker + 1} = sprintf(['  %d  (%3.2f%%) ', unit],...
             alllen, alllen/eegDb.epoch.origNum * 100);
     else
-        addtx{tracker} = sprintf(['alltogether:  %d  ', unit], alllen);
+        addtx{tracker + 1} = sprintf(['  %d  ', unit], alllen);
     end
-    tracker = tracker + 1;
+    tracker = tracker + 2;
 end 
 
 % if none
@@ -274,6 +279,7 @@ end
 
 %     ICA
 % -------
+addtx = {};
 currentRow = currentRow + 1;
 if femp(eegDb.ICA, 'icaweights')
     if femp(eegDb.ICA, 'time')
@@ -291,7 +297,8 @@ end
     currentRow, startCol);
 
 
-
+% text wrapping
+% -------------
 if ~isempty(h)
 
     % we need to do some wrapping!
@@ -365,7 +372,11 @@ function [infotext, currentRow] = addtotext(infotext, addtx, ...
     txlen = length(addtx);
     
     if txlen > 1
-       
+       % test addtx size (should be N by 1)
+       if size(addtx,2) > size(addtx,1)
+           addtx = addtx';
+       end
+        
         % TEST how faster cellfun is:
         for i = 2:txlen
             addtx{i} = [blanks(startCol), addtx{i}];
