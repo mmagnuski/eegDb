@@ -104,7 +104,7 @@ if eptp == 1
             dist = ep.distance{i, 2};
             
             % format event type
-            if isempty(etp); evtp = 'any event'; 
+            if isempty(evtp); evtp = 'any event'; 
             elseif ~iscell(evtp); evtp = {evtp}; 
             evtp = lincellstring(evtp); 
             else evtp = lincellstring(evtp); 
