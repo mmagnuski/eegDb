@@ -557,59 +557,8 @@ end
 %% [~] MULTI-SELECTION
 % --- Executes on button press in multisel.
 function multisel_Callback(hObject, eventdata, handles)
-
-% cansel = find(handles.recov);%check
-% strsel = cellfun(@num2str, num2cell(cansel), 'UniformOutput', false);
-% strsel = strsel(:);
-
-allsel = 1:length(handles.ICAw);
-allstr = cellfun(@num2str, num2cell(allsel), 'UniformOutput', false);
-allstr = allstr(:);
-
-% select records:
-sel = gui_chooselist(allstr, 'text', 'Select records:');
-
-if length(sel) == 1
-    % just jumping
-    handles.r = allsel(sel);
-    handles.selected = [];
-    set(handles.multisel, 'BackgroundColor', ...
-        handles.multisel_col);
-    
-    % refresh
-    winreject_refresh(handles);
-elseif isempty(sel)
-    handles.selected = [];
-    set(handles.multisel, 'BackgroundColor', ...
-        handles.multisel_col);
-    
-elseif ~isempty(sel)
-    %     realsel = intersect(allsel(sel), cansel);
-    realsel = sel;
-    
-    if length(realsel) == 1
-        % just jumping
-        handles.r = realsel;
-        handles.selected = [];
-        set(handles.multisel, 'BackgroundColor', ...
-            handles.multisel_col);
-        
-        % refresh
-        winreject_refresh(handles);
-        
-    elseif length(realsel) > 1
-        handles.r = realsel(1);
-        handles.selected = realsel;
-        set(handles.multisel, 'BackgroundColor', ...
-            [0.9, 0.2, 0.1]);
-        
-        % refresh
-        winreject_refresh(handles);
-    end
-end
-
-% Update handles structure
-guidata(hObject, handles);
+% call the link function:
+linkfun_multiselect(handles);
 
 
 %% [~]  APPLY REJECTIONS
