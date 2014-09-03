@@ -9,18 +9,29 @@ function linkfun_multiselect(h)
 %       - summary display
 %       - or/and navigate with arrows only among the selected
 
-% CHANGE - some old notes:
+% CHANGE - some old notes, recov was used previously:
 % cansel = find(handles.recov);%check
 % strsel = cellfun(@num2str, num2cell(cansel), 'UniformOutput', false);
 % strsel = strsel(:);
 
+
+% if h is one handle, not guidata structure - get guidata
+if length(h) == 1 && ishandle(h)
+    h = guidata(h);
+end
+
+% prepare GUI variables
+% ---------------------
 allsel = 1:length(h.ICAw);
 allstr = cellfun(@num2str, num2cell(allsel), 'UniformOutput', false);
 allstr = allstr(:);
 
-% select records:
+% select records through GUI:
+% ---------------------------
 sel = gui_chooselist(allstr, 'text', 'Select records:');
 
+% set selection based on GUI output
+% ---------------------------------
 if length(sel) == 1
     
     % just jumping
