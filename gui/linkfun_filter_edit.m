@@ -61,7 +61,6 @@ h = gui_multiedit('Edit filtering', optnames, val);
 set(h.ok, 'Callback', {@checkopt, h, hObj});
 set(h.cancel, 'Callback', {@closefun, h.hf});
 set(h.hf, 'WindowKeyPressFcn', {@window_butpressfun, h, hObj});
-%set(h.edit, 'KeyPressFcn', @editbox_butpressfun);
 uiwait(h.hf);
 
 
@@ -81,24 +80,6 @@ function window_butpressfun(h, e, hwin, hobj)
 	elseif strcmp(e.Key, 'escape')
 		closefun(h, e, hwin.hf);
 	end
-
-% function editbox_butpressfun(hedit, event)
-
-% 	% here we allow only numbers
-% 	nums = cellfun(@num2str, num2cell(0:9), 'uni', false);
-% 	nums{end+1} = '.';
-
-% 	if strcmp(event.Key, 'backspace')
-% 		str = get(hedit, 'String');
-% 		if ~isempty(str)
-% 			set(hedit, 'String', str(1:end-1));
-% 		end
-%     elseif any(strcmp(event.Key, nums))
-% 		set(hedit, 'String', [get(hedit, 'String'), event.Key]);
-%     else
-%         % do not accept
-%         set(hedit, 'String', '');
-%     end
 			
 
 function checkopt(h, e, hwin, hobj)
