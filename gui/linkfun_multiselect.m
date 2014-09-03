@@ -53,7 +53,6 @@ elseif length(sel) > 1
     
     % refresh
     winreject_refresh(h);
-end
 
 elseif isempty(sel)
 
