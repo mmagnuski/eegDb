@@ -5,7 +5,7 @@ function linkfun_filter_edit(hObj)
 % ADD
 % [ ] filter tests 
 % [ ] red highlight when something wrong
-% [ ] enter and escape accept and cancel
+% [x] enter and escape accept and cancel
 
 % get filtering data from main eegDb window
 % CONSIDER - eegDb_gui_get and eegDb_gui_set ?
@@ -18,10 +18,21 @@ filt = [];
 val = cell(4,1);
 
 
-% CHANGE - currently only single record
-if femp( d.ICAw(d.r), 'filter' ) && ...
-	isnumeric(d.ICAw(d.r).filter)
-	filt = d.ICAw(d.r).filter;
+% currently only single record is displayed
+% but multiple are edited
+
+% get r as current record or first selected
+r = d.r;
+
+if ~isempty(d.selected)
+	if ~any(d.selected == r)
+		r = d.selected(1);
+	end
+end
+
+if femp( d.ICAw(r), 'filter' ) && ...
+	isnumeric(d.ICAw(r).filter)
+	filt = d.ICAw(r).filter;
 end
 
 if ~isempty(filt)
@@ -49,11 +60,21 @@ h = gui_multiedit('Edit filtering', optnames, val);
 % OK and CANCEL Callbacks
 set(h.ok, 'Callback', {@checkopt, h, hObj});
 set(h.cancel, 'Callback', {@closefun, h.hf});
+set(h.hf, 'WindowKeyPressFcn', {@butpressfun, h, hObj});
 uiwait(h.hf);
 
 
 function closefun(h, e, figh)
 	close(figh);
+
+
+function butpressfun(h, e, hwin, hobj)
+
+	if strcmp(e.Key, 'enter')
+		checkopt(h, e, hwin, hobj);
+	elseif strcmp(e.Key, 'escape')
+		closefun(h, e, hwin.hf);
+	end
 
 
 function checkopt(h, e, hwin, hobj)
@@ -82,7 +103,14 @@ function checkopt(h, e, hwin, hobj)
 	d = guidata(hobj);
 
 	% set filtering
-	d.ICAw(d.r).filter = filt;
+	if isempty(d.selected)
+		d.ICAw(d.r).filter = filt;
+	else
+		for r = 1:length(d.selected)
+			d.ICAw(d.selected(r)).filter = filt;
+		end
+	end
+
 	winreject_refresh(d);
 
 	uiresume(hwin.hf);
