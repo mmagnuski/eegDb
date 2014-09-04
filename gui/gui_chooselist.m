@@ -76,6 +76,7 @@ set(h.fig, 'CloseRequestFcn', @close_Callback);
 %% the rest
 guidata(h.fig, h);
 set(h.fig, 'Visible', 'on');
+uicontrol(h.list);
 uiwait(h.fig);
 
 if ishandle(h.fig)

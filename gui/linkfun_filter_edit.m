@@ -60,8 +60,18 @@ h = gui_multiedit('Edit filtering', optnames, val);
 % OK and CANCEL Callbacks
 set(h.ok, 'Callback', {@checkopt, h, hObj});
 set(h.cancel, 'Callback', {@closefun, h.hf});
-set(h.hf, 'WindowKeyPressFcn', {@window_butpressfun, h, hObj});
+
+% enter accepts, escape cancels
+set(h.hf, 'KeyPressFcn', {@normal_butpressfun, h, hObj});
+set(h.edit, 'KeyPressFcn', {@normal_butpressfun, h, hObj});
+
+% add callback so that enter on button activates its function
+set(h.ok, 'KeyPressFcn', {@normal_butpressfun, h, hObj});
+set(h.cancel, 'KeyPressFcn', {@cancel_butpressfun, h, hObj});
+
+% give focus to first edit box
 uicontrol(h.edit(1));
+% wait for gui to finish
 uiwait(h.hf);
 
 
@@ -69,19 +79,37 @@ function closefun(h, e, figh)
 	close(figh);
 
 
-function window_butpressfun(h, e, hwin, hobj)
+function normal_butpressfun(h, e, hwin, hobj)
 
 	if strcmp(e.Key, 'return')
+        % if the object is an editbox
 		% change focus to update editbox
-		uicontrol(hwin.edit(1));
-		uicontrol(hwin.edit(2));
+		% if get(h, 'style')
+        try %#ok<TRYNC>
+            stl = get(h, 'style');
+            disp(stl);
+            if strcmp(stl, 'edit')
+                if hwin.edit(1) == h
+                    uicontrol(hwin.edit(2));
+                else
+                    uicontrol(hwin.edit(1));
+                end
+            end
+        end
 
 		% run checkopts
 		checkopt(h, e, hwin, hobj);
 	elseif strcmp(e.Key, 'escape')
 		closefun(h, e, hwin.hf);
 	end
+
 			
+function cancel_butpressfun(h, e, hwin, hobj)
+
+	if any(strcmp(e.Key, {'return', 'escape'}))
+		closefun(h, e, hwin.hf);
+	end
+
 
 function checkopt(h, e, hwin, hobj)
 

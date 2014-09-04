@@ -20,6 +20,9 @@
 % [x] fix blank
 % [x] fix backspace action
 
+% !!!
+% move figure to the centre:
+% movegui(h.fig, 'center');
 
 % adding information about the 'focus'
 % that is indices of items that are visible
@@ -40,6 +43,7 @@ function out = fuzzy_gui(menu_items, opt)
 %    .allowHighlight  -
 %    .allowEditBox    - NOT IMPLEMENTED
 %    .figPos          - define figure position
+%    .figPosAlign     - 'center' to align to center of the screen
 %    .inFigPos        - use a specific part of the figure
 %    .hFig            - pass figure handle to use existing
 %                       figure
@@ -71,6 +75,7 @@ udat.hAxis    = [];
 % dimensional data
 udat.figPos = [550, 90, 450, 450];
 udat.inFigPos = [0, 0, 1, 1]; % full
+udat.figPosAlign = 'center';
 udat.figSpace = udat.figPos([3,4]);
 udat.horLim   = [10, udat.figSpace(2) - 10];
 udat.keyh     = 60;
@@ -125,22 +130,35 @@ udat.active = true(1, udat.textItems);
 udat.focus = 1;
 
 
+% FIGURE & AXIS
+% -------------
+
 % create figure
 if isempty(udat.hFig) || ~ishandle(udat.hFig)
 
-    udat.hFig = figure('Psition', udat.figPos, ...
+    udat.hFig = figure('Position', udat.figPos, ...
         'DockControls', 'off', 'MenuBar', 'none',...
         'Name', 'Select mark', 'Toolbar', 'none',...
         'Visible', 'off', 'color', udat.bgColor);
 else
+    % give focus to the figure
     figure(udat.hFig);
 end 
 
 
 % create invisible background axis
-udat.hAxis = axes('Position', udat.inFigPos, 'Visible', 'off');
-set(udat.hAxis, 'Xlim', [0, udat.figSpace(1)],'YLim', [0, udat.figSpace(2)]);
+if isempty(udat.hAxes) || ~ishandle(udat.hAxes)
 
+    udat.hAxis = axes('Position', udat.inFigPos, 'Visible', 'off');
+    set(udat.hAxis, 'Xlim', [0, udat.figSpace(1)],'YLim', [0, udat.figSpace(2)]);
+else
+    % give focus to axis
+    axes(udat.hAxis);
+end
+
+
+% BUTTONS
+% -------
 
 % check how many 'boxes'
 udat.numButtons = floor( (udat.figSpace(2) - udat.keyBoxDist) / (udat.keyh + udat.keyDist) );
