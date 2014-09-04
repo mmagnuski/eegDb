@@ -2,6 +2,11 @@ function [outp, ifcancel] = gui_chooselist(optnames, varargin)
 
 % NOHELPINFO
 
+% TODOs
+% [ ] add enter - to accept
+% [ ] escape to cancel
+% [ ] enter to activate buttons
+
 if isempty(optnames)
     outp = [];
     ifcancel = true;
