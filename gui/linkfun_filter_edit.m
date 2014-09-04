@@ -61,6 +61,7 @@ h = gui_multiedit('Edit filtering', optnames, val);
 set(h.ok, 'Callback', {@checkopt, h, hObj});
 set(h.cancel, 'Callback', {@closefun, h.hf});
 set(h.hf, 'WindowKeyPressFcn', {@window_butpressfun, h, hObj});
+uicontrol(h.edit(1));
 uiwait(h.hf);
 
 
