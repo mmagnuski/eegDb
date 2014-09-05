@@ -40,8 +40,11 @@ function out = fuzzy_gui(menu_items, opt)
 %    .
 %    .allowSorting    - 
 %    .allowScrolling  -
+%    .allowScrollBar  -
 %    .allowHighlight  -
 %    .allowEditBox    - NOT IMPLEMENTED
+%
+%    .scrollBarWidth  -
 %    .figPos          - define figure position
 %    .figPosAlign     - 'center' to align to center of the screen
 %    .inFigPos        - use a specific part of the figure
@@ -72,15 +75,19 @@ len = length(menu_items);
 udat.hFig     = [];
 udat.hAxis    = [];
 
+udat.buttonsPerPage = [];
+
 % dimensional data
-udat.figPos = [550, 90, 450, 450];
-udat.inFigPos = [0, 0, 1, 1]; % full
+udat.figPos      = [550, 90, 450, 450];
+udat.inFigPos    = [0, 0, 1, 1]; % full
 udat.figPosAlign = 'center';
-udat.figSpace = udat.figPos([3,4]);
-udat.horLim   = [10, udat.figSpace(2) - 10];
-udat.keyh     = 60;
-udat.keyDist  = 15;
-udat.keyBoxDist = 100;
+udat.figSpace    = udat.figPos([3,4]);
+udat.horLim      = [10, udat.figSpace(2) - 10];
+udat.horLimEdit  = udat.horLim;
+udat.keyh        = 60;
+udat.keyDist     = 15;
+udat.keyBoxDist  = 100;
+udat.bottomDist  = udat.keyDist;
 
 % setup stuff
 udat.allowSorting   = true;
@@ -89,12 +96,18 @@ udat.allowHighlight = true;
 udat.allowEditBox   = true;
 udat.allowSrollBar  = true;
 
+% scroll bar defaults
+udat.scrollBarWidth = 30;  
+udat.scrollBarDist  = 15;
+
 % colors
 % button, edit box and highlight colors
 udat.bgColor = [0.25, 0.25, 0.25];
 udat.boxColor = 0.7 + rand(len,3)*0.3;
 udat.editColor = [0.2, 0.1, 0.0];
 udat.highlightColor = [255, 255, 100]/255;
+udat.scrollBarBackColor = [0.35, 0.35, 0.35];
+udat.scrollBarFrontColor = [0.45, 0.45, 0.45];
 
 
 % check input arguments
@@ -148,7 +161,7 @@ end
 
 % create invisible background axis
 if isempty(udat.hAxes) || ~ishandle(udat.hAxes)
-
+    udat.figSpace = udat.inFigPos([3, 4]);
     udat.hAxis = axes('Position', udat.inFigPos, 'Visible', 'off');
     set(udat.hAxis, 'Xlim', [0, udat.figSpace(1)],'YLim', [0, udat.figSpace(2)]);
 else
@@ -160,7 +173,60 @@ end
 % BUTTONS
 % -------
 
+% do we need to fit buttons?
+if ~isempty(udat.buttonsPerPage)
+    buttAndHeight = (udat.figSpace(2) - udat.keyBoxDist) / udat.buttonsPerPage;
+    buttonLeft = buttAndHeight - udat.keyDist;
+    if ~(buttonLeft >= udat.keyDist) || (udat.keyDist + udat.keyDist) > buttAndHeight
+        
+        % maybe - scale button height to keyDist?
+        unit = buttAndHeight / 4;
+        udat.keyDist = unit;
+        udat.keyh = unit * 3;
+    else
+        % think about this later
+    end
+end
+
+% make sure that button spacing is such 
+% that they fill the desired space
+
+
+% if scroll patch available
+% -------------------------
+
+% reduce buttons on the righthand
+if udat.allowSrollBar && udat.allowScrolling
+    udat.horLim(2) = udat.horLim(2) - udat.scrollBarWidth - udat.scrollBarDist;
+
+    % draw the backscrollbar
+    leftscroll = udat.horLim(2) + udat.scrollBarDist;
+    udat.hScrollBarBack = patch('vertices', ...
+        [leftscroll, udat.bottomDist; ...
+         leftscroll + udt.scrollBarWidth, udat.bottomDist;...
+         leftscroll + udt.scrollBarWidth, udat.editBoxDist;...
+         leftscroll, udat.editBoxDist], 'Visible', 'on', ...
+        'faceColor', dat.scrollBarBackColor, 'edgecolor',...
+        'none', 'Faces', 1:4);
+
+    % calculate scroll bar length and position
+    BarLim = calcScrollBar(udat);
+
+    % CHANGE:
+    % draw the front scroll bar
+    leftscroll = udat.horLim(2) + udat.scrollBarDist;
+    udat.hScrollBarBack = patch('vertices', ...
+        [leftscroll, udat.bottomDist; ...
+         leftscroll + udt.scrollBarWidth, udat.bottomDist;...
+         leftscroll + udt.scrollBarWidth, udat.editBoxDist;...
+         leftscroll, udat.editBoxDist], 'Visible', 'on', ...
+        'faceColor', dat.scrollBarBackColor, 'edgecolor',...
+        'none', 'Faces', 1:4);
+end
+
+
 % check how many 'boxes'
+
 udat.numButtons = floor( (udat.figSpace(2) - udat.keyBoxDist) / (udat.keyh + udat.keyDist) );
 if udat.numButtons > udat.textItems
     udat.numButtons = udat.textItems;
