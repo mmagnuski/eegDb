@@ -2,7 +2,7 @@ function barLim = calcScrollBar(d)
 
 % calculates scroll bar length and position
 
-Lim = [d.bottomDist, d.figSpace(2) - d.keyBoxDist];
+Lim = [d.bottomDist, d.figSpace(2) - d.editBoxDist];
 Len = diff(Lim);
 NumActive = sum(d.active);
 
@@ -14,7 +14,7 @@ else
 	unit = Len / NumActive;
 
 	barLen = d.numButtons * unit;
-	top = Lim(2) - d.focus * unit;
+	top = Lim(2) - (d.focus - 1) * unit;
 	barLim = [top - barLen, top];
 end
 

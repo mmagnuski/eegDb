@@ -79,14 +79,15 @@ udat.buttonsPerPage = [];
 
 % dimensional data
 udat.figPos      = [550, 90, 450, 450];
-udat.inFigPos    = [0, 0, 1, 1]; % full
+udat.inFigPos    = [0, 0, 450, 450]; % full
 udat.figPosAlign = 'center';
 udat.figSpace    = udat.figPos([3,4]);
 udat.horLim      = [10, udat.figSpace(2) - 10];
 udat.horLimEdit  = udat.horLim;
 udat.keyh        = 60;
+
 udat.keyDist     = 15;
-udat.keyBoxDist  = 100;
+udat.editBoxDist = 100;
 udat.bottomDist  = udat.keyDist;
 
 % setup stuff
@@ -152,17 +153,23 @@ if isempty(udat.hFig) || ~ishandle(udat.hFig)
     udat.hFig = figure('Position', udat.figPos, ...
         'DockControls', 'off', 'MenuBar', 'none',...
         'Name', 'Select mark', 'Toolbar', 'none',...
-        'Visible', 'off', 'color', udat.bgColor);
+        'Visible', 'on', 'color', udat.bgColor);
 else
     % give focus to the figure
     figure(udat.hFig);
 end 
 
+% ! CHANGE ! 
+% currently we assume inFigPos is in pixels
+% and thus force the units to be such
+% in future we should test for 
+% >= 1 --> normalized, otherwise --> pixels
 
 % create invisible background axis
-if isempty(udat.hAxes) || ~ishandle(udat.hAxes)
+if isempty(udat.hAxis) || ~ishandle(udat.hAxis)
     udat.figSpace = udat.inFigPos([3, 4]);
-    udat.hAxis = axes('Position', udat.inFigPos, 'Visible', 'off');
+    udat.hAxis = axes('Units', 'pixels', 'Position',...
+        udat.inFigPos, 'Visible', 'on');
     set(udat.hAxis, 'Xlim', [0, udat.figSpace(1)],'YLim', [0, udat.figSpace(2)]);
 else
     % give focus to axis
@@ -175,7 +182,7 @@ end
 
 % do we need to fit buttons?
 if ~isempty(udat.buttonsPerPage)
-    buttAndHeight = (udat.figSpace(2) - udat.keyBoxDist) / udat.buttonsPerPage;
+    buttAndHeight = (udat.figSpace(2) - udat.editBoxDist) / udat.buttonsPerPage;
     buttonLeft = buttAndHeight - udat.keyDist;
     if ~(buttonLeft >= udat.keyDist) || (udat.keyDist + udat.keyDist) > buttAndHeight
         
@@ -188,9 +195,17 @@ if ~isempty(udat.buttonsPerPage)
     end
 end
 
+
+% check how many buttons
+% ----------------------
+udat.numButtons = floor( (udat.figSpace(2) - udat.editBoxDist) / (udat.keyh + udat.keyDist) );
+if udat.numButtons > udat.textItems
+    udat.numButtons = udat.textItems;
+end
+
 % make sure that button spacing is such 
 % that they fill the desired space
-
+% ! ADD !
 
 % if scroll patch available
 % -------------------------
@@ -201,12 +216,14 @@ if udat.allowSrollBar && udat.allowScrolling
 
     % draw the backscrollbar
     leftscroll = udat.horLim(2) + udat.scrollBarDist;
+    topscroll  = udat.figSpace(2) - udat.editBoxDist;
+    
     udat.hScrollBarBack = patch('vertices', ...
         [leftscroll, udat.bottomDist; ...
-         leftscroll + udt.scrollBarWidth, udat.bottomDist;...
-         leftscroll + udt.scrollBarWidth, udat.editBoxDist;...
-         leftscroll, udat.editBoxDist], 'Visible', 'on', ...
-        'faceColor', dat.scrollBarBackColor, 'edgecolor',...
+         leftscroll + udat.scrollBarWidth, udat.bottomDist;...
+         leftscroll + udat.scrollBarWidth, topscroll;...
+         leftscroll, topscroll], 'Visible', 'on', ...
+        'faceColor', udat.scrollBarBackColor, 'edgecolor',...
         'none', 'Faces', 1:4);
 
     % calculate scroll bar length and position
@@ -215,22 +232,17 @@ if udat.allowSrollBar && udat.allowScrolling
     % CHANGE:
     % draw the front scroll bar
     leftscroll = udat.horLim(2) + udat.scrollBarDist;
-    udat.hScrollBarBack = patch('vertices', ...
-        [leftscroll, udat.bottomDist; ...
-         leftscroll + udt.scrollBarWidth, udat.bottomDist;...
-         leftscroll + udt.scrollBarWidth, udat.editBoxDist;...
-         leftscroll, udat.editBoxDist], 'Visible', 'on', ...
-        'faceColor', dat.scrollBarBackColor, 'edgecolor',...
+    udat.hScrollBarFront = patch('vertices', ...
+        [leftscroll, BarLim(1); ...
+         leftscroll + udat.scrollBarWidth, BarLim(1);...
+         leftscroll + udat.scrollBarWidth, BarLim(2);...
+         leftscroll, BarLim(2)], 'Visible', 'on', ...
+        'faceColor', udat.scrollBarFrontColor, 'edgecolor',...
         'none', 'Faces', 1:4);
 end
 
 
-% check how many 'boxes'
 
-udat.numButtons = floor( (udat.figSpace(2) - udat.keyBoxDist) / (udat.keyh + udat.keyDist) );
-if udat.numButtons > udat.textItems
-    udat.numButtons = udat.textItems;
-end
 
 % currently scrolling entails highlight
 if udat.allowScrolling
@@ -240,7 +252,7 @@ end
 
 % create highlight
 % ----------------
-up = udat.figSpace(2) - udat.keyBoxDist;
+up = udat.figSpace(2) - udat.editBoxDist;
 if udat.allowHighlight
     udat.highlightPosition = 1;
     udat.highlightRim = [udat.horLim(1), 8, udat.horLim(1), 8];
@@ -262,8 +274,7 @@ up - udat.keyh; udat.horLim(2), up - udat.keyh; udat.horLim(2), up],...
     'none', 'Faces', 1:4);
 
 udat.hEditText = text('String', '', 'FontSize', 15,...
-    'Position
-    ', [udat.horLim(1), up - udat.keyh/2] + [35, 0], ...
+    'Position', [udat.horLim(1), up - udat.keyh/2] + [35, 0], ...
     'Visible', 'on', 'Color', [0.8, 0.85, 0.9]);
 
 
@@ -271,21 +282,19 @@ udat.hEditText = text('String', '', 'FontSize', 15,...
 % ---------------------
 for i = 1:udat.numButtons
     
-    butUp = udat.figSpace(2) - udat.keyBoxDist - (i-1) * (udat.keyh + udat.keyDist);
+    butUp = udat.figSpace(2) - udat.editBoxDist - (i-1) * (udat.keyh + udat.keyDist);
     
-    hButton(i) = patch('vertices', [udat.horLim(1), butUp; udat.horLim(1), butUp - udat.keyh;...
+    udat.hButton(i) = patch('vertices', [udat.horLim(1), butUp; udat.horLim(1), butUp - udat.keyh;...
         udat.horLim(2), butUp - udat.keyh; udat.horLim(2), butUp], 'Visible', 'on',...
         'faceColor', udat.boxColor(i, :), 'edgecolor', 'none',...
         'Faces', 1:4);
 
     % ADD text centering etc.
-    hTxt(i) = text('String', menu_items{i}, 'FontSize', 15,...
+    udat.hTxt(i) = text('String', menu_items{i}, 'FontSize', 15,...
      'Position', [udat.horLim(1), butUp - udat.keyh/2] + [35, 0], 'Visible', 'on');
 end
 
 
-udat.hButton = hButton;
-udat.hText = hTxt;
 udat.typed = '';
 
 if udat.allowSorting
