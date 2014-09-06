@@ -42,7 +42,7 @@ func = {...
 	''...
 };
 
-com = fuzzy_gui_test(commands);
+com = fuzzy_gui(commands);
 
 % if user aborts - return
 if isempty(com) || com == 0

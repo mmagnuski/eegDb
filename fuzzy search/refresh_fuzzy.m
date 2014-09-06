@@ -24,6 +24,7 @@ text = uData.origText(uData.active);
 set(uData.hEditText, 'String',  uData.typed );
 
 % change highlight position
+% -------------------------
 if uData.allowHighlight
 
 	% something to highlight
@@ -73,6 +74,8 @@ if uData.allowHighlight
     end
 end
 
+
+
 % sorting
 % -------
 
@@ -95,6 +98,15 @@ if uData.allowScrolling
 
 	% check if focus needs to be reduced
 	uData.focus = min( uData.focus, max(1, activeNum - uData.numButtons + 1) ); 
+
+
+	% update scroll bar if it is allowed:
+	if uData.allowSrollBar
+
+		BarLim = calcScrollBar(uData);
+		Y = repmat(BarLim, [2, 1]);
+		set(uData.hScrollBarFront, 'YData', Y(:));
+	end
 
 end
 

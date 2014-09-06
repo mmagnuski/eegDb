@@ -153,7 +153,7 @@ if isempty(udat.hFig) || ~ishandle(udat.hFig)
     udat.hFig = figure('Position', udat.figPos, ...
         'DockControls', 'off', 'MenuBar', 'none',...
         'Name', 'Select mark', 'Toolbar', 'none',...
-        'Visible', 'on', 'color', udat.bgColor);
+        'Visible', 'off', 'color', udat.bgColor);
 else
     % give focus to the figure
     figure(udat.hFig);
@@ -169,7 +169,7 @@ end
 if isempty(udat.hAxis) || ~ishandle(udat.hAxis)
     udat.figSpace = udat.inFigPos([3, 4]);
     udat.hAxis = axes('Units', 'pixels', 'Position',...
-        udat.inFigPos, 'Visible', 'on');
+        udat.inFigPos, 'Visible', 'off');
     set(udat.hAxis, 'Xlim', [0, udat.figSpace(1)],'YLim', [0, udat.figSpace(2)]);
 else
     % give focus to axis
@@ -207,6 +207,32 @@ end
 % that they fill the desired space
 % ! ADD !
 
+
+
+
+% create highlight
+% ----------------
+
+% currently scrolling entails highlight
+if udat.allowScrolling
+    udat.allowHighlight = true;
+end
+
+% draw highlight patch
+up = udat.figSpace(2) - udat.editBoxDist;
+if udat.allowHighlight
+    udat.highlightPosition = 1;
+    udat.highlightRim = [udat.horLim(1), 8, udat.horLim(1), 8];
+    udat.hHighlight = patch('vertices', [0, up + udat.highlightRim(2);...
+        0, up - udat.keyh - udat.highlightRim(4);...
+        udat.figSpace(1), up - udat.keyh - udat.highlightRim(4);...
+         udat.figSpace(1), up + udat.highlightRim(2)],...
+        'Visible', 'on', 'faceColor', udat.highlightColor, 'edgecolor',...
+        'none', 'Faces', 1:4);
+end
+
+
+
 % if scroll patch available
 % -------------------------
 
@@ -229,7 +255,6 @@ if udat.allowSrollBar && udat.allowScrolling
     % calculate scroll bar length and position
     BarLim = calcScrollBar(udat);
 
-    % CHANGE:
     % draw the front scroll bar
     leftscroll = udat.horLim(2) + udat.scrollBarDist;
     udat.hScrollBarFront = patch('vertices', ...
@@ -243,38 +268,16 @@ end
 
 
 
-
-% currently scrolling entails highlight
-if udat.allowScrolling
-    udat.allowHighlight = true;
-end
-
-
-% create highlight
-% ----------------
-up = udat.figSpace(2) - udat.editBoxDist;
-if udat.allowHighlight
-    udat.highlightPosition = 1;
-    udat.highlightRim = [udat.horLim(1), 8, udat.horLim(1), 8];
-    udat.hHighlight = patch('vertices', [0, up + udat.highlightRim(2);...
-        0, up - udat.keyh - udat.highlightRim(4);...
-        udat.figSpace(1), up - udat.keyh - udat.highlightRim(4);...
-         udat.figSpace(1), up + udat.highlightRim(2)],...
-        'Visible', 'on', 'faceColor', udat.highlightColor, 'edgecolor',...
-        'none', 'Faces', 1:4);
-end
-
-
 % create 'edit box'
 % -----------------
 up = udat.figSpace(2) - 20;
-udat.hEditFrame = patch('vertices', [udat.horLim(1), up; udat.horLim(1), ...
-up - udat.keyh; udat.horLim(2), up - udat.keyh; udat.horLim(2), up],...
+udat.hEditFrame = patch('vertices', [udat.horLimEdit(1), up; udat.horLimEdit(1), ...
+up - udat.keyh; udat.horLimEdit(2), up - udat.keyh; udat.horLimEdit(2), up],...
     'Visible', 'on', 'faceColor', udat.editColor, 'edgecolor',...
     'none', 'Faces', 1:4);
 
 udat.hEditText = text('String', '', 'FontSize', 15,...
-    'Position', [udat.horLim(1), up - udat.keyh/2] + [35, 0], ...
+    'Position', [udat.horLimEdit(1), up - udat.keyh/2] + [35, 0], ...
     'Visible', 'on', 'Color', [0.8, 0.85, 0.9]);
 
 
@@ -290,7 +293,7 @@ for i = 1:udat.numButtons
         'Faces', 1:4);
 
     % ADD text centering etc.
-    udat.hTxt(i) = text('String', menu_items{i}, 'FontSize', 15,...
+    udat.hText(i) = text('String', menu_items{i}, 'FontSize', 15,...
      'Position', [udat.horLim(1), butUp - udat.keyh/2] + [35, 0], 'Visible', 'on');
 end
 
