@@ -110,6 +110,9 @@ if nargin > 1
         cpal = color_palette(elec_color);
         elec_color = mat2cell(cpal, ...
             ones(size(cpal,1), 1), 3);
+    elseif isnumeric(elec_color)
+        elec_color = mat2cell(elec_color, ...
+            ones(size(elec_color,1), 1), 3);
     end
     
     % changing elec

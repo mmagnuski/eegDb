@@ -55,7 +55,7 @@ function selcol_GUI_OpeningFcn(hObject, eventdata, h, varargin)
 % Choose default command line output for selcol_GUI
 h.output = color_palette('default');
 
-set(h.list_cpal, 'String', color_palette('disp'));
+set(h.list_cpal, 'String', color_palette('get'));
 
 % Update handles structure
 guidata(hObject, h);
