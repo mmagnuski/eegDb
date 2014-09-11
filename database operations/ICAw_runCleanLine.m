@@ -3,7 +3,7 @@ function ICAw = ICAw_runCleanLine(ICAw)
 % ICAw = ICAw_runCleanLine(ICAw)
 %
 % runs CleanLine for records where field 
-% usecleanline is set to true. 
+% cleanline is set to true. 
 % Updates ICAw structure.
 % FIXHELPINFO - add info about creation of
 %               \CleanLine\ folder etc.
@@ -18,10 +18,10 @@ cleanr = zeros(length(ICAw), 1);
 
 % scan ICAw for files to clean:
 for r = 1:length(ICAw)
-    if isfield(ICAw(r), 'usecleanline') && ...
-            ~isempty(ICAw(r).usecleanline) && ...
-            islogical(ICAw(r).usecleanline)
-        cleanr(r) = ICAw(r).usecleanline;
+    if isfield(ICAw(r), 'cleanline') && ...
+            ~isempty(ICAw(r).cleanline) && ...
+            islogical(ICAw(r).cleanline)
+        cleanr(r) = ICAw(r).cleanline;
     else
         cleanr(r) = false;
     end
@@ -76,7 +76,7 @@ for C = 1:length(cleanr)
     ICAw(r).datainfo.cleanline = true;
     
     % cleanline done, no need to perform again
-    ICAw(r).usecleanline = false;
+    ICAw(r).cleanline = false;
     
     %% save file and update ICAw filepath
     fsep = filesep;
