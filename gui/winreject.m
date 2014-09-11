@@ -163,7 +163,7 @@ guidata(hObject, handles);
 
 % ===PROFILE========================
 % try to load profile if one exists:
-test_profile(handles, 'load')
+handles = test_profile(handles, 'load');
 
 % Refresh GUI:
 winreject_refresh(handles);
@@ -597,7 +597,7 @@ seltypes = rej.name;
 % if some have applied rejections 
 % - allow for removal
 remopt =false;
-remhas = ~cellfun(@isempty, {handles.ICAw(cansel).reject.all});
+remhas = ~cellfun(@(x) isempty(x.all), {handles.ICAw(cansel).reject});
 remhas = sum(remhas) > 0;
 if remhas
     remopt = true;
@@ -862,6 +862,12 @@ end
 % --- Executes on button press in save2file.
 function save2file_Callback(hObject, eventdata, handles)
 
+% CHANGE - quick fix for profile handling
+if ischar(handles.structpath)
+    handles.savepath = handles.structpath;
+    handles.structpath = true;
+end
+
 if ~handles.structpath && ~femp(handles, 'savepath')
     savepath = uigetdir('', 'Where would you like to save the structure?');
     if savepath
@@ -1102,7 +1108,7 @@ function manage_versions_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % ====PROFILE=====
-function test_profile(handles, opt)
+function handles = test_profile(handles, opt)
 % tests whether:
 % (1) when 'opt' == 'load':
 %     - whether an option profile is present in the workspace
@@ -1125,7 +1131,11 @@ switch opt
             flds = fields(base_profile);
             
             for f = 1:length(flds)
-                handles.(flds{f}) = base_profile.(flds{f});
+                if ~strcmp('savepath', flds{f})
+                    handles.(flds{f}) = base_profile.(flds{f});
+                else
+                    handles.structpath = base_profile.(flds{f});
+                end
             end
             guidata(handles.figure1, handles);
         else
