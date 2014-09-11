@@ -45,6 +45,12 @@ pat = ['[0-9]{4}\.[0-9]{2}\.[0-9]{2} ',...
     '[0-9]{2}\.[0-9]{2}\.[0-9]{2}\.[0-9]{3}'];
 
 i = regexp(fls, pat, 'once');
+
+% remove empty ones
+emp = cellfun(@isempty, i);
+i(emp) = [];
+fls(emp) = [];
+
 dts = zeros(length(fls), 7);
 
 for a = 1:length(i)
@@ -85,7 +91,7 @@ for p = 1:length(profile_names)
         regexp(all_fls, profile_names{p}, 'once') ) );
     if ~isempty(f)
         f = f(1); % CHANGE - ensure first is taken...
-        ld = load([PTH, all_fls(f)]);
+        ld = load([PTH, all_fls{f}]);
         clear winner
         flds = fields(ld);
         prof = ld.(flds{1});
