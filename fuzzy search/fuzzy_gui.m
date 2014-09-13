@@ -1,4 +1,6 @@
 % TODOs:
+% [ ] defferentiate enter vs escape when returning 
+%     and no option chosen but text typed
 % [ ] option not to use fuzzy search (no edit box)
 % [ ] option to reside somewhere in an already present figure
 % [ ] add option to restart highligh when new
@@ -32,7 +34,7 @@
 %         presentation capacity - informs about
 %         the index of first visible element
 
-function out = fuzzy_gui(menu_items, opt)
+function [out, typed] = fuzzy_gui(menu_items, opt)
 
 % NOHELPINFO
 %
@@ -314,31 +316,46 @@ set(udat.hFig, 'Visible', 'on');
 % ----------------------
 uiwait(udat.hFig);
 
+typed = '';
+
 if ishandle(udat.hFig)
     udat = get(udat.hFig, 'UserData');
 else
-    out = 0;
+    out = 0; % CHANGE to -1 ?
     return
 end
 
 
 % resume and return
 % -----------------
-if udat.allowSorting
-    inds = udat.sortInds;
-else
-    inds = find(udat.active);
-end
-
-if udat.allowHighlight
-
-    if udat.allowScrolling
-        out = inds(udat.highlightPosition - 1 + udat.focus);
+if any(udat.active)
+    if udat.allowSorting
+        inds = udat.sortInds;
     else
-        out = inds(udat.highlightPosition);
+        inds = find(udat.active);
     end
 else
-    out = inds(1);
+    inds = [];
 end
+
+if ~isempty(inds)
+    if udat.allowHighlight
+        
+        if udat.allowScrolling
+            out = inds(udat.highlightPosition - 1 + udat.focus);
+        else
+            out = inds(udat.highlightPosition);
+        end
+    else
+        out = inds(1);
+    end
+else
+    out = 0;
+end
+
+if udat.allowEditBox
+    typed = get(udat.hEditText, 'String');
+end
+
 
 close(udat.hFig);

@@ -6,7 +6,12 @@ col = {'\color{black}', '\color{magenta}'};
 
 % set inactive to invisible
 activeNum = sum(uData.active);
-buttonsNum = length(uData.hButton);
+
+try
+    buttonsNum = length(uData.hButton);
+catch %#ok<CTCH>
+    buttonsNum = 0;
+end
 
 if activeNum > 0
 	set(uData.hButton(1:uData.numButtons), 'Visible', 'on');
