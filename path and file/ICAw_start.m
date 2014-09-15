@@ -6,7 +6,8 @@ function ICAw_start(PTH, varargin)
 % CHECK, CHANGE this function and to a stable, relatively final form
 
 % TODOs:
-% [ ] add some more options
+% [ ] ! if output is specified do not evalin in base workspace !
+% [ ] add some more options?
 
 % TEMPORARY argument checks:
 innm = 'ICAw ';
@@ -30,7 +31,7 @@ cd(PTH);
 % add to search path
 addpath(PTH);
 % check for files
-all_fls = dir([PTH, '*.mat']);
+all_fls = dir(fullfile(PTH, '*.mat'));
 all_fls = {all_fls.name};
 
 % take only ICAw databases:
@@ -54,8 +55,8 @@ fls(emp) = [];
 dts = zeros(length(fls), 7);
 
 for a = 1:length(i)
-    dt = cellfun(@str2num, strsep(fls{a}(i{a}+1:i{a}+9), '.'));
-    tm = cellfun(@str2num, strsep(fls{a}(i{a}+10:end-4), '.'));
+    dt = cellfun(@str2num, strsep(fls{a}(i{a}:i{a}+9), '.'));
+    tm = cellfun(@str2num, strsep(fls{a}(i{a}+11:i{a}+22), '.'));
     dts(a,:) = [dt', tm'];
 end
 
@@ -75,7 +76,7 @@ else
 end
 %% load current ICAw
 disp('loading the database...');
-ld = load([PTH, winner]);
+ld = load(fullfile(PTH, winner));
 clear winner
 flds = fields(ld);
 ICAw = ld.(flds{1});
@@ -91,7 +92,7 @@ for p = 1:length(profile_names)
         regexp(all_fls, profile_names{p}, 'once') ) );
     if ~isempty(f)
         f = f(1); % CHANGE - ensure first is taken...
-        ld = load([PTH, all_fls{f}]);
+        ld = load(fullfile(PTH, all_fls{f}));
         clear winner
         flds = fields(ld);
         prof = ld.(flds{1});
