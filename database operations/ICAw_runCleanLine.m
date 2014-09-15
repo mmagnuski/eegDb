@@ -58,7 +58,7 @@ for C = 1:length(cleanr)
         clear filt
         
         % move filter to datainfo
-        ICAw(r).datainfo.filtered = ICAw(r).filter;
+        ICAw(r).datainfo.filter = ICAw(r).filter;
         ICAw(r).filter = [];
     end
     
