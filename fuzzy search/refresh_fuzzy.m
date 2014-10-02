@@ -6,7 +6,12 @@ col = {'\color{black}', '\color{magenta}'};
 
 % set inactive to invisible
 activeNum = sum(uData.active);
-buttonsNum = length(uData.hButton);
+
+try
+    buttonsNum = length(uData.hButton);
+catch %#ok<CTCH>
+    buttonsNum = 0;
+end
 
 if activeNum > 0
 	set(uData.hButton(1:uData.numButtons), 'Visible', 'on');
@@ -24,6 +29,7 @@ text = uData.origText(uData.active);
 set(uData.hEditText, 'String',  uData.typed );
 
 % change highlight position
+% -------------------------
 if uData.allowHighlight
 
 	% something to highlight
@@ -73,6 +79,8 @@ if uData.allowHighlight
     end
 end
 
+
+
 % sorting
 % -------
 
@@ -95,6 +103,15 @@ if uData.allowScrolling
 
 	% check if focus needs to be reduced
 	uData.focus = min( uData.focus, max(1, activeNum - uData.numButtons + 1) ); 
+
+
+	% update scroll bar if it is allowed:
+	if uData.allowSrollBar
+
+		BarLim = calcScrollBar(uData);
+		Y = repmat(BarLim, [2, 1]);
+		set(uData.hScrollBarFront, 'YData', Y(:));
+	end
 
 end
 

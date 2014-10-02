@@ -69,6 +69,9 @@ function winreject_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<*INUSL
 handles.output = hObject;
 handles.UniOrig = get(0, 'Units');
 
+% CHECK
+% why are the lines below commented out?
+% why setting figure1 to visible if units are not pixels?
 if ~strcmp(handles.UniOrig, 'pixels')
     set(handles.figure1, 'Visible', 'on');
     %     set(0, 'Units', 'pixels');
@@ -150,12 +153,17 @@ set(handles.slider, 'SliderStep', [1 3]);
 handles.recov = ~cellfun(@(x) isempty(x.pre),...
     {handles.ICAw.reject});
 
+% KEYPRESS
+% --------
+% set window keypress behavior
+set(handles.figure1, 'WindowKeyPressFcn', @winrej_buttonpress);
+
 % Update handles structure
 guidata(hObject, handles);
 
 % ===PROFILE========================
 % try to load profile if one exists:
-test_profile(handles, 'load')
+handles = test_profile(handles, 'load');
 
 % Refresh GUI:
 winreject_refresh(handles);
@@ -174,132 +182,6 @@ elseif nargout > 0
     varargout{1} = handles.ICAw;
 end
 delete(handles.figure1);
-
-%% [~] REFRESH
-% --- Refreshes winreject GUI each time a registry is changed
-function winreject_refresh(handles)
-%% refresh function
-% CHANGE refreshing info textbox - it should be a separate and
-%        more universal function
-
-% --- title_text ---
-set(handles.title_text, 'String', {'ICAw data cleaner'; ...
-    ['record number: ', num2str(handles.r)]});
-
-
-% =================
-% --- info_text ---
-% =================
-
-
-% text stuff
-% ----------
-
-% Fill info_text:
-maxlines = 8;
-
-% get text from eegDb structure, already wrapped
-infotext = eegDb_struct2text(handles.ICAw(handles.r), handles.info_text);
-
-% check wrapped size:
-all_lines = length(infotext);
-
-
-% get slider vars
-% ---------------
-sliderVal = get(handles.slider, 'Value');
-sliderMax = get(handles.slider, 'Max');
-current_slider_pos = round(sliderMax - sliderVal) + 1;
-
-% set active lines (scrollable)
-active_lines = all_lines - maxlines;
-if active_lines < 1
-    active_lines = 1;
-end
-
-% slider cannot be off max
-if current_slider_pos > sliderMax + 1
-    current_slider_pos = sliderMax + 1;
-end
-
-% see what part of the text to present
-lastlin = current_slider_pos + maxlines - 1;
-if lastlin > all_lines
-    % but never more than there are lines
-    lastlin = all_lines;
-end
-
-
-% Slider stuff
-% ------------
-
-set(handles.slider, 'Max', active_lines);
-set(handles.slider, 'SliderStep', 1/active_lines * [1, 3])
-if sliderVal > active_lines
-    set(handles.slider, 'Value', active_lines);
-else
-    set(handles.slider, 'Value', max([0, active_lines - current_slider_pos + 1]));
-end
-
-
-% 
-% trim text and show:
-% -------------------
-infotext = infotext(current_slider_pos:lastlin);
-
-% set the text
-set(handles.info_text, 'String', infotext);
-
-
-% --- CL_checkbox ---
-useclean = false;
-if femp(handles.ICAw(handles.r), 'cleanline') && ...
-        (isstruct(handles.ICAw(handles.r).cleanline) ...
-        || handles.ICAw(handles.r).cleanline)
-    useclean = true;
-end
-
-% change state of the toggle button
-if useclean
-    set(handles.CL_checkbox, 'Value', 1);
-else
-    set(handles.CL_checkbox, 'Value', 0);
-end
-
-% --- notes_win ---
-set(handles.notes_win, 'String', handles.ICAw(handles.r).notes);
-
-% --- addit_text ---
-if isempty(handles.rEEG) || handles.r ~= handles.rEEG
-    set(handles.addit_text, 'String', 'EEG not recovered');
-else
-    set(handles.addit_text, 'String', 'EEG recovered');
-end
-
-% === version checks ===
-
-% --- if versions ---
-% check if this record has versions
-f = ICAw_checkfields(handles.ICAw, handles.r, {'versions'});
-
-% no versions whatsoever (no subfields in 'versions'):
-if ~f.fsubf
-    % add main version
-    handles.ICAw = ICAw_mainversion(handles.ICAw, handles.r);
-    
-end
-
-guidata(handles.figure1, handles);
-clear f
-
-% --- version names ---
-versions = ICAw_getversions(handles.ICAw, handles.r);
-set(handles.versions_pop, 'String', versions(:,2));
-
-% --- current version ---
-curr = handles.ICAw(handles.r).versions.current;
-curr = find(strcmp(curr, versions(:,1)));
-set(handles.versions_pop, 'Value', curr);
 
 
 %% [~] PLOT DATA
@@ -675,59 +557,8 @@ end
 %% [~] MULTI-SELECTION
 % --- Executes on button press in multisel.
 function multisel_Callback(hObject, eventdata, handles)
-
-% cansel = find(handles.recov);%check
-% strsel = cellfun(@num2str, num2cell(cansel), 'UniformOutput', false);
-% strsel = strsel(:);
-
-allsel = 1:length(handles.ICAw);
-allstr = cellfun(@num2str, num2cell(allsel), 'UniformOutput', false);
-allstr = allstr(:);
-
-% select records:
-sel = gui_chooselist(allstr, 'text', 'Select records:');
-
-if length(sel) == 1
-    % just jumping
-    handles.r = allsel(sel);
-    handles.selected = [];
-    set(handles.multisel, 'BackgroundColor', ...
-        handles.multisel_col);
-    
-    % refresh
-    winreject_refresh(handles);
-elseif isempty(sel)
-    handles.selected = [];
-    set(handles.multisel, 'BackgroundColor', ...
-        handles.multisel_col);
-    
-elseif ~isempty(sel)
-    %     realsel = intersect(allsel(sel), cansel);
-    realsel = sel;
-    
-    if length(realsel) == 1
-        % just jumping
-        handles.r = realsel;
-        handles.selected = [];
-        set(handles.multisel, 'BackgroundColor', ...
-            handles.multisel_col);
-        
-        % refresh
-        winreject_refresh(handles);
-        
-    elseif length(realsel) > 1
-        handles.r = realsel(1);
-        handles.selected = realsel;
-        set(handles.multisel, 'BackgroundColor', ...
-            [0.9, 0.2, 0.1]);
-        
-        % refresh
-        winreject_refresh(handles);
-    end
-end
-
-% Update handles structure
-guidata(hObject, handles);
+% call the link function:
+linkfun_multiselect(handles);
 
 
 %% [~]  APPLY REJECTIONS
@@ -766,7 +597,7 @@ seltypes = rej.name;
 % if some have applied rejections 
 % - allow for removal
 remopt =false;
-remhas = ~cellfun(@isempty, {handles.ICAw(cansel).reject.all});
+remhas = ~cellfun(@(x) isempty(x.all), {handles.ICAw(cansel).reject});
 remhas = sum(remhas) > 0;
 if remhas
     remopt = true;
@@ -1031,6 +862,12 @@ end
 % --- Executes on button press in save2file.
 function save2file_Callback(hObject, eventdata, handles)
 
+% CHANGE - quick fix for profile handling
+if ischar(handles.structpath)
+    handles.savepath = handles.structpath;
+    handles.structpath = true;
+end
+
 if ~handles.structpath && ~femp(handles, 'savepath')
     savepath = uigetdir('', 'Where would you like to save the structure?');
     if savepath
@@ -1271,7 +1108,7 @@ function manage_versions_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % ====PROFILE=====
-function test_profile(handles, opt)
+function handles = test_profile(handles, opt)
 % tests whether:
 % (1) when 'opt' == 'load':
 %     - whether an option profile is present in the workspace
@@ -1294,7 +1131,11 @@ switch opt
             flds = fields(base_profile);
             
             for f = 1:length(flds)
-                handles.(flds{f}) = base_profile.(flds{f});
+                if ~strcmp('savepath', flds{f})
+                    handles.(flds{f}) = base_profile.(flds{f});
+                else
+                    handles.structpath = base_profile.(flds{f});
+                end
             end
             guidata(handles.figure1, handles);
         else

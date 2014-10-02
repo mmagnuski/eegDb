@@ -353,7 +353,7 @@ if femp(h, 'ICAw')
         ICAw = ICAw_copybase(ICAw, opt);
     end
     
-    ICAw = ICAw_updatetonewformat(ICAw);
+    % ICAw = ICAw_updatetonewformat(ICAw);
     h.output = ICAw;
     guidata(hObject, h);
     uiresume(h.figure1);

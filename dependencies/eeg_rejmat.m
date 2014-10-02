@@ -16,47 +16,73 @@ function rejmat = eeg_rejmat(EEG, varargin)
 %
 % coded by M. Magnuski, august 2013
 
-srt = EEG.srate;
+
 allrej = 0;
 % change check fields to include other non-standard fields
-chckflds = {'rejjp', 'rejmanual', 'rejfreq', 'reject',...
-    'maybe', 'dontknow'};
+chckflds = {'rejjp', 'rejmanual', 'rejfreq'}; % CHANGE
 
 % check for additional arguments:
 if nargin > 1
     chckflds = varargin{1};
 end
 
-rejperf = zeros(1,length(chckflds));
-numep = cell(1,length(chckflds));
+len = length(chckflds);
+numep = cell(1,len);
+eplen = size(EEG.data, 2);
 
 % get info on rejections
-for f = 1:length(chckflds)
+for f = 1:len
     if isfield(EEG.reject, chckflds{f}) && ...
             ~isempty(EEG.reject.(chckflds{f}))
-        rejperf(f) = sum(EEG.reject.(chckflds{f}));
+        rejperf = sum(EEG.reject.(chckflds{f}));
         numep{f} = find(EEG.reject.(chckflds{f}))';
-        allrej = allrej + rejperf(f);
+        allrej = allrej + rejperf;
     end
 end
-clear f rejperf
 
+
+% CHANGE - a dirty workaround (rejections were not shown)
+% if ICAw is present:
+if isfield(EEG.reject, 'ICAw')
+    templen = length(EEG.reject.ICAw.name);
+    track = 0;
+    for f = 1:templen
+        if ~isempty(EEG.reject.ICAw.value{f})
+            
+            rejperf = sum(EEG.reject.ICAw.value{f});
+            
+            if rejperf > 0
+                track = track + 1;
+                fname = sprintf('tempfield%d', track);
+                
+                chckflds{len + track} = fname;
+                numep{len + track} = find(EEG.reject.ICAw.value{f});
+                EEG.reject.([fname, 'col']) = EEG.reject.ICAw.color{f};
+                
+                allrej = allrej + rejperf;
+            end
+        end
+    end
+    len = len + track;
+end
+clear f rejperf
+        
 rejmat = zeros(allrej, 5 + EEG.nbchan);
 rejsofar = 0;
 clear allrej
 
 % fill rejection matrix
-for f = 1:length(chckflds)
+for f = 1:len
     % fill by matrix multiplication:
-    len = length(numep{f});
-    if len > 0
-    rejmat(rejsofar+1 : len+rejsofar, 1 : 2) = ...
-        [numep{f}(:), repmat(srt - 1, [len, 1])] ...
-        * [srt, srt; -1, 0];
-    rejmat(rejsofar+1 : len+rejsofar, 3 : 5) = ...
-        repmat(EEG.reject.([chckflds{f}, 'col']), ...
-        [len, 1]);
-    rejsofar = rejsofar + len;
+    lent = length(numep{f});
+    if lent > 0
+        rejmat(rejsofar+1 : lent+rejsofar, 1 : 2) = ...
+            [numep{f}(:), repmat(eplen - 1, [lent, 1])] ...
+            * [eplen, eplen; -1, 0];
+        rejmat(rejsofar+1 : lent+rejsofar, 3 : 5) = ...
+            repmat(EEG.reject.([chckflds{f}, 'col']), ...
+            [lent, 1]);
+        rejsofar = rejsofar + lent;
     end
 end
-clear rejsofar len numep
+clear rejsofar lent numep

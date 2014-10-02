@@ -1,6 +1,28 @@
 function hs = gui_multiedit(maintext, opts, optval)
 
-% NOHELPINFO
+% GUI_MULTIEDIT creates a simple gui with multiple
+% edit boxes.
+% 
+% hs = gui_multiedit(maintext, opts, optval)
+% 
+% input:
+% maintext - string; title text visible on top of the gui
+% opts     - cell array of strings; each string is a title
+%            corresponding to one edit box
+% optval   - cell array of strings; each string is the
+%            starting value for the edit box
+% 
+% output:
+% hs          - structure of handles; contains handles to all
+%               elements of the figure
+% hs.hf       - handle; handle to the figure
+% hs.maintxt  - handle; handle to the title text
+% hs.txt      - array of handles; handles to consecutive 
+%               text boxes (serve as titles to edit boxes)
+% hs.edit     - array of handles; handles to consecutive 
+%               edit boxes
+% hs.ok       - handle; handle to the OK button
+% hs.cancel   - handle; handle to the cancel button
 
 % this gui is useful for gathering options
 % also one needs to specify: text options on one side
@@ -53,18 +75,18 @@ hs.maintxt = uicontrol('Style', 'text',...
         'FontSize', 16);
 
 for o = 1:nopt
-    myh = (o - 1) * opth + o * optsep + abvbut;
+    myh = (nopt - o) * opth + (nopt - o) * optsep + abvbut;
     
     % text
-    hs.txt(nopt - (o - 1)) = uicontrol('Style', 'text',...
+    hs.txt(o) = uicontrol('Style', 'text',...
         'Units', 'pixels', 'Position', [descdist, myh, ...
-        desl, opth], 'String', opts{nopt - (o - 1)},...
+        desl, opth], 'String', opts{o},...
         'FontSize', 12);
     
     % edit
-    hs.edit(nopt - (o - 1)) = uicontrol('Style', 'edit',...
+    hs.edit(o) = uicontrol('Style', 'edit',...
         'Units', 'pixels', 'Position', [descdist*2 + desl,...
-        myh, editl, opth], 'String', optval{nopt - (o - 1)},...
+        myh, editl, opth], 'String', optval{o},...
         'FontSize', 12);
 end
 

@@ -76,4 +76,10 @@ if nargin > 0
         end
         fprintf('(as well as any colormap like: jet or hot)\n');
     end
+    
+    % get color palettes:
+    gt = strcmp('get', varargin);
+    if any(gt) && nargin == 1
+        palette = pnames;
+    end
 end

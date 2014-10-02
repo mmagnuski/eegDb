@@ -328,6 +328,7 @@ if ~loaded
             %             end
             
             % filtering
+            test_pop_eegfiltnew();
             EEG = pop_eegfiltnew(EEG, filt(1,1), filt(1,2));
             
             
