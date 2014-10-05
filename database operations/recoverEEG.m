@@ -406,7 +406,7 @@ end
 
 %% interpolating bad channels
 if interp
-    EEG = eeg_interp(EEG, ICAw(r).chan.bad, 'spherical');
+    EEG = eeg_interp2(EEG, ICAw(r).chan.bad, 'spherical');
     if ~isempty(EEG.icaweights)
         
         % add weights etc. after interpolation
