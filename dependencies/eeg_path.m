@@ -13,8 +13,10 @@ function eeg_path(type, varargin)
 
 
 % TODOs:
+% [ ] restructure
 % [X] one function for adding and removing 
 % [ ] persistent option? (what was added before)
+% [ ] remove globals option (de-global)
 % [X] removing eeglab paths
 % [X] eeg_path(1) - add; eeg_path(2) - remove;
 % [ ] toolbox paths - check if added. If not:
@@ -22,6 +24,7 @@ function eeg_path(type, varargin)
 
 %% defaults
 external = false;
+remglob = true;
 % toolboxes = false; % add usage!
 
 %% check input
