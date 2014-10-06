@@ -283,8 +283,11 @@ end
 
 %% recover file:
 if ~loaded
-    EEG = pop_loadset('filename', ICAw(r).filename, ...
-        'filepath', pth);
+    % CHANGE if there are problems to try-catch
+    EEG = eegDb_fastread(pth, ICAw(r).filename);
+    
+    % EEG = pop_loadset('filename', ICAw(r).filename, ...
+    %     'filepath', pth);
     
     % =====================
     % checking prefunctions
@@ -477,31 +480,9 @@ elseif ~isempty(ICAw(r).epoch.events) && ...
             strcmp(epoc(1:cidlen), code_id)
         
         epoc = eval(epoc(cidlen+1:end));
-        EEG = pop_epoch( EEG, {}, ICAw(r).epoch_limits,...
-            'eventindices', epoc);
-    else
-        epoch_ind = false;
-        
-        if isnumeric(epoc)
-            epoch_ind = true;
-        elseif ~iscell(epoc)
-            % checking whether is cell:
-            epoc = {ICAw(r).epoch.events};
-        end
-        
-        % =======================================
-        % epoch with respect to types or indices:
-        if ~epoch_ind
-            % epoching with respect to given
-            % event types and limits:
-            EEG = pop_epoch( EEG, epoc, ICAw(r).epoch.limits);
-        else
-            % epoching with respect to given
-            % event indices and limits:
-            EEG = pop_epoch( EEG, {}, ICAw(r).epoch.limits,...
-                'eventindices', epoc);
-        end
     end
+    
+    EEG = eegDb_fastepoch(EEG, epoc, ICAw(r).epoch.limits);
     
     % =======================
     % checking for segmenting
