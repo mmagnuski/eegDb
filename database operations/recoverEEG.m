@@ -433,6 +433,7 @@ end
 %% postfilter:
 if femp(ICAw(r), 'postfilter')
     % filtering
+    test_pop_eegfiltnew();
     EEG = pop_eegfiltnew(EEG, ICAw(r).postfilter(1,1),...
         ICAw(r).postfilter(1,2));
 end
