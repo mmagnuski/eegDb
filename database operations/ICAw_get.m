@@ -12,37 +12,55 @@ function info = ICAw_get(ICAw, rs, prop)
 % -1 - option present both in .datainfo and core entry - may be an error
 
 numR = length(rs);
-vec = zeros(5, numR);
+info = zeros(5, numR);
 
 % check filtering 
 
 % CHECK which is faster? cellfun?
 
 % FILTER
-vec = simple_testfield(ICAw(rs), 'filter', vec, 1);
+info = simple_testfield(ICAw(rs), 'filter', [], info, 1);
 
 % CLEANLINE
 istrue = @(x) isequal(x, true);
-vec = simple_testfield(ICAw(rs), 'cleanline', vec, 2, istrue);
+info = simple_testfield(ICAw(rs), 'cleanline', [], info, 2, istrue);
 
 % EPOCHING
 % just checking if the field is empty may not be enough...
-vec = simple_testfield(ICAw(rs), 'epoch', vec, 3);
+info = simple_testfield(ICAw(rs), 'epoch', [], info, 3);
+
+% rem epochs
+% pre
+info = simple_testfield(ICAw(rs), 'reject', info, 2, istrue);
 
 % ICA
 
+%
 
-function vec = simple_testfield(ICAw, fname, vec, n, varargin)
-    f = ~cellfun(@isempty, {ICAw.(fname)});
-    d = ~cellfun(@(x) femp(x, fname), {ICAw.datainfo});
+function vec = simple_testfield(ICAw, fname, subf, vec, n, varargin)
+    if isempty(subf)
+        f = ~cellfun(@isempty, {ICAw.(fname)});
+        d = cellfun(@(x) femp(x, fname), {ICAw.datainfo});
 
-    if ~isempty(varargin)
-        for v = 1:length(varargin)
-            f(f) = cellfun(varargin{v}, {ICAw(f).(fname)});
-            d(d) = cellfun(@(x) feval(varargin{v}, x.(fname)), {ICAw(f).datainfo});
+        if ~isempty(varargin)
+            for v = 1:length(varargin)
+                f(f) = cellfun(varargin{v}, {ICAw(f).(fname)});
+                d(d) = cellfun(@(x) feval(varargin{v}, x.(fname)), {ICAw(d).datainfo});
+            end
+        end
+    else
+        f = ~cellfun(@isempty, {ICAw.(fname).(subf)});
+        d = cellfun(@(x) femp(x, subf), {ICAw.datainfo.(fname)});
+
+        if ~isempty(varargin)
+            for v = 1:length(varargin)
+                f(f) = cellfun(varargin{v}, {ICAw(f).(fname).(subf)});
+                d(d) = cellfun(@(x) feval(varargin{v}, x.(subf)), {ICAw(d).datainfo.(fname)});
+            end
         end
     end
 
+    % apply changes
     vec = fillvec(vec, f, d, n);
 
 function vec = fillvec(vec, f, d, n)
