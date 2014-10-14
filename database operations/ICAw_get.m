@@ -19,7 +19,6 @@ info = zeros(5, numR);
 % CHECK which is faster? cellfun?
 
 % FILTER
-<<<<<<< Updated upstream
 info = simple_testfield(ICAw(rs), 'filter', [], info, 1);
 
 % CLEANLINE
