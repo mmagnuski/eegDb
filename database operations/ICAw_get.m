@@ -31,7 +31,10 @@ info = simple_testfield(ICAw(rs), 'epoch', [], info, 3);
 
 % rem epochs
 % pre
-info = simple_testfield(ICAw(rs), 'reject', info, 2, istrue);
+info = simple_testfield(ICAw(rs), 'reject', 'pre', info, 4);
+% post
+info = simple_testfield(ICAw(rs), 'reject', 'post', info, 5);
+
 
 % ICA
 
@@ -49,13 +52,16 @@ function vec = simple_testfield(ICAw, fname, subf, vec, n, varargin)
             end
         end
     else
-        f = ~cellfun(@isempty, {ICAw.(fname).(subf)});
-        d = cellfun(@(x) femp(x, subf), {ICAw.datainfo.(fname)});
+        getf = {ICAw.(fname)};
+        f = ~cellfun(@(x) femp(x, subf), getf);
+
+        d    = cellfun(@(x) femp(x, fname), {ICAw.datainfo});
+        d(d) = cellfun(@(x) femp(x.fname, subf), {ICAw(d).datainfo});
 
         if ~isempty(varargin)
             for v = 1:length(varargin)
-                f(f) = cellfun(varargin{v}, {ICAw(f).(fname).(subf)});
-                d(d) = cellfun(@(x) feval(varargin{v}, x.(subf)), {ICAw(d).datainfo.(fname)});
+                f(f) = cellfun(@(x) feval(varargin{v}, x.(subf)), getf(f));
+                d(d) = cellfun(@(x) feval(varargin{v}, x.(fname).(subf)), {ICAw(d).datainfo});
             end
         end
     end
