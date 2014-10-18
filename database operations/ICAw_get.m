@@ -11,6 +11,10 @@ function info = ICAw_get(ICAw, rs, prop)
 %  2 - option is specified and saved in EEG file (present in .datainfo of the database)
 % -1 - option present both in .datainfo and core entry - may be an error
 
+if ~exist('rs', 'var')
+    rs = 1:length(ICAw);
+end
+
 numR = length(rs);
 info = zeros(5, numR);
 
