@@ -16,4 +16,20 @@ pth = fileparts(which('eegDb'));
 %     addpath(fullfile(pth, f{1}));
 % end
 
-addpath(genpath(pth));
+% do not add .git etc folders:
+lst = dir(pth);
+dirlst = lst([lst.isdir]);
+
+dl = false(length(dirlst), 1);
+
+for i = 1:length(dirlst)
+    if dirlst(i).name(1) == '.'
+        dl(i) = true;
+    end
+end
+dirlst(dl) = [];
+
+disp('adding paths...');
+for d = 1:length(dirlst)
+    addpath(genpath(fullfile(pth, dirlst(d).name)));
+end
