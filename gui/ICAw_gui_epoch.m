@@ -148,7 +148,7 @@ function prev_settings(h, r)
 
 % ====================
 % check epoch options:
-if femp(h.ICAw(r).epoch, 'events')
+if femp(h.ICAw(r), 'epoch') && femp(h.ICAw(r).epoch, 'events')
     if iscell(h.ICAw(r).epoch.events)
         
         % CHECK - set list with event types!
@@ -180,7 +180,7 @@ end
 
 % =====================
 % check onesec options:
-if femp(h.ICAw(r).epoch, 'onesecepoch')
+if femp(h.ICAw(r), 'epoch') && femp(h.ICAw(r).epoch, 'onesecepoch')
     
     if islogical(h.ICAw(r).onesecepoch)
         % if boolean
