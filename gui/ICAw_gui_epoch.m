@@ -148,12 +148,12 @@ function prev_settings(h, r)
 
 % ====================
 % check epoch options:
-if femp(h.ICAw(r), 'epoch_events')
-    if iscell(h.ICAw(r).epoch_events)
+if femp(h.ICAw(r), 'epoch') && femp(h.ICAw(r).epoch, 'events')
+    if iscell(h.ICAw(r).epoch.events)
         
         % CHECK - set list with event types!
-        update_event_list(h, h.ICAw(r).epoch_events);
-    elseif isnumeric(h.ICAw(r).epoch_events)
+        update_event_list(h, h.ICAw(r).epoch.events);
+    elseif isnumeric(h.ICAw(r).epoch.events)
         % what to do in such case?
         % toggle button for types/indices ?
         set(h.typeind_toggle, 'Value', 0);
@@ -161,8 +161,8 @@ if femp(h.ICAw(r), 'epoch_events')
         % update button etc.
         typeind_toggle_Callback(h.typeind_toggle, [], h);
         % update list to numeric values of epoch_events:
-        set(h.event_list, 'Value', h.ICAw(r).epoch_events);
-        set(h.event_list, 'ListBoxTop', h.ICAw(r).epoch_events(1));
+        set(h.event_list, 'Value', h.ICAw(r).epoch.events);
+        set(h.event_list, 'ListBoxTop', h.ICAw(r).epoch.events(1));
     end
     
     set(h.check_epoch, 'Value', 1);
@@ -171,8 +171,8 @@ if femp(h.ICAw(r), 'epoch_events')
 end
 
 if femp(h.ICAw(r), 'epoch_limits')
-    set(h.pre_box, 'String', num2str(-1 * h.ICAw(r).epoch_limits(1)));
-    set(h.post_box, 'String', num2str(h.ICAw(r).epoch_limits(2)));
+    set(h.pre_box, 'String', num2str(-1 * h.ICAw(r).epoch.limits(1)));
+    set(h.post_box, 'String', num2str(h.ICAw(r).epoch.limits(2)));
     
     set(h.check_epoch, 'Value', 1);
     check_epoch_Callback([], [], h);
@@ -180,43 +180,26 @@ end
 
 % =====================
 % check onesec options:
-if femp(h.ICAw(r), 'onesecepoch')
-    
-    if islogical(h.ICAw(r).onesecepoch)
-        % if boolean
-        % then if true:
-        if h.ICAw(r).onesecepoch
-            % set defaults:
-            set(h.winlen_box, 'String', '1');
-            set(h.eventname_box, 'String', 'dummy');
-            
-            set(h.check_onesec, 'Value', 1);
-            set(h.winsel_check, 'Value', 0);
-            
-            check_onesec_Callback([], [], h);
-        end
-    else
-        % else - structure
-        % fld = fields(h.ICAw(r).onesecepoch);
+if femp(h.ICAw(r), 'epoch') && femp(h.ICAw(r).epoch, 'locked') && ~ICAw(r).epoch.locked
         
+        % ADD - else default options?
         % check 'winlen':
-        if femp(h.ICAw(r).onesecepoch, 'winlen')
-            val = h.ICAw(r).onesecepoch.winlen;
+        if femp(h.ICAw(r).epoch, 'winlen')
+            val = h.ICAw(r).epoch.winlen;
             val = num2str(val);
             set(h.winlen_box, 'String', val);
         end
         
         % check 'eventname':
-        if femp(h.ICAw(r).onesecepoch, 'eventname')
-            val = h.ICAw(r).onesecepoch.eventname;
+        if femp(h.ICAw(r).epoch, 'eventname')
+            val = h.ICAw(r).epoch.eventname;
             set(h.eventname_box, 'String', val);
         end
         
         % check 'distance':
-        if femp(h.ICAw(r).onesecepoch, 'distance')
+        if femp(h.ICAw(r).epoch, 'distance')
             % ADD
         end
-    end
 end
 
 % ================================
@@ -684,27 +667,35 @@ if get(h.check_epoch, 'Value') == 1
     % epoch events
     evlst = get(h.event_list, 'String');
     chosen_evnts = get(h.event_list, 'Value');
+    opts.epoch.locked = true;
+
     if ismember(1, chosen_evnts)
-        opts.epoch_events = evlst(2:end);
+        opts.epoch.events = evlst(2:end);
     else
-        opts.epoch_events = evlst(chosen_evnts);
+        opts.epoch.events = evlst(chosen_evnts);
     end
     
     % epoch limits
-    opts.epoch_limits = [-1 * str2num(get(h.pre_box, 'String')), ...
+    opts.epoch.limits = [-1 * str2num(get(h.pre_box, 'String')), ...
         str2num(get(h.post_box, 'String'))];
-    opts.onesecepoch = [];
+
+    % clear onesec opts
+    opts.epoch.eventname = [];
+    opts.epoch.winlen    = [];
+    opts.epoch.distance  = [];
     
 else
     % onesec is chosen, check whether distance defined
+    opts.epoch.locked = false;
+
     if get(h.winsel_check, 'Value') == 1
-        opts.onesecepoch.distance = h.onesecopts;
+        opts.epoch.distance = h.onesecopts;
     end
     % add normal onesec options
-    opts.onesecepoch.eventname = get(h.eventname_box, 'String');
-    opts.onesecepoch.winlen = str2num(get(h.winlen_box, 'String')); %#ok<*ST2NM>
-    opts.epoch_limits = [];
-    opts.epoch_events = [];
+    opts.epoch.eventname = get(h.eventname_box, 'String');
+    opts.epoch.winlen = str2num(get(h.winlen_box, 'String')); %#ok<*ST2NM>
+    opts.epoch.limits = [];
+    opts.epoch.events = [];
 end
 h.ICAw = ICAw_copybase(h.ICAw, opts);
 h.output = h.ICAw;

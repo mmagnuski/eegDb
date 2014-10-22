@@ -289,21 +289,15 @@ h = guidata(hObject);
 
 [strPth, flist] = get_path_and_files(h);
 
-ICAw_temp = struct('filepath', strPth, 'filename', flist,...
-    'onesecepoch', []);
+ICAw_temp = struct('filepath', strPth, 'filename', flist);
 
 % here ADD some code to fill this temp ICAw struct
 % with epoch data present in 
 if femp(h, 'ICAw')
     % add epoching options
     opt = [];
-    if femp(h.ICAw(1), 'onesecepoch')
-        opt.onesecepoch = h.ICAw(1).onesecepoch;
-    end
-    
-    if femp(h.ICAw(1), 'epoch_limits')
-        opt.epoch_limits = h.ICAw(1).epoch_limits;
-        opt.epoch_events = h.ICAw(1).epoch_events;
+    if femp(h.ICAw(1), 'epoch')
+        opt.epoch = h.ICAw(1).epoch;
     end
     
     % update if relevant
@@ -337,13 +331,8 @@ if femp(h, 'ICAw')
         opt.filter(2,:) = h.PassFilt;
     end
     
-    if femp(h.ICAw(1), 'onesecepoch')
-        opt.onesecepoch = h.ICAw(1).onesecepoch;
-    end
-    
-    if femp(h.ICAw(1), 'epoch_limits')
-        opt.epoch_limits = h.ICAw(1).epoch_limits;
-        opt.epoch_events = h.ICAw(1).epoch_events;
+    if femp(h.ICAw(1), 'epoch')
+        opt.epoch = h.ICAw(1).epoch;
     end
     
     [strPth, flist] = get_path_and_files(h);
