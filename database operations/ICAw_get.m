@@ -1,4 +1,4 @@
-function info = ICAw_get(ICAw, rs, prop)
+function info = ICAw_get(ICAw, rs)
 
 % NOHELPINFO
 % Helper function for getting info about properties 
@@ -41,30 +41,48 @@ info = simple_testfield(ICAw(rs), 'reject', 'post', info, 5);
 
 
 % ICA
+info = simple_testfield(ICAw(rs), 'ICA', 'icaweights', info, 6);
 
-%
+% removed components
+info = simple_testfield(ICAw(rs), 'ICA', 'remove', info, 7);
+
 
 function vec = simple_testfield(ICAw, fname, subf, vec, n, varargin)
     if isempty(subf)
-        f = ~cellfun(@isempty, {ICAw.(fname)});
+        isf = isfield(ICAw, fname);
+        if isf
+            f = ~cellfun(@isempty, {ICAw.(fname)});
+        else
+            f = false(1, length(ICAw));
+        end
         d = cellfun(@(x) femp(x, fname), {ICAw.datainfo});
 
         if ~isempty(varargin)
             for v = 1:length(varargin)
-                f(f) = cellfun(varargin{v}, {ICAw(f).(fname)});
+                if isf
+                    f(f) = cellfun(varargin{v}, {ICAw(f).(fname)});
+                end
                 d(d) = cellfun(@(x) feval(varargin{v}, x.(fname)), {ICAw(d).datainfo});
             end
         end
     else
-        getf = {ICAw.(fname)};
-        f = ~cellfun(@(x) femp(x, subf), getf);
+        isf = isfield(ICAw, fname);
+        if isf
+            getf = {ICAw.(fname)};
+            f = cellfun(@(x) femp(x, subf), getf);
+        else
+            getf = [];
+            f = false(1, length(ICAw));
+        end
 
         d    = cellfun(@(x) femp(x, fname), {ICAw.datainfo});
         d(d) = cellfun(@(x) femp(x.fname, subf), {ICAw(d).datainfo});
 
         if ~isempty(varargin)
             for v = 1:length(varargin)
-                f(f) = cellfun(@(x) feval(varargin{v}, x.(subf)), getf(f));
+                if isf
+                    f(f) = cellfun(@(x) feval(varargin{v}, x.(subf)), getf(f));
+                end
                 d(d) = cellfun(@(x) feval(varargin{v}, x.(fname).(subf)), {ICAw(d).datainfo});
             end
         end
