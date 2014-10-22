@@ -148,7 +148,7 @@ function prev_settings(h, r)
 
 % ====================
 % check epoch options:
-if femp(h.ICAw(r).epoch, 'events')
+if femp(h.ICAw(r), 'epoch') && femp(h.ICAw(r).epoch, 'events')
     if iscell(h.ICAw(r).epoch.events)
         
         % CHECK - set list with event types!
@@ -180,43 +180,26 @@ end
 
 % =====================
 % check onesec options:
-if femp(h.ICAw(r).epoch, 'onesecepoch')
-    
-    if islogical(h.ICAw(r).onesecepoch)
-        % if boolean
-        % then if true:
-        if h.ICAw(r).onesecepoch
-            % set defaults:
-            set(h.winlen_box, 'String', '1');
-            set(h.eventname_box, 'String', 'dummy');
-            
-            set(h.check_onesec, 'Value', 1);
-            set(h.winsel_check, 'Value', 0);
-            
-            check_onesec_Callback([], [], h);
-        end
-    else
-        % else - structure
-        % fld = fields(h.ICAw(r).onesecepoch);
+if femp(h.ICAw(r), 'epoch') && femp(h.ICAw(r).epoch, 'locked') && ~ICAw(r).epoch.locked
         
+        % ADD - else default options?
         % check 'winlen':
-        if femp(h.ICAw(r).onesecepoch, 'winlen')
-            val = h.ICAw(r).onesecepoch.winlen;
+        if femp(h.ICAw(r).epoch, 'winlen')
+            val = h.ICAw(r).epoch.winlen;
             val = num2str(val);
             set(h.winlen_box, 'String', val);
         end
         
         % check 'eventname':
-        if femp(h.ICAw(r).onesecepoch, 'eventname')
-            val = h.ICAw(r).onesecepoch.eventname;
+        if femp(h.ICAw(r).epoch, 'eventname')
+            val = h.ICAw(r).epoch.eventname;
             set(h.eventname_box, 'String', val);
         end
         
         % check 'distance':
-        if femp(h.ICAw(r).onesecepoch, 'distance')
+        if femp(h.ICAw(r).epoch, 'distance')
             % ADD
         end
-    end
 end
 
 % ================================
