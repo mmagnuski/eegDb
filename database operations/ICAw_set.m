@@ -53,4 +53,4 @@ ispres = scan > 0;
 ch = ch(:,f);
 
 % multip element-wise with ispres:
-prob = ch .* ispres;
+prob = repmat(ch, [1, size(ispres,2)]) .* ispres;
