@@ -3,9 +3,9 @@
 % adds necessary paths to folders
 %
 % see also: addpath
+function eegDb_setup
 
-
-pth = fileparts(which('eegDb'));
+pth = fileparts(which('eegDb_setup'));
 
 % fld = {'database operations', 'dependencies', 'eeglabsubst', 'gui', ...
 %     'manage marks', 'manage versions', 'path and file utils', ...
@@ -32,4 +32,5 @@ dirlst(dl) = [];
 disp('adding paths...');
 for d = 1:length(dirlst)
     addpath(genpath(fullfile(pth, dirlst(d).name)));
+end
 end
