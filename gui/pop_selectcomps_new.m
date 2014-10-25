@@ -1,56 +1,3 @@
-% modification of pop_select comps
-% allows to:
-% 1. scroll through components in a window with < > at the bottom
-%  + interrupting plotting
-% 2. minimize plotting time by saving the graphical object structure
-%    (precomputing if users wishes so)
-% 3. integrate with comp_explore (think it over - how to integrate best)
-% 4. some other cool stuff - plotting options (other GUI)
-%                          - tags (in da future)
-%                          - what else?
-
-
-% TODOs:
-        % [ ] resolve adding computed topos to EEG in the
-        %     base workspace (or how else?)
-        % [ ] add an EEG-checking function that compares
-        %     given EEG to those present in the base work-
-        %     space or global variables available from 
-        %     base workspace...
-        % [ ] add precompute option
-
-% FEATURES:
-% options structure
-% graphic structure?
-%
-%
-%
-
-% varargin options and 'update' keyword could help...
-% OR, maybe better - until the figure is closed
-%                    all data are kept in appdata figure
-%                    field. only then (close request)
-%                    the data are migrated or not
-%                    (this depends on the call context)
-
-% CONSIDER - how to pass options to the function?
-%       --> hidden in EEG.etc.(somefield)?
-%       --> as another argument (in varargin)?
-%       --> maybe both ways with varargin overriding
-%           EEG.etc.(somefield)
-% CONSIDER - whether to use this one function for both
-%            EEGlab and ICAw or only use it as a
-
-% CONSIDER looking for a figure if handle not given
-%          or only figure name given (?)
-%          figh = findobj('type','figure','name','orange')
-
-% CONSIDER if one resizes the figure the buttons do not
-%          get scaled too much - some limits are set
-
-% Would be nice if pop_selectcomps_new (or some other name
-% that this function will have) was compatible with pop_selectcomps:
-
 % Usage:
 %       >> OUTEEG = pop_selectcomps( INEEG, compnum );
 %
@@ -79,6 +26,7 @@
 %   will have some more button active to tune up the automatic rejection.
 %
 % Author: Arnaud Delorme, CNL / Salk Institute, 2001
+%         Mikołaj Magnuski,                     2014
 %
 % See also: pop_prop(), eeglab()
 
@@ -86,19 +34,16 @@
 
 function [EEG, com] = pop_selectcomps_new( EEG, compnum, fig, varargin )
 
-% TODOs:
-% - saves topo maps in EEG
 
-%% ><\_''~~INPUT CHECKS~~''_/><
+% INPUT CHECKS
+% ------------
 
-% ==========================================
 % if not enough arguments passed, show help:
 if nargin < 1
     help pop_selectcomps;
     return;
 end;
 
-% =====================================
 % if comp indices have not been passed:
 if nargin < 2
     
@@ -118,76 +63,75 @@ if nargin < 2
     % turn user's string input to numbers:
     compnum = eval( [ '[' result{1} ']' ]);
     
-    % the code below is no longer valid, now the
-    % components are plotted in one window
-    % with the option to move around
-    %
-    %if length(compnum) > PLOTPERFIG
-    %    ButtonName=questdlg2(strvcat(['More than ' int2str(PLOTPERFIG) ' components so'],'this function will pop-up several windows'), ...
-    %                         'Confirmation', 'Cancel', 'OK','OK');
-    %    if ~isempty( strmatch(lower(ButtonName), 'cancel')), return; end;
-    %end;
 end;
+
+
+
+% DEFAULTS
+% --------
+
+% default topo plotting
+topopts.verbose    = 'off';
+topopts.style      = 'fill';
+topopts.chaninfo   = EEG.chaninfo;
+topopts.numcontour = 8;
+
+% maybe CHANGE later - customize colors?
+% reject and accept colors,
+COLREJ           = '[1 0.6 0.6]';
+COLACC           = '[0.75 1 0.75]';
+BACKCOLOR        = [0.8 0.8 0.8];
+GUIBUTTONCOLOR   = [0.8 0.8 0.8];
+
+NOTPLOTCHANS = 65;
+PLOTPERFIG   = 25;
+DRAWFREQ     = 4;
+onoff = {'off', 'on'};
 
 % ============
 % other checks
 
-% check EEG.etc for topocach
-TopCach = femp(EEG.etc, 'topocache');
+if nargin > 2
+    % a key might have been passed in place of
+    % figure handle
+    if fig_h_passed && ischar(fig)
+        varargin = [{fig}, varargin];
+        fig_h_passed = false;
+    else
+        fig_h_passed = true;
+    end
 
-% whether figure handle has been passed:
-fig_h_passed = vpres('fig');
-
-% a key might have been passed in place of
-% figure handle
-if fig_h_passed && ischar(fig)
-    varargin = [{fig}, varargin];
-    fig_h_passed = false;
 end
 
-% check keys
-% ------------
 % INPUT PARSER
+% ------------
 
 prs = inputParser;
 prs.FunctionName = 'pop_selectcomps_new';
 % addParamValue is addParameter in new MATLAB...
 % moreover addParamValue is not recommended...
-addParamValue(prs,'perfig', 35, @isnumeric);
-addParamValue(prs,'fill', true, @islogical);
+addParamValue(prs, 'perfig', PLOTPERFIG, @isnumeric);
+addParamValue(prs, 'fill', true, @islogical);
+addParamValue(prs, 'eegDb', [], @iseegDb);
+addParamValue(prs, 'h', true, @isstructofhandles);
+addParamValue(prs, 'update', 'no', @isupdateval);
+addParamValue(prs, 'topopts', topopts, @isupdateval);
+
 parse(prs, varargin{:});
 params = prs.Results;
 clear prs
 
-%%
-
-% maybe CHANGE later - customize colors?
-% reject and accept colors,
-% we can leave these as they are:
-COLREJ = '[1 0.6 0.6]';
-COLACC = '[0.75 1 0.75]';
-
-% CHANGE later:
-% how many components per figure,
-% this should be possible to pass
-% in some data structure, now it
-% only checks whether the variable
-% is present
-if ~femp(params, 'perfig')
-    PLOTPERFIG = 35;
-else
-    PLOTPERFIG = params.perfig;
-end
+% clean up parameters
+% -------------------
+PLOTPERFIG = params.perfig;
+eegDb_present = ~isempty(params.eegDb);
 
 % testing plotperfig dimensions if 'fill' is on
-
 params.column = ceil(sqrt( PLOTPERFIG ))+1;
 params.rows = ceil(PLOTPERFIG/params.column);
 if params.fill
     PLOTPERFIG = params.column * params.rows;
 end
-
-DRAWFREQ = 4;
 
 % ----------------------------------
 % Num Axes per dimension and Filling
@@ -206,24 +150,6 @@ else
     params.rows = ceil(NumOfComp/params.column);
 end;
 
-% OTHER DEFAULTS
-onoff = {'off', 'on'};
-
-% ---
-% COM
-% com is used to pass info to EEGlab history, we
-% will use it only if called from EEGlab GUI
-com = '';
-% CHANGE
-% We'll think about filling com later
-% com = [ 'pop_selectcomps(' inputname(1) ', ' vararg2str(compnum) ');' ];
-
-
-
-% CONSIDER
-% Ideally, there should be a 'verbose' option.
-% now, I'm just going to comment out all print statements
-% fprintf('Drawing figure...\n');
 
 % generate a random figure tag:
 currentfigtag = ['selcomp' num2str(rand)];
@@ -233,29 +159,15 @@ currentfigtag = ['selcomp' num2str(rand)];
 % and add a tag that is not being used
 
 
-
-% CHANGE - so that comp info is taken from:
-%          ICAw    - if present
-%     else EEG.etc - if it has relevant field there
-%     else EEG     - if no other source present
-% Check EEG.reject.gcompreject for component rejection
-% info
-if isempty(EEG.reject.gcompreject)
-    EEG.reject.gcompreject = zeros( size(EEG.icawinv,2));
+% using icadefs is generally a bad idea - especially in terms of speed
+% for compatibility it is still used if no eegDb was passed
+if ~eegDb_present
+    try
+        icadefs;        
+    end
 end
 
-% CHECK - running icadefs may not be the best
-%         especially in terms of speed
-try
-    icadefs;
-catch  %#ok<CTCH>
-    BACKCOLOR = [0.8 0.8 0.8];
-    GUIBUTTONCOLOR   = [0.8 0.8 0.8];
-end
 
-% CHANGE - so that figure is not created when
-%          figure handle has been passed
-%
 % set up the figure
 % -----------------
 
@@ -264,7 +176,7 @@ if ~fig_h_passed
     % CHANGE name
     % create figure
     fig = figure('name', [ 'Reject components by map - ',...
-        'pop_selectcomps() (dataset: ', EEG.setname ')'], 'tag', ...
+        'pop_selectcomps_new() (dataset: ', EEG.setname ')'], 'tag', ...
         currentfigtag, 'numbertitle', 'off', 'color', BACKCOLOR);
     
     % delete the classic menu bar:
@@ -277,6 +189,7 @@ if ~fig_h_passed
     %         against options
     % CHANGE - manipulate the pos(1) and pos(2) to
     %          get better results
+
     % change the position to match number of rows and columns
     % it is assumed that each colum should consume
     % 115 pixels (previously 800/7 that is - 114.2857)
@@ -295,7 +208,7 @@ if ~fig_h_passed
         sizewy = 90/params.rows;
     else
         sizewy = 80/params.rows;
-    end;
+    end
     
     % get current axis position to plot
     % relative to current axes
@@ -308,18 +221,33 @@ if ~fig_h_passed
     q = [pos(1) pos(2) 0 0];
     s = [pos(3) pos(4) pos(3) pos(4)]./100;
     axis off;
-end;
+end
 
 
 % figure rows and columns
 % -----------------------
-if EEG.nbchan > 64
-    % CHANGE - verbose:
-    % disp('More than 64 electrodes: electrode locations not shown');
+if EEG.nbchan > NOTPLOTCHANS
     plotelec = 0;
 else
     plotelec = 1;
 end;
+
+
+% check cached topos
+% ------------------
+% check EEG.etc for topocach
+TopCach = femp(EEG.etc, 'topo');
+
+% get rejected comps
+% ------------------
+% CHANGE - so that comp info is taken from:
+%          ICAw    - if present
+%     else EEG.reject     - if no other source present
+% Check EEG.reject.gcompreject for component rejection
+% info
+if isempty(EEG.reject.gcompreject)
+    EEG.reject.gcompreject = zeros( size(EEG.icawinv,2));
+end
 
 
 % ===============================
@@ -601,6 +529,28 @@ guidata(fig, h);
         guidata(figh, h);
     end
 
+% CHANGE
+% work on com a little more
+
+% ---
+% COM
+% com is used to pass info to EEGlab history, we
+% will use it only if called from EEGlab GUI
+com = '';
+
 com = [ 'pop_selectcomps(' inputname(1) ', ' vararg2str(compnum) ');' ];
-return
+
 end
+
+
+function isv = isupdateval(v)
+% checks whether input is char and corresponds to
+% either 'workspace', 'eegDb gui'
+
+    if ~ischar(v)
+        isv = false;
+        return
+    end
+
+    valid = {'workspace', 'eegDb gui'};
+    isv = any(strcmp(v, valid));
