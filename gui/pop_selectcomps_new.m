@@ -94,13 +94,14 @@ onoff = {'off', 'on'};
 if nargin > 2
     % a key might have been passed in place of
     % figure handle
-    if fig_h_passed && ischar(fig)
+    if ischar(fig)
         varargin = [{fig}, varargin];
         fig_h_passed = false;
     else
         fig_h_passed = true;
     end
-
+else
+    fig_h_passed = false;
 end
 
 % INPUT PARSER
@@ -438,7 +439,7 @@ guidata(fig, h);
             toplot = toplot(1) : fin;
         end
         
-        
+        if ~isempty(toplot)
         % -----------
         % clear up field
         for stp = 1:length(h.comps.visible)
@@ -521,12 +522,14 @@ guidata(fig, h);
             end
         end
         
+        % topo caching - CHECK and probably CHANGE
         h.EEG = EEG_topo_cache(h.EEG, gcf);
         
         % CONSIDER - gui data updates should happen more often...
         % update guidata
         h.comps.visible = toplot;
         guidata(figh, h);
+        end
     end
 
 % CHANGE
@@ -554,3 +557,4 @@ function isv = isupdateval(v)
 
     valid = {'workspace', 'eegDb gui'};
     isv = any(strcmp(v, valid));
+end
