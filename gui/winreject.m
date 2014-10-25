@@ -198,6 +198,13 @@ else
     currf = handles.ICAw(handles.r).versions.current;
     handles.ICAw = ICAw_updateversion(handles.ICAw, handles.r, currf);
     
+    % CHANGE - this is a mess
+    %        - whether r is recovered should be checked in a sepatate
+    %          function (the same with recover if not present)
+    %        - recovopts should be reworked
+    %        - comparing EEG and current r/version should be
+    %          smarter  
+    
     % first - recover data if not present
     if isempty(handles.EEG) || handles.r ~= handles.rEEG || ...
             ~ICAw_vers_compare(handles.EEG.etc.recov, handles.ICAw(handles.r)...
