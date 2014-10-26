@@ -34,6 +34,31 @@
 
 function [EEG, com] = pop_selectcomps_new( EEG, compnum, fig, varargin )
 
+% TODOs:
+% [ ] check cached topos if present
+% [ ] write and call selcomps_update
+% [ ] selcomps_update - should it cache topos or some other fun?
+% [ ] work on broadcast
+% [ ] check update option if passed (?)
+% [ ] cached topos should have info on plot options
+
+
+% info for hackers (or future self)
+% ---------------------------------
+% h     - structure of handles (to figure, axes and buttons)
+% info  - structure of lightweight info:
+%     .eegDb_present      - boolean; whether eegDb was passed
+%     .compnum (?)
+%     .topopts (?)
+%     .r                  
+%     .ver
+%
+% in 'appdata':
+% 'h'         - structure of handles
+% 'EEG'       - EEG structure
+% 'info'      - struct; see in previous section
+% 'eegDb'     - eegDb structure (database of preprocessing steps)
+% 'topopts'   - structure of options for compo plotting
 
 % INPUT CHECKS
 % ------------
@@ -41,8 +66,8 @@ function [EEG, com] = pop_selectcomps_new( EEG, compnum, fig, varargin )
 % if not enough arguments passed, show help:
 if nargin < 1
     help pop_selectcomps;
-    return;
-end;
+    return
+end
 
 % if comp indices have not been passed:
 if nargin < 2
@@ -63,18 +88,12 @@ if nargin < 2
     % turn user's string input to numbers:
     compnum = eval( [ '[' result{1} ']' ]);
     
-end;
+end
 
 
 
 % DEFAULTS
 % --------
-
-% default topo plotting
-topopts.verbose    = 'off';
-topopts.style      = 'fill';
-topopts.chaninfo   = EEG.chaninfo;
-topopts.numcontour = 8;
 
 % maybe CHANGE later - customize colors?
 % reject and accept colors,
@@ -87,6 +106,20 @@ NOTPLOTCHANS = 65;
 PLOTPERFIG   = 25;
 DRAWFREQ     = 4;
 onoff = {'off', 'on'};
+
+
+% topopts
+topopts.verbose    = 'off';
+topopts.style      = 'fill';
+topopts.chaninfo   = EEG.chaninfo;
+topopts.numcontour = 8;
+
+if EEG.nbchan > NOTPLOTCHANS
+    topopts.electrodes = 'off';
+else
+    topopts.electrodes = 'on';
+end
+
 
 % ============
 % other checks
@@ -104,29 +137,75 @@ else
     fig_h_passed = false;
 end
 
+
 % INPUT PARSER
 % ------------
-
 prs = inputParser;
 prs.FunctionName = 'pop_selectcomps_new';
+
 % addParamValue is addParameter in new MATLAB...
 % moreover addParamValue is not recommended...
-addParamValue(prs, 'perfig', PLOTPERFIG, @isnumeric);
-addParamValue(prs, 'fill', true, @islogical);
-addParamValue(prs, 'eegDb', [], @iseegDb);
-addParamValue(prs, 'h', true, @isstructofhandles);
-addParamValue(prs, 'update', 'no', @isupdateval);
-addParamValue(prs, 'topopts', topopts, @isupdateval);
+addParamValue(prs, 'perfig',  PLOTPERFIG, @isnumeric);
+addParamValue(prs, 'fill',    true,       @islogical);
+addParamValue(prs, 'eegDb',   [],         @iseegDb);
+addParamValue(prs, 'h',       [],         @isstructofhandles);
+addParamValue(prs, 'update',  'no',       @isupdateval);
+addParamValue(prs, 'rsync',   [],         @isnumeric);
+addParamValue(prs, 'r',       1,          @isnumeric);
+addParamValue(prs, 'topopts', topopts,    @isupdateval);
 
 parse(prs, varargin{:});
 params = prs.Results;
 clear prs
 
+
 % clean up parameters
 % -------------------
 PLOTPERFIG = params.perfig;
-eegDb_present = ~isempty(params.eegDb);
+info.eegDb_present = ~isempty(params.eegDb);
+info.EGGcompN = size(EEG.icaweights,1);
 
+
+% other fig handles:
+if ~isempty(params.h)
+    info.otherfigh = true;
+
+    testflds = {'eegDb_gui', 'comp_explore'};
+    for f = testflds
+        if isfield(params.h, f{1})
+            info.(f{1}) = params.h.(f{1});
+        end
+    end
+else
+    info.otherfigh = false;
+end
+
+% r
+if info.eegDb_present
+    eegDb = params.eegDb;
+
+    info.r = params.r;
+
+    if isempty(params.rsync)
+        info.rsync = info.r;
+    end
+
+    % icaweights
+    info.eegDbcompN = size(eegDb(info.r).ICA.icaweights, 1);
+
+    % CHANGE
+    % test for problems - when EEG does not have the same num
+    %                     of components as eegDb
+end
+
+
+
+% ----------------------------------
+% Num Axes per dimension and Filling
+% figure rows and columns
+% -----------------------
+
+% CHANGE - move rows etc from params to info (or maybe change params to info?)
 % testing plotperfig dimensions if 'fill' is on
 params.column = ceil(sqrt( PLOTPERFIG ))+1;
 params.rows = ceil(PLOTPERFIG/params.column);
@@ -134,35 +213,35 @@ if params.fill
     PLOTPERFIG = params.column * params.rows;
 end
 
-% ----------------------------------
-% Num Axes per dimension and Filling
-
 % if more components than figure space, enable scroll buttons
 if length(compnum) > PLOTPERFIG
-    block_navig = false;
-    allcomp = compnum;
+    info.block_navig = false;
+    info.allcomp = compnum;
     compnum = compnum(1:PLOTPERFIG);
 else
-    block_navig = true;
-    allcomp = [];
+    info.block_navig = true;
+    info.allcomp = [];
     
     NumOfComp = length(compnum);
     params.column = ceil(sqrt( NumOfComp ))+1;
     params.rows = ceil(NumOfComp/params.column);
-end;
+end
 
-
-% generate a random figure tag:
-currentfigtag = ['selcomp' num2str(rand)];
 
 % ADD or CHANGE:
 % check what figures with selcomp tag exist
 % and add a tag that is not being used
+% or maybe do not use the tag (?)
+
+% generate a random figure tag:
+currentfigtag = ['selcomp' num2str(rand)];
 
 
+% icadefs
+% -------
 % using icadefs is generally a bad idea - especially in terms of speed
 % for compatibility it is still used if no eegDb was passed
-if ~eegDb_present
+if ~info.eegDb_present
     try
         icadefs;        
     end
@@ -172,19 +251,22 @@ end
 % set up the figure
 % -----------------
 
+% h - strucutre of handles
+% the rest is in appdata
+
 if ~fig_h_passed
     
     % CHANGE name
     % create figure
-    fig = figure('name', [ 'Reject components by map - ',...
+    h.fig = figure('name', [ 'Reject components by map - ',...
         'pop_selectcomps_new() (dataset: ', EEG.setname ')'], 'tag', ...
         currentfigtag, 'numbertitle', 'off', 'color', BACKCOLOR);
     
     % delete the classic menu bar:
-    set(fig, 'MenuBar', 'none');
+    set(h.fig, 'MenuBar', 'none');
     
     % get figure position:
-    pos = get(fig, 'Position');
+    pos = get(h.fig, 'Position');
     
     % CHECK - later this should be checked and compared
     %         against options
@@ -225,29 +307,106 @@ if ~fig_h_passed
 end
 
 
-% figure rows and columns
-% -----------------------
-if EEG.nbchan > NOTPLOTCHANS
-    plotelec = 0;
-else
-    plotelec = 1;
-end;
-
-
 % check cached topos
 % ------------------
-% check EEG.etc for topocach
-TopCach = femp(EEG.etc, 'topo');
+info.ifcached = false;
+cachetopo     = [];
+
+% if eegDb passed - there
+if info.eegDb_present
+    tst = femp(eegDb(info.r).ICA, 'topo');
+    if tst
+        info.ifcached = true;
+        cachetopo     = eegDb(info.r).ICA.topo;
+        clear tst
+    end
+end
+
+if ~info.ifcached
+    tst = femp(EEG.etc, 'topo');
+    if tst
+        info.ifcached = true;
+        cachetopo     = EEG.etc.topo;
+        clear tst
+    end
+end
+
+% CHECK?
+% check cachetopo first
+% should contain all components
+
 
 % get rejected comps
 % ------------------
-% CHANGE - so that comp info is taken from:
-%          ICAw    - if present
-%     else EEG.reject     - if no other source present
-% Check EEG.reject.gcompreject for component rejection
-% info
-if isempty(EEG.reject.gcompreject)
-    EEG.reject.gcompreject = zeros( size(EEG.icawinv,2));
+
+if info.eegDb_present 
+    % components marked as removed
+    if femp(eegDb(info.r).ICA, 'remove')
+        info.compremove = true(1, )
+        info.compremove = eegDb(info.r).ICA.remove;
+    else
+        info.compremove = [];
+    end
+
+    % components marked as 'maybe'
+    if femp(eegDb(info.r).ICA, 'ifremove')
+        info.compifremove = eegDb(info.r).ICA.ifremove;
+    else
+        info.compifremove = [];
+    end
+else
+    % get info from EEG
+    if femp(EEG.reject, 'gcompreject')
+        info.compremove =  EEG.reject.gcompreject;
+    else
+        info.compremove = [];
+    end
+
+    info.compifremove = [];
+end
+
+
+
+% draw the bottom buttons
+% -----------------------
+if ~fig_h_passed
+    % CHANGE callbacks
+    % CHECK  pop_icathresh(EEG)
+    % CHANGE clarify visually (shorter lines)
+
+    h.cancel = uicontrol(h.fig, 'Style', 'pushbutton', 'string', 'Cancel', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
+        'Position',[-10 -10  15 sizewy*0.25].*s+q, 'callback', 'close(gcf); fprintf(''Operation cancelled\n'')' );
+    h.setthresholds = uicontrol(h.fig, 'Style', 'pushbutton', 'string', 'Set threhsolds', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
+        'Position',[10 -10  15 sizewy*0.25].*s+q, 'callback', 'pop_icathresh(EEG); pop_selectcomps( EEG, gcbf);' );
+    
+    % check if component statistics have been computed:
+    if isempty( EEG.stats.compenta	), set(h.setthresholds, 'enable', 'off'); end;
+    
+    h.seecompstats = uicontrol(h.fig, 'Style', 'pushbutton', 'string', 'See comp. stats', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
+        'Position',[30 -10  15 sizewy*0.25].*s+q, 'callback',  ' ' );
+    if isempty( EEG.stats.compenta	), set(h.seecompstats, 'enable', 'off'); end;
+    
+    % CHANGE - maybe better use a handles structure rather
+    %          than later findobj...
+    h.seeproj = uicontrol(h.fig, 'Style', 'pushbutton', 'string', 'See projection', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
+        'Position',[50 -10  15 sizewy*0.25].*s+q, 'callback', ' ', 'enable', 'off'  );
+    
+    % we've deleted the help button and added a button for plot
+    % refreshing (left right arrows)
+    h.prev = uicontrol(h.fig, 'Style', 'pushbutton', 'string', '  <  ', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
+        'Position',[68 -10  9 sizewy*0.25].*s+q, 'callback', {@topos_refresh, '<'},...
+        'Enable', onoff{2 - info.block_navig});
+    h.next = uicontrol(h.fig, 'Style', 'pushbutton', 'string', ...
+        '  >  ', 'Units','Normalized', 'backgroundcolor', ...
+        GUIBUTTONCOLOR, 'Position', [78 -10  9 sizewy*0.25].*s+q,...
+        'callback', {@topos_refresh, '>'}, 'Enable', ...
+        onoff{2 - info.block_navig});
+    
+    % CHANGE - use function handles
+    % here the command for OK button is created:
+    command = '[ALLEEG EEG] = eeg_store(ALLEEG, EEG, CURRENTSET); eegh(''[ALLEEG EEG] = eeg_store(ALLEEG, EEG, CURRENTSET);''); close(gcf)';
+    hh = uicontrol(h.fig, 'Style', 'pushbutton', 'string', 'OK', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
+        'Position',[90 -10  15 sizewy*0.25].*s+q, 'callback',  command);
 end
 
 
@@ -260,13 +419,19 @@ end
 %            'refresh' subfunction
 % count is used to find position of given axis
 count = 1;
-for ri = compnum
+for i = 1:length(compnum)
     
+    ri = compnum(i);
+
     % ===
     % button check:
     if fig_h_passed
+
+        % CHANGE - should get info, h struct etc. from figure handle etc.
+        %          findobj is unneccessarily slow
+
         % find the button of a present figure:
-        button = findobj('parent', fig, 'tag', ['comp' num2str(ri)]);
+        button = findobj('parent', h.fig, 'tag', ['comp' num2str(ri)]);
         
         % no such button was found, whoops!
         if isempty(button)
@@ -288,6 +453,7 @@ for ri = compnum
         
         % plot the head
         % -------------
+        % instead - selcomps_update() later
         
         % CHANGE this to checking whether
         % the figure is still alive
@@ -296,23 +462,11 @@ for ri = compnum
             return;
         end
         
-        % CHANGE - store axis handles in h.ax
+        % CHANGE - tag is not necessary if we use array of handles
         % create axis for the topoplot
-        ha = axes('Units','Normalized', 'Position',[X Y sizewx sizewy].*s+q,...
+        h.ax(i) = axes('Units','Normalized', 'Position',[X Y sizewx sizewy].*s+q,...
             'tag', ['topoaxis', num2str(ri)]);
         
-        % CHANGE - recreate from saved data if cached
-        %        - add plot options to be used
-        % plot the topo there
-        if plotelec
-            topoplot( EEG.icawinv(:,ri), EEG.chanlocs, 'verbose', ...
-                'off', 'style' , 'fill', 'chaninfo', EEG.chaninfo,...
-                'numcontour', 8);
-        else
-            topoplot( EEG.icawinv(:,ri), EEG.chanlocs, 'verbose', ...
-                'off', 'style' , 'fill','electrodes','off', ...
-                'chaninfo', EEG.chaninfo, 'numcontour', 8);
-        end
         
         % axis should be square
         % (so that component plots look OK)
@@ -321,7 +475,7 @@ for ri = compnum
         % plot the button above
         % ---------------------
         button_pos = [X, Y+sizewy, sizewx, sizewy*0.25] .* s+q;
-        button = uicontrol(gcf, 'Style', 'pushbutton', 'Units','Normalized',...
+        h.button(i) = uicontrol(h.fig, 'Style', 'pushbutton', 'Units','Normalized',...
             'Position', button_pos, 'tag', ['comp' num2str(ri)]);
         
         % CHANGE command to a function handle that takes relevant
@@ -349,188 +503,36 @@ for ri = compnum
     count = count +1;
 end
 
-% draw the bottom buttons
-% -----------------------
-if ~fig_h_passed
-    hh = uicontrol(gcf, 'Style', 'pushbutton', 'string', 'Cancel', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
-        'Position',[-10 -10  15 sizewy*0.25].*s+q, 'callback', 'close(gcf); fprintf(''Operation cancelled\n'')' );
-    hh = uicontrol(gcf, 'Style', 'pushbutton', 'string', 'Set threhsolds', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
-        'Position',[10 -10  15 sizewy*0.25].*s+q, 'callback', 'pop_icathresh(EEG); pop_selectcomps( EEG, gcbf);' );
-    
-    % check if component statistics have been computed:
-    if isempty( EEG.stats.compenta	), set(hh, 'enable', 'off'); end;
-    
-    hh = uicontrol(gcf, 'Style', 'pushbutton', 'string', 'See comp. stats', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
-        'Position',[30 -10  15 sizewy*0.25].*s+q, 'callback',  ' ' );
-    if isempty( EEG.stats.compenta	), set(hh, 'enable', 'off'); end;
-    
-    % CHANGE - hh used multiple times for no reason...
-    %          maybe better use a handles structure rather
-    %          than later findobj...
-    hh = uicontrol(gcf, 'Style', 'pushbutton', 'string', 'See projection', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
-        'Position',[50 -10  15 sizewy*0.25].*s+q, 'callback', ' ', 'enable', 'off'  );
-    
-    % we've deleted the help button and added a button for plot
-    % refreshing (left right arrows)
-    hh = uicontrol(gcf, 'Style', 'pushbutton', 'string', '  <  ', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
-        'Position',[68 -10  9 sizewy*0.25].*s+q, 'callback', {@topos_refresh, '<'},...
-        'Enable', onoff{2 - block_navig});
-    hh = uicontrol(gcf, 'Style', 'pushbutton', 'string', ...
-        '  >  ', 'Units','Normalized', 'backgroundcolor', ...
-        GUIBUTTONCOLOR, 'Position', [78 -10  9 sizewy*0.25].*s+q,...
-        'callback', {@topos_refresh, '>'}, 'Enable', ...
-        onoff{2 - block_navig});
-    
-    % here the command is created:
-    command = '[ALLEEG EEG] = eeg_store(ALLEEG, EEG, CURRENTSET); eegh(''[ALLEEG EEG] = eeg_store(ALLEEG, EEG, CURRENTSET);''); close(gcf)';
-    hh = uicontrol(gcf, 'Style', 'pushbutton', 'string', 'OK', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
-        'Position',[90 -10  15 sizewy*0.25].*s+q, 'callback',  command);
-    
-    % CHECK code below - what is this? (it was commented out in the
-    % original function)
-    % sprintf(['eeg_global; if %d pop_rejepoch(%d, %d, find(EEG.reject.sigreject > 0), EEG.reject.elecreject, 0, 1);' ...
-    %		' end; pop_compproj(%d,%d,1); close(gcf); eeg_retrieve(%d); eeg_updatemenu; '], rejtrials, set_in, set_out, fastif(rejtrials, set_out, set_in), set_out, set_in));
-end
 
-EEG = EEG_topo_cache(EEG, gcf);
 
-% temporarily:
-h.EEG = EEG;
-h.TopCach = TopCach;
+
+% CONSIDER
+% what about these:
 h.comps.all = allcomp;
-h.block_navig = block_navig;
 h.perfig = PLOTPERFIG;
 h.opt.plotelec = plotelec;
 
-if ~block_navig
+
+if ~info.block_navig
     h.comps.visible = 1:PLOTPERFIG;
 else
     h.comps.visible = [];
 end
 h.comps.invisible = zeros(1, h.perfig);
-guidata(fig, h);
 
-% temp refresh:
+% APPDATA
+% -------
+setappdata(h.fig, 'h', h);
+setappdata(h.fig, 'EEG', EEG);
+setappdata(h.fig, 'info', info);
+setappdata(h.fig, 'topopts', topopts);
+setappdata(h.fig, 'cachetopo', cachetopo);
 
-    function topos_refresh(hobject, ~, dir)
-        % a button has been pressed,
-        % evaluate which comps have to be plotted
-        
-        % TODOs:
-        % [ ] fix plotting components when those
-        %     to plot are less than the number of axes
-        
-        figh = get(hobject, 'Parent');
-        h = guidata(figh);
-        numcomps = length(h.comps.all);
-        
-        cachedcomps = [h.EEG.etc.topocache.CompNum];
-        % remapping that some of the component plots can just be moved from
-        % one place to another
-        remapping = false; % CHANGE - should remapping be used?
-        
-        if strcmp(dir, '<')
-            toplot(1) = h.comps.visible(1) - h.perfig;
-            if toplot(1) < 1; toplot(1) = 1; remapping = true; end
-            toplot = toplot(1) : toplot(1) + h.perfig - 1;
-        elseif strcmp(dir, '>')
-            toplot(1) = h.comps.visible(end) + 1;
-            fin = min(toplot(1) + h.perfig - 1, numcomps);
-            toplot = toplot(1) : fin;
-        end
-        
-        if ~isempty(toplot)
-        % -----------
-        % clear up field
-        for stp = 1:length(h.comps.visible)
-            
-            % comp number
-            cmp = h.comps.all(toplot(stp));
-            
-            % get axis handle:
-            thisax = findobj('Parent', figh, 'tag', ...
-                ['topoaxis', num2str(h.comps.visible(stp))]);
-            
-            % clear axis children
-            axchil = get(thisax, 'Children');
-            
-            % CHECK
-            % why invisible are compared with zero?
-            % this is weird -  what should this code do?
-            if ~isempty(axchil) %&& h.comps.invisible(stp) == 0
-                set(axchil, 'Visible', 'off');
-                h.comps.invisible(stp) = h.comps.visible(stp);
-            end
-            
-            % change tag etc.
-            h.comps.visible(stp) = toplot(stp);
-            set(thisax, 'tag', ['topoaxis', num2str(cmp)]);
-            
-            but = findobj('tag', ['comp', num2str(h.comps.all(...
-                h.comps.invisible(stp)))]);
-            comm = sprintf(['pop_prop( %s, 0, %d, %3.15f, ',...
-                '{ ''freqrange'', [1 50] });'], 'h.EEG', cmp, but);
-            set( but, 'callback', comm, 'string', int2str(cmp),...
-                'tag', ['comp', num2str(cmp)]);
-        end
-        
-        
-        % -----------
-        % plot components
-        for stp = 1:length(toplot)
-            cmp = h.comps.all(toplot(stp));
-            
-            % get axis handle:
-            thisax = findobj('Parent', figh, 'tag', ...
-                ['topoaxis', num2str(h.comps.visible(stp))]);
-            
-            % ------------------
-            % replot from memory
-            if sum(cachedcomps == cmp) > 0
-                replot_topo(h.EEG, cmp, thisax);
-                
-                
-                % CHANGE so that frequency of drawnow
-                % can be controlled
-                
-                if mod(stp, DRAWFREQ) == 0
-                    drawnow
-                end
-            else
-                
-                % clear axis children
-                axchil = get(thisax, 'Children');
-                delete(axchil);
-                h.comps.invisible(stp) = 0;
-                
-                % activate axis:
-                axes(thisax); %#ok<LAXES>
-                
-                % draw new topoplot
-                if h.opt.plotelec
-                    topoplot( h.EEG.icawinv(:,cmp), h.EEG.chanlocs, 'verbose', ...
-                        'off', 'style' , 'fill', 'chaninfo', h.EEG.chaninfo,...
-                        'numcontour', 8);
-                else
-                    topoplot( h.EEG.icawinv(:,cmp), h.EEG.chanlocs, 'verbose', ...
-                        'off', 'style' , 'fill','electrodes','off', ...
-                        'chaninfo', h.EEG.chaninfo, 'numcontour', 8);
-                end
-                
-                % --- and change other stuff ---
-                
-            end
-        end
-        
-        % topo caching - CHECK and probably CHANGE
-        h.EEG = EEG_topo_cache(h.EEG, gcf);
-        
-        % CONSIDER - gui data updates should happen more often...
-        % update guidata
-        h.comps.visible = toplot;
-        guidata(figh, h);
-        end
-    end
+
+if info.eegDb_present
+    setappdata(h.fig, 'eegDb', eegDb);
+
+end
 
 % CHANGE
 % work on com a little more
@@ -541,9 +543,11 @@ guidata(fig, h);
 % will use it only if called from EEGlab GUI
 com = '';
 
+% CHECK vararg2str - its EEGlab's function, not MATLAB's
 com = [ 'pop_selectcomps(' inputname(1) ', ' vararg2str(compnum) ');' ];
 
 end
+
 
 
 function isv = isupdateval(v)
