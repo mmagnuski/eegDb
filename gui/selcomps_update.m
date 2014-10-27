@@ -9,6 +9,7 @@ function selcomps_update(varargin)
     % see also: selcomps, 
     
     % TODOs:
+    % [ ] invisible is not yet used - will it be useful?
     % [ ] fix plotting components when those
     %     to plot are less than the number of axes
     
@@ -59,6 +60,11 @@ function selcomps_update(varargin)
     
     if ~isempty(dir)
         if strcmp(dir, '<')
+
+            if info.comps.visible(1) == 1
+                return
+            end 
+            
             info.comps.visible(1) = info.comps.visible(1) - info.perfig;
             
             if info.comps.visible(1) < 1 
@@ -69,103 +75,106 @@ function selcomps_update(varargin)
             info.comps.visible = info.comps.visible(1) : ...
             					 info.comps.visible(1) + info.perfig - 1;
         elseif strcmp(dir, '>')
+            
+            if info.comps.visible(1) == numcomps
+                % CHANGE - maybe not return but do not update components
+                return
+            end
+
             info.comps.visible(1) = info.comps.visible(end) + 1;
+
             fin = min(info.comps.visible(1) + info.perfig - 1, numcomps);
             info.comps.visible = info.comps.visible(1) : fin;
         end
-
-        % ====
-        % finished here <<<---
-        % ====
         
         % -----------
         % clear up field
         for stp = 1:length(info.comps.visible)
-        
-        % comp number
-        cmp = h.comps.all(toplot(stp));
-        
-        % get axis handle:
-        thisax = findobj('Parent', figh, 'tag', ...
-            ['topoaxis', num2str(h.comps.visible(stp))]);
-        
-        % clear axis children
-        axchil = get(thisax, 'Children');
-        
-        % CHECK
-        % why invisible are compared with zero?
-        % this is weird -  what should this code do?
-        if ~isempty(axchil) %&& h.comps.invisible(stp) == 0
-            set(axchil, 'Visible', 'off');
-            h.comps.invisible(stp) = h.comps.visible(stp);
-        end
-        
-        % change tag etc.
-        h.comps.visible(stp) = toplot(stp);
-        set(thisax, 'tag', ['topoaxis', num2str(cmp)]);
-        
-        but = findobj('tag', ['comp', num2str(h.comps.all(...
-            h.comps.invisible(stp)))]);
-        comm = sprintf(['pop_prop( %s, 0, %d, %3.15f, ',...
-            '{ ''freqrange'', [1 50] });'], 'h.EEG', cmp, but);
-        set( but, 'callback', comm, 'string', int2str(cmp),...
-            'tag', ['comp', num2str(cmp)]);
-    end
-    
-    
-    % -----------
-    % plot components
-    for stp = 1:length(toplot)
-        cmp = h.comps.all(toplot(stp));
-        
-        % get axis handle:
-        thisax = findobj('Parent', figh, 'tag', ...
-            ['topoaxis', num2str(h.comps.visible(stp))]);
-        
-        % ------------------
-        % replot from memory
-        if sum(cachedcomps == cmp) > 0
-            replot_topo(h.EEG, cmp, thisax);
             
+            % comp number
+            cmp = h.comps.all(info.comps.visible(stp));
             
-            % CHANGE so that frequency of drawnow
-            % can be controlled
-            
-            if mod(stp, DRAWFREQ) == 0
-                drawnow
-            end
-        else
+            % get axis handle:
+            thisax = h.ax(stp);
             
             % clear axis children
             axchil = get(thisax, 'Children');
-            delete(axchil);
-            h.comps.invisible(stp) = 0;
             
-            % activate axis:
-            axes(thisax); %#ok<LAXES>
-            
-            % draw new topoplot
-            if h.opt.plotelec
-                topoplot( h.EEG.icawinv(:,cmp), h.EEG.chanlocs, 'verbose', ...
-                    'off', 'style' , 'fill', 'chaninfo', h.EEG.chaninfo,...
-                    'numcontour', 8);
-            else
-                topoplot( h.EEG.icawinv(:,cmp), h.EEG.chanlocs, 'verbose', ...
-                    'off', 'style' , 'fill','electrodes','off', ...
-                    'chaninfo', h.EEG.chaninfo, 'numcontour', 8);
+            % if has children and not invisible
+            if ~isempty(axchil) && h.comps.invisible(stp) == 0
+                set(axchil, 'Visible', 'off');
+                h.comps.invisible(stp) = h.comps.visible(stp);
             end
             
-            % --- and change other stuff ---
+            % change tag etc.
+            h.comps.visible(stp) = toplot(stp);
+            set(thisax, 'tag', ['topoaxis', num2str(cmp)]);
             
+            but = h.button(stp);
+            comm = sprintf(['pop_prop( %s, 0, %d, %3.15f, ',...
+                '{ ''freqrange'', [1 50] });'], 'h.EEG', cmp, but);
+            set( but, 'callback', comm, 'string', int2str(cmp),...
+                'tag', ['comp', num2str(cmp)]);
         end
-    end
     
-    % topo caching - CHECK and probably CHANGE
-    h.EEG = EEG_topo_cache(h.EEG, gcf);
     
-    % CONSIDER - gui data updates should happen more often...
-    % update guidata
-    h.comps.visible = toplot;
-    guidata(figh, h);
+        % -----------
+        % plot components
+        for stp = 1:length(toplot)
+            cmp = h.comps.all(toplot(stp));
+            
+            % get axis handle:
+            thisax = h.ax(stp);
+            
+            % ====
+            % finished here <<<---
+            % ====
+            
+            % ------------------
+            % replot from memory
+            if sum(cachedcomps == cmp) > 0
+                replot_topo(h.EEG, cmp, thisax);
+                
+                
+                % CHANGE so that frequency of drawnow
+                % can be controlled
+                
+                if mod(stp, DRAWFREQ) == 0
+                    drawnow
+                end
+            else
+                
+                % clear axis children
+                axchil = get(thisax, 'Children');
+                delete(axchil);
+                h.comps.invisible(stp) = 0;
+                
+                % activate axis:
+                axes(thisax); %#ok<LAXES>
+                
+                % draw new topoplot
+                if h.opt.plotelec
+                    topoplot( h.EEG.icawinv(:,cmp), h.EEG.chanlocs, 'verbose', ...
+                        'off', 'style' , 'fill', 'chaninfo', h.EEG.chaninfo,...
+                        'numcontour', 8);
+                else
+                    topoplot( h.EEG.icawinv(:,cmp), h.EEG.chanlocs, 'verbose', ...
+                        'off', 'style' , 'fill','electrodes','off', ...
+                        'chaninfo', h.EEG.chaninfo, 'numcontour', 8);
+                end
+                
+                % --- and change other stuff ---
+                
+            end
+        end
+    
+        % topo caching - CHECK and probably CHANGE
+        h.EEG = EEG_topo_cache(h.EEG, gcf);
+        
+        % CONSIDER - gui data updates should happen more often...
+        % update guidata
+        h.comps.visible = toplot;
+        guidata(figh, h);
+        end
     end
 end
