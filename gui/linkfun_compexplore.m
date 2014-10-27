@@ -39,9 +39,13 @@ isreco = winreject_isrecovered(h);
 % if not recovered - recover
 if ~isreco
 	h.EEG = recoverEEG(h.ICAw, h.r, 'local', h.recovopts{:});
-        h.rEEG = h.r;
+    h.rEEG = h.r;
     guidata(hObj, h);
 end
 
 % open compo view window
-
+newh.eegDb_gui = h.figure1;
+compnum = 1:size(h.ICAw(h.r).ICA.icaweights, 1);
+pop_selectcomps_new( h.EEG, compnum, 'eegDb', h.ICAw, ...
+					'r', h.r, 'update', 'eegDb gui', ...
+					'h', newh);
