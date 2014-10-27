@@ -35,6 +35,7 @@
 function [EEG, com] = pop_selectcomps_new( EEG, compnum, fig, varargin )
 
 % TODOs:
+% [ ] change name to simpler selcomps( ... )
 % [ ] check cached topos if present
 % [ ] write and call selcomps_update
 % [ ] selcomps_update - should it cache topos or some other fun?
@@ -342,8 +343,8 @@ end
 if info.eegDb_present 
     % components marked as removed
     if femp(eegDb(info.r).ICA, 'remove')
-        info.compremove = true(1, )
-        info.compremove = eegDb(info.r).ICA.remove;
+        info.compremove = false(1, info.eegDbcompN);
+        info.compremove(eegDb(info.r).ICA.remove) = true;
     else
         info.compremove = [];
     end
@@ -393,14 +394,17 @@ if ~fig_h_passed
     
     % we've deleted the help button and added a button for plot
     % refreshing (left right arrows)
-    h.prev = uicontrol(h.fig, 'Style', 'pushbutton', 'string', '  <  ', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
-        'Position',[68 -10  9 sizewy*0.25].*s+q, 'callback', {@topos_refresh, '<'},...
+    h.prev = uicontrol(h.fig, 'Style', 'pushbutton', 'string', '  <  ', ...
+        'Units', 'Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
+        'Position',[68 -10  9 sizewy*0.25] .* s+q, 'callback', ...
+        {@selcomps_update, 'figh', h.fig, 'update', 'topo', 'dir', '<'},...
         'Enable', onoff{2 - info.block_navig});
+
     h.next = uicontrol(h.fig, 'Style', 'pushbutton', 'string', ...
         '  >  ', 'Units','Normalized', 'backgroundcolor', ...
         GUIBUTTONCOLOR, 'Position', [78 -10  9 sizewy*0.25].*s+q,...
-        'callback', {@topos_refresh, '>'}, 'Enable', ...
-        onoff{2 - info.block_navig});
+        'callback', {@selcomps_update, 'figh', h.fig, 'update', 'topo',...
+         'dir', '>'}, 'Enable', onoff{2 - info.block_navig});
     
     % CHANGE - use function handles
     % here the command for OK button is created:
@@ -531,9 +535,12 @@ if info.eegDb_present
 
 end
 
+% ask for gui update:
+selcomps_update('figh', h.fig, 'update', 'topo');
+
+
 % CHANGE
 % work on com a little more
-
 % ---
 % COM
 % com is used to pass info to EEGlab history, we
