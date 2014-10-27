@@ -21,6 +21,6 @@ if ~(length(s) == 1)
 end
 
 flds = fields(s);
-c = cell(1,lnegth(flds)*2);
+c = cell(1,length(flds)*2);
 c(1:2:end) = flds;
 c(2:2:end) = struct2cell(s);
