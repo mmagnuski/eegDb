@@ -216,11 +216,11 @@ end
 % if more components than figure space, enable scroll buttons
 if length(compnum) > PLOTPERFIG
     info.block_navig = false;
-    info.allcomp = compnum;
+    info.comps.all = compnum;
     compnum = compnum(1:PLOTPERFIG);
 else
     info.block_navig = true;
-    info.allcomp = [];
+    info.comps.all = compnum;
     
     NumOfComp = length(compnum);
     params.column = ceil(sqrt( NumOfComp ))+1;
@@ -508,17 +508,14 @@ end
 
 % CONSIDER
 % what about these:
-h.comps.all = allcomp;
-h.perfig = PLOTPERFIG;
-h.opt.plotelec = plotelec;
-
+info.perfig = PLOTPERFIG;
 
 if ~info.block_navig
-    h.comps.visible = 1:PLOTPERFIG;
+    info.comps.visible = 1:PLOTPERFIG;
 else
-    h.comps.visible = [];
+    info.comps.visible = [];
 end
-h.comps.invisible = zeros(1, h.perfig);
+info.comps.invisible = zeros(1, info.perfig);
 
 % APPDATA
 % -------
