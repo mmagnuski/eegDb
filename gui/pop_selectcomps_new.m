@@ -10,6 +10,7 @@
 %  ---myadd---
 %  Additonal optional inputs:
 %  'ICAw' ?
+%  'rsync' ?
 %  'r'    ?
 %  'appdata' ? (handles structure etc. in case it was called from
 %               comp_explore
@@ -469,7 +470,7 @@ for i = 1:length(compnum)
         % CHANGE - tag is not necessary if we use array of handles
         % create axis for the topoplot
         h.ax(i) = axes('Units','Normalized', 'Position',[X Y sizewx sizewy].*s+q,...
-            'tag', ['topoaxis', num2str(ri)]);
+            'tag', ['topoaxis', num2str(ri)], 'Visible', 'off');
         
         
         % axis should be square

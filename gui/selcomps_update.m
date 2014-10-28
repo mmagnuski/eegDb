@@ -1,4 +1,5 @@
 function selcomps_update(varargin)
+
 % SELCOMPS_UPDATE refreshes selcomps figure
 %
 % selcomps_update(varargin)
@@ -34,7 +35,7 @@ prs.FunctionName = 'selcomps_update';
 % moreover addParamValue is not recommended...
 addParamValue(prs, 'figh',    [],         @ishandle);
 addParamValue(prs, 'update',  'all',      @ischar);
-addParamValue(prs, 'dir',     [],      @ischar);
+addParamValue(prs, 'dir',     [],         @ischar);
 
 parse(prs, varargin{:});
 params = prs.Results;
@@ -173,7 +174,9 @@ if any(strcmp(params.update, {'topo', 'all'}))
             
             % replot the cached topo
             replot_topo(h.EEG, cmp, thisax);
-            
+
+            % make sure it is visible
+            % set(thisax, 'Visible', 'on');
             
             if mod(stp, DRAWFREQ) == 0
                 drawnow
@@ -185,12 +188,18 @@ if any(strcmp(params.update, {'topo', 'all'}))
             delete(axchil);
             h.comps.invisible(stp) = 0;
             
+            % CHANGE - this may not be necessary
+            % maybe change topoplot to plot to passed handle
             % activate axis:
             axes(thisax); %#ok<LAXES>
             
-            % draw new topoplot
-            topoplot( EEG.icawinv(:,cmp), EEG.chanlocs, opts_unrolled{:});
-            
+            % draw new topoplot and make sure it is visible
+            topoplot( EEG.icawinv(:,cmp), EEG.chanlocs,...
+                opts_unrolled{:});
+
+            % make sure visible
+            % set(thisax, 'Visible', 'on');
+
             % --- and change other stuff ---
             
         end
@@ -198,11 +207,6 @@ if any(strcmp(params.update, {'topo', 'all'}))
     
     % topo caching - CHECK and probably CHANGE
     % h.EEG = EEG_topo_cache(h.EEG, gcf);
-    
-
-    % ====
-    % finished here <<<---
-    % ====
 end
 
 end
