@@ -157,7 +157,8 @@ if any(strcmp(params.update, {'topo', 'all'}))
     
     
     opts_unrolled = struct_unroll(topopts);
-    EEG = getappdata(h.fig, 'EEG');
+    icawinv  = getappdata(h.fig, 'icawinv');
+    chanlocs = getappdata(h.fig, 'chanlocs');
     
     % -----------
     % plot components
@@ -194,8 +195,8 @@ if any(strcmp(params.update, {'topo', 'all'}))
             axes(thisax); %#ok<LAXES>
             
             % draw new topoplot and make sure it is visible
-            topoplot( EEG.icawinv(:,cmp), EEG.chanlocs,...
-                opts_unrolled{:});
+            topoplot( icawinv(:,cmp), chanlocs,...
+                opts_unrolled{:}, 'tag', ['topoaxis', num2str(cmp)]);
 
             % make sure visible
             % set(thisax, 'Visible', 'on');
