@@ -72,15 +72,16 @@ if any(strcmp(params.update, {'topo', 'all'}))
     
     % appdata needed for update:
     topopts   = getappdata(h.fig, 'topopts');
-    cachetopo = getappdata(h.fig, 'cachetopo');
+    topocache = getappdata(h.fig, 'topocache');
+    prev_visible = info.comps.visible;
     
     % get number of components
     numcomps  = length(info.comps.all);
     
     % check cached topos
-    if ~isempty(cachetopo)
+    if ~isempty(topocache)
         iscached    = true;
-        cachedcomps = cachetopo.CompNum;
+        cachedcomps = [topocache.CompNum];
     else
         iscached    = false;
     end
@@ -104,9 +105,6 @@ if any(strcmp(params.update, {'topo', 'all'}))
             info.comps.visible = info.comps.visible(1) : ...
                 info.comps.visible(1) + info.perfig - 1;
             
-            % update appdata:
-            setappdata(h.fig, 'info', info);
-            
         elseif strcmp(dir, '>')
             
             if info.comps.visible(1) == numcomps
@@ -119,19 +117,15 @@ if any(strcmp(params.update, {'topo', 'all'}))
             fin = min(info.comps.visible(1) + info.perfig - 1, numcomps);
             info.comps.visible = info.comps.visible(1) : fin;
             
-            % update appdata:
-            setappdata(h.fig, 'info', info);
-            
         end
     end
     
     
     % -----------
     % clear up field
-    for stp = 1:length(info.comps.visible)
-        
-        % comp number
-        cmp = info.comps.all(info.comps.visible(stp));
+    numvis = length(info.comps.visible);
+    
+    for stp = 1:length(h.ax)
         
         % get axis handle:
         thisax = h.ax(stp);
@@ -142,19 +136,28 @@ if any(strcmp(params.update, {'topo', 'all'}))
         % if has children and not invisible
         if ~isempty(axchil) && info.comps.invisible(stp) == 0
             set(axchil, 'Visible', 'off');
-            info.comps.invisible(stp) = info.comps.visible(stp);
+            info.comps.invisible(stp) = prev_visible(stp);
         end
         
-        % change tag etc.
-        set(thisax, 'tag', ['topoaxis', num2str(cmp)]);
-        
-        but = h.button(stp);
-        comm = sprintf(['pop_prop( %s, 0, %d, %3.15f, ',...
-            '{ ''freqrange'', [1 50] });'], 'h.EEG', cmp, but);
-        set( but, 'callback', comm, 'string', int2str(cmp),...
-            'tag', ['comp', num2str(cmp)]);
+        if stp <= numvis
+            % comp number
+            cmp = info.comps.all(info.comps.visible(stp));
+            
+            % change tag etc.
+            set(thisax, 'tag', ['topoaxis', num2str(cmp)]);
+            
+            but = h.button(stp);
+            comm = sprintf(['pop_prop( %s, 0, %d, %3.15f, ',...
+                '{ ''freqrange'', [1 50] });'], 'h.EEG', cmp, but);
+            set( but, 'callback', comm, 'string', int2str(cmp),...
+                'tag', ['comp', num2str(cmp)]);
+        else
+            but = h.button(stp);
+            comm = '';
+            set( but, 'callback', comm, 'string', '',...
+                'tag', ['comp', num2str(cmp)]);
+        end
     end
-    
     
     opts_unrolled = struct_unroll(topopts);
     icawinv  = getappdata(h.fig, 'icawinv');
@@ -168,20 +171,27 @@ if any(strcmp(params.update, {'topo', 'all'}))
         % get axis handle:
         thisax = h.ax(stp);
         
+        % visible so not invisible :)
+        info.comps.invisible(stp) = 0;
+        
+        % ADD - if is invisible and can be 
+        %       used relocate if needed and
+        %       make visible
         
         % ------------------
         % replot from memory
-        if iscached && sum(cachedcomps == cmp) > 0
+        if iscached && any(cachedcomps == cmp)
             
+            % CHECK - does replotting change axis tag?
             % replot the cached topo
-            replot_topo(h.EEG, cmp, thisax);
+            replot_topo(topocache, cmp, thisax);
 
             % make sure it is visible
             % set(thisax, 'Visible', 'on');
             
-            if mod(stp, DRAWFREQ) == 0
-                drawnow
-            end
+%             if mod(stp, DRAWFREQ) == 0
+%                 drawnow
+%             end
         else
             
             % clear axis children
@@ -196,18 +206,23 @@ if any(strcmp(params.update, {'topo', 'all'}))
             
             % draw new topoplot and make sure it is visible
             topoplot( icawinv(:,cmp), chanlocs,...
-                opts_unrolled{:}, 'tag', ['topoaxis', num2str(cmp)]);
-
-            % make sure visible
-            % set(thisax, 'Visible', 'on');
-
-            % --- and change other stuff ---
+                opts_unrolled{:});
+            
+            % add tags
+            set(thisax, 'tag', ['topoaxis', num2str(cmp)]);
             
         end
     end
     
-    % topo caching - CHECK and probably CHANGE
-    % h.EEG = EEG_topo_cache(h.EEG, gcf);
+    % update info (because of visible invisible)
+    setappdata(h.fig, 'info', info);
+    
+    % cache topos
+    [topocache, ifnew] = topo_cache(h.fig, topocache);
+
+    if ifnew
+        setappdata(h.fig, 'topocache', topocache);
+    end
 end
 
 end
