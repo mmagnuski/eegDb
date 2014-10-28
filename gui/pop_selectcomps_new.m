@@ -215,10 +215,6 @@ else
     chanlocs = EEG.chanlocs(chansind);
 end
 
-setappdata(h.fig, 'chansind', chansind);
-setappdata(h.fig, 'icawinv',  icawinv);
-setappdata(h.fig, 'chanlocs', chanlocs);
-
 
 % ----------------------------------
 % Num Axes per dimension and Filling
@@ -262,7 +258,7 @@ currentfigtag = ['selcomp' num2str(rand)];
 % using icadefs is generally a bad idea - especially in terms of speed
 % for compatibility it is still used if no eegDb was passed
 if ~info.eegDb_present
-    try
+    try %#ok<*TRYNC>
         icadefs;        
     end
 end
@@ -316,7 +312,7 @@ if ~fig_h_passed
     % get current axis position to plot
     % relative to current axes
     pos = get(gca,'position');
-    hh = gca;
+    % hh = gca;
     
     % CHECK - q and s seem to be scaling factors
     % CHANGE - does not make much sense to use these
@@ -565,12 +561,13 @@ setappdata(h.fig, 'h', h);
 setappdata(h.fig, 'EEG', EEG);
 setappdata(h.fig, 'info', info);
 setappdata(h.fig, 'topopts', topopts);
-setappdata(h.fig, 'cachetopo', cachetopo);
-
+setappdata(h.fig, 'icawinv',  icawinv);
+setappdata(h.fig, 'chansind', chansind);
+setappdata(h.fig, 'chanlocs', chanlocs);
+setappdata(h.fig, 'topocache', cachetopo);
 
 if info.eegDb_present
     setappdata(h.fig, 'eegDb', eegDb);
-
 end
 
 % ask for gui update:
@@ -583,7 +580,7 @@ selcomps_update('figh', h.fig, 'update', 'topo');
 % COM
 % com is used to pass info to EEGlab history, we
 % will use it only if called from EEGlab GUI
-com = '';
+% com = '';
 
 % CHECK vararg2str - its EEGlab's function, not MATLAB's
 com = [ 'pop_selectcomps(' inputname(1) ', ' vararg2str(compnum) ');' ];
