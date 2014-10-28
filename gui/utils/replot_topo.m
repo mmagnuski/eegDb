@@ -1,4 +1,9 @@
-function replot_topo(EEG, compN, axh)
+function replot_topo(topocache, compN, axh)
+
+% NOHELPINFO
+
+% TODOs:
+% [ ] - needs some more work, cleaning up etc.
 
 % kill axes children:
 killch = get(axh, 'Children');
@@ -16,9 +21,9 @@ ommit_fields = {'Type', 'Parent', 'Annotation',...
 %     'XData', 'XDataMode', 'YData', 'YDataMode', ...
 %     'ZData', 'ZDataMode'}; %
 
-allcompN = [EEG.etc.topocache.CompNum];
+allcompN = [topocache.CompNum];
 gettopo = allcompN == compN;
-topo = EEG.etc.topocache(gettopo).Children;
+topo = topocache(gettopo).Children;
 
 start = size(topo,1);
 hnd = zeros(start,1);
@@ -66,4 +71,4 @@ for nump = start:-1:1
 end
 
 % transport color limits
-set(axh, 'CLim', EEG.etc.topocache(gettopo).Info.CLim);
+set(axh, 'CLim', topocache(gettopo).Info.CLim);
