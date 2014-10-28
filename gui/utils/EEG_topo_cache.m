@@ -4,9 +4,14 @@ function EEG = EEG_topo_cache(EEG, hnd)
 
 % HELPINFO
 
+% TODOs
+% [ ] - separate topo caching and EEG / eegDb part of the story
+% [ ] - get input about which comps are already cached
+% [ ] - return struct of cached comps (or empty when no new caches)
+
 % if no etc.topocache, create:
-if ~femp(EEG.etc, 'topocache')
-    EEG.etc.topocache = [];
+if ~femp(EEG.etc, 'topo')
+    EEG.etc.topo = [];
 end
 
 if ~exist('hnd', 'var') || isempty(hnd)
@@ -38,22 +43,20 @@ end
         'match', 'once')), tags); %#ok<ST2NM>
 %end
 
-if isempty(EEG.etc.topocache)
+if isempty(EEG.etc.topo)
     tocache = compnum;
     h2chache = ax_hnd;
 else
-    cachedNums = [EEG.etc.topocache.CompNum];
-    tocache = setdiff(compnum, cachedNums);
+    cachedNums = [EEG.etc.topo.CompNum];
+    tocacheMask = arrayfun(@(x) ~any(cachedNums==x), compnum);
+    tocache = compnum(tocacheMask);
     
     if isempty(tocache)
         return
     else
         
-        h2chache = zeros(size(tocache));
-        
-        for c = 1:length(h2chache)
-            h2chache(c) = ax_hnd(compnum == tocache(c));
-        end  
+        h2chache = ax_hnd(tocacheMask);
+        clear tocacheMask
     end
 end
 
@@ -61,19 +64,16 @@ if ~isempty(h2chache)
     % cache comps
     fig = cachefig(h2chache, 'axes');
 
-    % CHANGE: (we have compnums already)
-    % get comp numbers
-    for f = 1:length(fig)
-        fig(f).CompNum = str2num(regexp(fig(f).Tag, '[0-9]+', 'match', 'once'));
-    end
+    tocache = num2cell(tocache);
+    [fig.CompNum] = deal(tocache{:});
 
-    if isempty(EEG.etc.topocache)
-        EEG.etc.topocache = fig;
+    if isempty(EEG.etc.topo)
+        EEG.etc.topo = fig;
     else
-        EEG.etc.topocache = [EEG.etc.topocache, fig];
+        EEG.etc.topo = [EEG.etc.topo, fig];
     end
     
     % sort according to CompNum
-    [~,srt] = sort([EEG.etc.topocache.CompNum]);
-    EEG.etc.topocache = EEG.etc.topocache(srt);
+    [~,srt] = sort([EEG.etc.topo.CompNum]);
+    EEG.etc.topo = EEG.etc.topo(srt);
 end
