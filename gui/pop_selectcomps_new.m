@@ -37,12 +37,12 @@ function [EEG, com] = pop_selectcomps_new( EEG, compnum, fig, varargin )
 
 % TODOs:
 % [ ] change name to simpler selcomps( ... )
-% [ ] check cached topos if present
-% [ ] write and call selcomps_update
-% [ ] selcomps_update - should it cache topos or some other fun?
-% [ ] work on broadcast
-% [ ] check update option if passed (?)
+% [ ] check cached topos and put icawinv and chanlocs in appdata
 % [ ] cached topos should have info on plot options
+% [X] write and call selcomps_update
+% [ ] selcomps_update - should it cache topos or some other fun?
+% [ ] work on broadcast - notify and addlistener for GUIs?
+% [ ] check update option if passed (?)
 
 
 % info for hackers (or future self)
@@ -61,6 +61,10 @@ function [EEG, com] = pop_selectcomps_new( EEG, compnum, fig, varargin )
 % 'info'      - struct; see in previous section
 % 'eegDb'     - eegDb structure (database of preprocessing steps)
 % 'topopts'   - structure of options for compo plotting
+% 
+% TAGS:
+% buttons     -> 'comp10' denotes button corresponding to 10th component
+% axes        -> 
 
 % INPUT CHECKS
 % ------------
@@ -182,7 +186,7 @@ else
     info.otherfigh = false;
 end
 
-% r
+% if eegDb is present:
 if info.eegDb_present
     eegDb = params.eegDb;
 
@@ -190,6 +194,8 @@ if info.eegDb_present
 
     if isempty(params.rsync)
         info.rsync = info.r;
+    else
+        info.rsync = params.rsync;
     end
 
     % icaweights
@@ -198,8 +204,20 @@ if info.eegDb_present
     % CHANGE
     % test for problems - when EEG does not have the same num
     %                     of components as eegDb
+
+    % get chanind and put wininv and chanlocs in appdata
+    chansind = eegDb(info.r).ICA.icachansind;
+    icawinv  = eegDb(info.r).ICA.icawinv;
+    chanlocs = eegDb(info.r).datainfo.chanlocs(chansind);
+else
+    chansind = EEG.icachansind;
+    icawinv  = EEG.icawinv;
+    chanlocs = EEG.chanlocs(chansind);
 end
 
+setappdata(h.fig, 'chansind', chansind);
+setappdata(h.fig, 'icawinv',  icawinv);
+setappdata(h.fig, 'chanlocs', chanlocs);
 
 
 % ----------------------------------
@@ -374,44 +392,64 @@ end
 if ~fig_h_passed
     % CHANGE callbacks
     % CHECK  pop_icathresh(EEG)
-    % CHANGE clarify visually (shorter lines)
+    % CHANGE - some descriptions are reused - put 
+    %          these in a cell array and reuse
 
-    h.cancel = uicontrol(h.fig, 'Style', 'pushbutton', 'string', 'Cancel', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
-        'Position',[-10 -10  15 sizewy*0.25].*s+q, 'callback', 'close(gcf); fprintf(''Operation cancelled\n'')' );
-    h.setthresholds = uicontrol(h.fig, 'Style', 'pushbutton', 'string', 'Set threhsolds', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
-        'Position',[10 -10  15 sizewy*0.25].*s+q, 'callback', 'pop_icathresh(EEG); pop_selectcomps( EEG, gcbf);' );
+    common_opts = {'Style', 'pushbutton', 'Units','Normalized', ...
+        'backgroundcolor', GUIBUTTONCOLOR};
+
+    h.cancel = uicontrol(h.fig, common_opts{:},...
+        'string', 'Cancel', ...
+        'Position',[-10 -10  15 sizewy*0.25].*s+q, ...
+        'callback', 'close(gcf); fprintf(''Operation cancelled\n'')' );
+    h.setthresholds = uicontrol(h.fig, common_opts{:}, ...
+        'string', 'Set threhsolds', ...
+        'Position',[10 -10  15 sizewy*0.25].*s+q, ...
+        'callback', 'pop_icathresh(EEG); pop_selectcomps( EEG, gcbf);' );
     
+    h.seecompstats = uicontrol(h.fig, common_opts{:}, ...
+        'string', 'See comp. stats', ...
+        'Position',[30 -10  15 sizewy*0.25].*s+q, ...
+        'callback',  ' ' );
+
     % check if component statistics have been computed:
-    if isempty( EEG.stats.compenta	), set(h.setthresholds, 'enable', 'off'); end;
-    
-    h.seecompstats = uicontrol(h.fig, 'Style', 'pushbutton', 'string', 'See comp. stats', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
-        'Position',[30 -10  15 sizewy*0.25].*s+q, 'callback',  ' ' );
-    if isempty( EEG.stats.compenta	), set(h.seecompstats, 'enable', 'off'); end;
+    if isempty( EEG.stats.compenta	)
+        set(h.setthresholds, 'enable', 'off'); 
+        set(h.seecompstats, 'enable', 'off'); 
+    end
     
     % CHANGE - maybe better use a handles structure rather
     %          than later findobj...
-    h.seeproj = uicontrol(h.fig, 'Style', 'pushbutton', 'string', 'See projection', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
-        'Position',[50 -10  15 sizewy*0.25].*s+q, 'callback', ' ', 'enable', 'off'  );
+    h.seeproj = uicontrol(h.fig, common_opts{:},...
+        'string', 'See projection', ...
+        'Position',[50 -10  15 sizewy*0.25].*s+q, ...
+        'callback', ' ', 'enable', 'off'  );
     
     % we've deleted the help button and added a button for plot
     % refreshing (left right arrows)
-    h.prev = uicontrol(h.fig, 'Style', 'pushbutton', 'string', '  <  ', ...
-        'Units', 'Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
-        'Position',[68 -10  9 sizewy*0.25] .* s+q, 'callback', ...
-        {@selcomps_update, 'figh', h.fig, 'update', 'topo', 'dir', '<'},...
+    h.prev = uicontrol(h.fig, common_opts{:}, ...
+        'string', '  <  ', ...
+        'Position',[68 -10  9 sizewy*0.25] .* s+q, ...
+        'callback', {@selcomps_update, 'figh', h.fig, ...
+                     'update', 'topo', 'dir', '<'}, ...
         'Enable', onoff{2 - info.block_navig});
 
-    h.next = uicontrol(h.fig, 'Style', 'pushbutton', 'string', ...
-        '  >  ', 'Units','Normalized', 'backgroundcolor', ...
-        GUIBUTTONCOLOR, 'Position', [78 -10  9 sizewy*0.25].*s+q,...
-        'callback', {@selcomps_update, 'figh', h.fig, 'update', 'topo',...
-         'dir', '>'}, 'Enable', onoff{2 - info.block_navig});
+    h.next = uicontrol(h.fig, common_opts{:}, ...
+        'string', '  >  ', ...
+        'Position', [78 -10  9 sizewy*0.25].*s+q,...
+        'callback', {@selcomps_update, 'figh', h.fig, ...
+                     'update', 'topo', 'dir', '>'}, ...
+        'Enable', onoff{2 - info.block_navig});
     
     % CHANGE - use function handles
     % here the command for OK button is created:
-    command = '[ALLEEG EEG] = eeg_store(ALLEEG, EEG, CURRENTSET); eegh(''[ALLEEG EEG] = eeg_store(ALLEEG, EEG, CURRENTSET);''); close(gcf)';
-    hh = uicontrol(h.fig, 'Style', 'pushbutton', 'string', 'OK', 'Units','Normalized', 'backgroundcolor', GUIBUTTONCOLOR, ...
-        'Position',[90 -10  15 sizewy*0.25].*s+q, 'callback',  command);
+    command = ['[ALLEEG EEG] = eeg_store(ALLEEG, EEG, CURRENTSET); ',...
+    'eegh(''[ALLEEG EEG] = eeg_store(ALLEEG, EEG, CURRENTSET);''); ',...
+    'close(gcf)'];
+    h.ok = uicontrol(h.fig, common_opts{:}, ...
+        'string', 'OK', ...
+        'Position',[90 -10  15 sizewy*0.25].*s+q, ...
+        'callback',  command);
 end
 
 
@@ -467,8 +505,7 @@ for i = 1:length(compnum)
             return;
         end
         
-        % CHANGE - tag is not necessary if we use array of handles
-        % create axis for the topoplot
+        % CHANGE - currently tags are used to 
         h.ax(i) = axes('Units','Normalized', 'Position',[X Y sizewx sizewy].*s+q,...
             'tag', ['topoaxis', num2str(ri)], 'Visible', 'off');
         
@@ -518,7 +555,7 @@ info.perfig = PLOTPERFIG;
 if ~info.block_navig
     info.comps.visible = 1:PLOTPERFIG;
 else
-    info.comps.visible = [];
+    info.comps.visible = info.comps.all;
 end
 info.comps.invisible = zeros(1, info.perfig);
 
