@@ -590,7 +590,7 @@ end
 
 % what kind of selections?
 rej = ICAw_getrej(handles.ICAw, handles.r, 'nonempt');
-seltypes = rej.name;
+seltypes = (rej.name)';
 
 
 % ===============================
