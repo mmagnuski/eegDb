@@ -25,7 +25,8 @@ rejt = ICAw_scanmarks(ICAw);
 
 newlen = length(newtypes.name);
 rejNames = rejt.name;
-isnew = cellfun(@(x) ~any(strcmp(x, rejNames)));
+isnew = cellfun(@(x) ~any(strcmp(x, rejNames)),...
+    newtypes.name);
 
 
 newt = find(isnew);
@@ -34,14 +35,11 @@ clear isnew
 if ~isempty(newt)
     % there are some new types
     
-    
-    
     % apply to all ICAw records
     for r = 1:length(ICAw)
         for n = 1:length(newt)
-            ICAw(r).userrem.(fnm) = [];
-            ICAw(r).marks(end + 1).name.(fnm) = newtypes.name{newt(n)};
-            ICAw(r).marks(end + 1).color.(fnm) = newtypes.color{newt(n)};
+            ICAw(r).marks(end + 1).name = newtypes.name{newt(n)};
+            ICAw(r).marks(end).color = newtypes.color(newt(n),:);
             % additional?
         end
         

@@ -2193,7 +2193,7 @@ end
 % [ ] check if color is present
 
 g.labels = [marknames; markname];
-g.labcol = [g.labcol; c];
+g.labcol = [g.labcol, c];
 
 % set ui dropdown string
 set(g.choose_rejcol, 'String', g.labels);
