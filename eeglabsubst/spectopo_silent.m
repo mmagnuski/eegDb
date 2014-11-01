@@ -317,7 +317,7 @@ else
         % fprintf('Computing spectra')
         [eegspecdB freqs specstd] = spectcomp( data, frames, srate, epoch_subset, g);
         if ~isempty(g.mapnorm) % normalize by component map RMS power (if data contain 1 component
-            disp('Scaling spectrum by component RMS of scalp map power');
+            % disp('Scaling spectrum by component RMS of scalp map power');
             eegspecdB       = sqrt(mean(g.mapnorm.^4)) * eegspecdB;
             % the idea is to take the RMS of the component activity (compact) projected at each channel
             % spec = sqrt( power(g.mapnorm(1)*compact).^2 + power(g.mapnorm(2)*compact).^2 + ...)
@@ -813,7 +813,7 @@ end;
 % Turn on axcopy (disabled to allow to click on curves)
 %%%%%%%%%%%%%%%%
 if strcmpi(g.plot, 'on')
-    disp('Click on each trace for channel/component index');
+    % disp('Click on each trace for channel/component index');
     axcopy(gcf, 'if ~isempty(get(gca, ''''userdata'''')), eval(get(gca, ''''userdata'''')); end;');
     % will not erase the commands for the curves
 end;
