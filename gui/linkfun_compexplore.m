@@ -38,8 +38,14 @@ isreco = winreject_isrecovered(h);
 % CHANGE - this should be a separate func:
 % if not recovered - recover
 if ~isreco
+	% draw now to close fuzzy gui
+	drawnow;
+
+	% recover
 	h.EEG = recoverEEG(h.ICAw, h.r, 'local', h.recovopts{:});
     h.rEEG = h.r;
+
+    % update winrej handles
     guidata(hObj, h);
 end
 

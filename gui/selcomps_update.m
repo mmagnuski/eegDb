@@ -9,10 +9,6 @@ function selcomps_update(varargin)
 %
 % see also: selcomps,
 
-% TODOs:
-% [ ] invisible is not yet used - will it be useful?
-% [ ] fix plotting components when those
-%     to plot are less than the number of axes
 
 % parase arguments
 % ----------------
@@ -41,7 +37,9 @@ parse(prs, varargin{:});
 params = prs.Results;
 clear prs
 
-% figure
+% setup
+% -----
+% get figure
 if ~isempty(params.figh)
     figh = params.figh;
     
@@ -64,7 +62,7 @@ else
     dir = [];
 end
 
-
+% get basic appdata
 h = getappdata(figh, 'h');
 info = getappdata(figh, 'info');
 
@@ -159,6 +157,7 @@ if any(strcmp(params.update, {'topo', 'all'}))
         end
     end
     
+    % get things for plotting 
     opts_unrolled = struct_unroll(topopts);
     icawinv  = getappdata(h.fig, 'icawinv');
     chanlocs = getappdata(h.fig, 'chanlocs');
@@ -182,16 +181,13 @@ if any(strcmp(params.update, {'topo', 'all'}))
         % replot from memory
         if iscached && any(cachedcomps == cmp)
             
-            % CHECK - does replotting change axis tag?
+            % CHECK - is axis tag changed?
             % replot the cached topo
             replot_topo(topocache, cmp, thisax);
-
-            % make sure it is visible
-            % set(thisax, 'Visible', 'on');
             
-%             if mod(stp, DRAWFREQ) == 0
-%                 drawnow
-%             end
+            if mod(stp, info.drawfreq) == 0
+                drawnow
+            end
         else
             
             % clear axis children
@@ -204,14 +200,17 @@ if any(strcmp(params.update, {'topo', 'all'}))
             % activate axis:
             axes(thisax); %#ok<LAXES>
             
-            % draw new topoplot and make sure it is visible
-            topoplot( icawinv(:,cmp), chanlocs,...
-                opts_unrolled{:});
+            % draw new topoplot
+            topoplot2( icawinv(:,cmp), chanlocs,...
+                opts_unrolled{:}, 'backcolor', info.FIGBACKCOLOR);
             
             % add tags
             set(thisax, 'tag', ['topoaxis', num2str(cmp)]);
             
         end
+
+        % change button callback
+        set(h.button(stp), 'callback', @(src, ev) linkfun_comp_prop(h.fig, src, cmp) )
     end
     
     % update info (because of visible invisible)

@@ -37,12 +37,8 @@ function [EEG, com] = pop_selectcomps_new( EEG, compnum, fig, varargin )
 
 % TODOs:
 % [ ] change name to simpler selcomps( ... )
-% [ ] check cached topos and put icawinv and chanlocs in appdata
 % [ ] cached topos should have info on plot options
-% [X] write and call selcomps_update
-% [ ] selcomps_update - should it cache topos or some other fun?
 % [ ] work on broadcast - notify and addlistener for GUIs?
-% [ ] check update option if passed (?)
 
 
 % info for hackers (or future self)
@@ -106,7 +102,8 @@ end
 COLREJ           = '[1 0.6 0.6]';
 COLACC           = '[0.75 1 0.75]';
 BACKCOLOR        = [0.8 0.8 0.8];
-GUIBUTTONCOLOR   = [0.8 0.8 0.8];
+FIGBACKCOLOR     = [0.93, 0.93, 0.93];
+GUIBUTTONCOLOR   = [0.85 0.85 0.85];
 
 NOTPLOTCHANS = 65;
 PLOTPERFIG   = 25;
@@ -243,6 +240,9 @@ else
     params.rows = ceil(NumOfComp/params.column);
 end
 
+% CHANGE - this is in info, should later be in opts or sth similar
+info.FIGBACKCOLOR = FIGBACKCOLOR;
+
 
 % ADD or CHANGE:
 % check what figures with selcomp tag exist
@@ -276,7 +276,7 @@ if ~fig_h_passed
     % create figure
     h.fig = figure('name', [ 'Reject components by map - ',...
         'pop_selectcomps_new() (dataset: ', EEG.setname ')'], 'tag', ...
-        currentfigtag, 'numbertitle', 'off', 'color', BACKCOLOR);
+        currentfigtag, 'numbertitle', 'off', 'color', FIGBACKCOLOR);
     
     % delete the classic menu bar:
     set(h.fig, 'MenuBar', 'none');
@@ -347,14 +347,11 @@ if ~info.ifcached
     end
 end
 
-% CHECK?
-% check cachetopo first
-% should contain all components
-
 
 % get rejected comps
 % ------------------
-
+% ADD / CHANGE - so that it works when some comps have been
+%                rejected...
 if info.eegDb_present 
     % components marked as removed
     if femp(eegDb(info.r).ICA, 'remove')
@@ -515,13 +512,6 @@ for i = 1:length(compnum)
         button_pos = [X, Y+sizewy, sizewx, sizewy*0.25] .* s+q;
         h.button(i) = uicontrol(h.fig, 'Style', 'pushbutton', 'Units','Normalized',...
             'Position', button_pos, 'tag', ['comp' num2str(ri)]);
-        
-        % CHANGE command to a function handle that takes relevant
-        % data from appdata and decides how to plot the component
-        % CHECK how pop_prop behves too
-        command = sprintf(['pop_prop( %s, 0, %d, %3.15f, ',...
-            '{ ''freqrange'', [1 50] });'], inputname(1), ri, button);
-        set( button, 'callback', command );
     end
     
     % CHANGE this so that other sources can be used:
@@ -543,9 +533,8 @@ end
 
 
 
-
-% CONSIDER
-% what about these:
+% CONSIDER - move to info part of the code?
+% update info
 info.perfig = PLOTPERFIG;
 
 if ~info.block_navig
@@ -554,6 +543,13 @@ else
     info.comps.visible = info.comps.all;
 end
 info.comps.invisible = zeros(1, info.perfig);
+info.drawfreq = DRAWFREQ;
+
+% colors to info
+info.colors.comp_accept = eval(COLACC);
+info.colors.comp_reject = eval(COLREJ);
+info.colors.comp_maybe  = [1, 0.65, 0];
+
 
 % APPDATA
 % -------
