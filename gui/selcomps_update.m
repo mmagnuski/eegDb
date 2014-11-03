@@ -2,7 +2,13 @@ function selcomps_update(varargin)
 
 % SELCOMPS_UPDATE refreshes selcomps figure
 %
-% selcomps_update(varargin)
+% selcomps_update(s, varargin)
+%
+% input:
+% s      - update scheduler object
+% 
+% optional input:
+% FIXHELPINFO
 %
 % examples:
 % FIXHELPINFO
@@ -31,7 +37,6 @@ prs.FunctionName = 'selcomps_update';
 % moreover addParamValue is not recommended...
 addParamValue(prs, 'figh',    [],         @ishandle);
 addParamValue(prs, 'update',  'all',      @ischar);
-addParamValue(prs, 'dir',     [],         @ischar);
 
 parse(prs, varargin{:});
 params = prs.Results;
@@ -51,30 +56,22 @@ else
     % look for selcomps figure?
 end
 
-% dir
-if ~isempty(params.dir)
-    dir = params.dir;
-    % CHANGE - maybe we should add to update
-    %          not change it, or change/add
-    %          only if not 'all'...
-    params.update = 'topo';
-else
-    dir = [];
-end
 
 % get basic appdata
-h = getappdata(figh, 'h');
+% -----------------
+h    = getappdata(figh, 'h');
 info = getappdata(figh, 'info');
+s    = getappdata(figh, 'scheduler');
 
 if any(strcmp(params.update, {'topo', 'all'}))
-    
+
+    % CHECK / CHANGE - prev_visible are no longer previous
+    %                  (appdata?)
     % appdata needed for update:
     topopts   = getappdata(h.fig, 'topopts');
     topocache = getappdata(h.fig, 'topocache');
     prev_visible = info.comps.visible;
     
-    % get number of components
-    numcomps  = length(info.comps.all);
     
     % check cached topos
     if ~isempty(topocache)
@@ -85,46 +82,18 @@ if any(strcmp(params.update, {'topo', 'all'}))
     end
     
     
-    % check dir if present
-    if ~isempty(dir)
-        if strcmp(dir, '<')
-            
-            if info.comps.visible(1) == 1
-                return
-            end
-            
-            info.comps.visible(1) = info.comps.visible(1) - info.perfig;
-            
-            if info.comps.visible(1) < 1
-                info.comps.visible(1) = 1;
-                % remapping = true;
-            end
-            
-            info.comps.visible = info.comps.visible(1) : ...
-                info.comps.visible(1) + info.perfig - 1;
-            
-        elseif strcmp(dir, '>')
-            
-            if info.comps.visible(1) == numcomps
-                % CHANGE - maybe not return but do not update components
-                return
-            end
-            
-            info.comps.visible(1) = info.comps.visible(end) + 1;
-            
-            fin = min(info.comps.visible(1) + info.perfig - 1, numcomps);
-            info.comps.visible = info.comps.visible(1) : fin;
-            
-        end
-    end
-    
-    
     % -----------
     % clear up field
     numvis = length(info.comps.visible);
     
     for stp = 1:length(h.ax)
         
+        % check if this update is still valid
+        if s.waiting()
+            setappdata(figh, 'info', info);
+            return
+        end
+
         % get axis handle:
         thisax = h.ax(stp);
         
@@ -134,27 +103,35 @@ if any(strcmp(params.update, {'topo', 'all'}))
         % if has children and not invisible
         if ~isempty(axchil) && info.comps.invisible(stp) == 0
             set(axchil, 'Visible', 'off');
-            info.comps.invisible(stp) = prev_visible(stp);
+            info.comps.invisible(stp) = prev_visible(stp); % this may not work right
         end
         
         if stp <= numvis
             % comp number
             cmp = info.comps.all(info.comps.visible(stp));
             
-            % change tag etc.
-            set(thisax, 'tag', ['topoaxis', num2str(cmp)]);
-            
             but = h.button(stp);
-            comm = sprintf(['pop_prop( %s, 0, %d, %3.15f, ',...
-                '{ ''freqrange'', [1 50] });'], 'h.EEG', cmp, but);
-            set( but, 'callback', comm, 'string', int2str(cmp),...
-                'tag', ['comp', num2str(cmp)]);
+            comm = '';
+            set( but, 'string', int2str(cmp), ...
+                'tag', ['comp', num2str(cmp)], ...
+                'callback', comm);
         else
+            % CHANGE - the tag is not correct, 
+            %          but may not be needed
+            % CHANGE - calculate cmp correctly
+            %          (from invisible - this re-
+            %           quires some changes in 'pre')
+            % CHANGE - invisible may not be accurate 
+            % CONDIDER if main task is switched
+            %          what should I do?
             but = h.button(stp);
             comm = '';
             set( but, 'callback', comm, 'string', '',...
                 'tag', ['comp', num2str(cmp)]);
         end
+
+        % change tag etc.
+        set(thisax, 'tag', ['cleared', num2str(cmp)]);
     end
     
     % get things for plotting 
@@ -165,7 +142,15 @@ if any(strcmp(params.update, {'topo', 'all'}))
     % -----------
     % plot components
     for stp = 1:length(info.comps.visible)
+
+        % check if this update is still valid
+        if s.waiting()
+            setappdata(figh, 'info', info);
+            return
+        end
+
         cmp = info.comps.all(info.comps.visible(stp));
+
         
         % get axis handle:
         thisax = h.ax(stp);
@@ -184,6 +169,10 @@ if any(strcmp(params.update, {'topo', 'all'}))
             % CHECK - is axis tag changed?
             % replot the cached topo
             replot_topo(topocache, cmp, thisax);
+
+            % if axis tag not changed:
+            % add tags
+            set(thisax, 'tag', ['topoaxis', num2str(cmp)]);
             
             if mod(stp, info.drawfreq) == 0
                 drawnow
@@ -216,12 +205,14 @@ if any(strcmp(params.update, {'topo', 'all'}))
     % update info (because of visible invisible)
     setappdata(h.fig, 'info', info);
     
-    % cache topos
-    [topocache, ifnew] = topo_cache(h.fig, topocache);
+    % CACHING
+    % topos are cached in 'post' fun from scheduler
+end
 
-    if ifnew
-        setappdata(h.fig, 'topocache', topocache);
-    end
+% CHANGE - should be earlier because of the scheduler
+% updating buttons
+if any(strcmp(params.update, {'buttons'}))
+
 end
 
 end

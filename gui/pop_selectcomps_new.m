@@ -352,10 +352,17 @@ end
 % ------------------
 % ADD / CHANGE - so that it works when some comps have been
 %                rejected...
+% CHANGE       - currently only eegDb-level 
 if info.eegDb_present 
+
+    % compstate
+    info.comp.state = zeros(1, info.eegDbcompN);
+    info.comp.stateNames = {'', 'reject', 'select', 'maybe'};
+    info.comp.colorcycle = [GUIBUTTONCOLOR; eval(COLREJ); ...
+                            eval(COLACC); [1, 0.65, 0]];
+
     % components marked as removed
     if femp(eegDb(info.r).ICA, 'remove')
-        info.compremove = false(1, info.eegDbcompN);
         info.compremove(eegDb(info.r).ICA.remove) = true;
     else
         info.compremove = [];
@@ -423,15 +430,13 @@ if ~fig_h_passed
     h.prev = uicontrol(h.fig, common_opts{:}, ...
         'string', '  <  ', ...
         'Position',[68 -10  9 sizewy*0.25] .* s+q, ...
-        'callback', {@selcomps_update, 'figh', h.fig, ...
-                     'update', 'topo', 'dir', '<'}, ...
+        'callback', @(src, ev) linkfun_selcomps_dir_update(h.fig, '<'), ...
         'Enable', onoff{2 - info.block_navig});
 
     h.next = uicontrol(h.fig, common_opts{:}, ...
         'string', '  >  ', ...
         'Position', [78 -10  9 sizewy*0.25].*s+q,...
-        'callback', {@selcomps_update, 'figh', h.fig, ...
-                     'update', 'topo', 'dir', '>'}, ...
+        'callback', @(src, ev) linkfun_selcomps_dir_update(h.fig, '>'), ...
         'Enable', onoff{2 - info.block_navig});
     
     % CHANGE - use function handles
@@ -514,19 +519,6 @@ for i = 1:length(compnum)
             'Position', button_pos, 'tag', ['comp' num2str(ri)]);
     end
     
-    % CHANGE this so that other sources can be used:
-    % CHANGE fastif to indexing through color cell matrix
-    %
-    % set button color
-    set( button, 'backgroundcolor', eval(fastif(EEG.reject.gcompreject(ri),...
-        COLREJ,COLACC)), 'string', int2str(ri));
-    
-    % CONSIDER whether changing this might
-    % help with speed:
-    % draw each of the component without
-    % waiting for buffer to fill
-    drawnow;
-    
     % go to the next component
     count = count +1;
 end
@@ -546,21 +538,30 @@ info.comps.invisible = zeros(1, info.perfig);
 info.drawfreq = DRAWFREQ;
 
 % colors to info
-info.colors.comp_accept = eval(COLACC);
-info.colors.comp_reject = eval(COLREJ);
-info.colors.comp_maybe  = [1, 0.65, 0];
+if ~info.eegDb_present
+    info.colors.colorcycle(2) = [];
+end
 
+
+% initialize scheduler
+% --------------------
+% scheduler is used to resolved conflicts
+% when clicking direction buttons when plotting
+% has not been finished
+s = Scheduler();
 
 % APPDATA
 % -------
 setappdata(h.fig, 'h', h);
 setappdata(h.fig, 'EEG', EEG);
 setappdata(h.fig, 'info', info);
+setappdata(h.fig, 'scheduler', s);
 setappdata(h.fig, 'topopts', topopts);
 setappdata(h.fig, 'icawinv',  icawinv);
 setappdata(h.fig, 'chansind', chansind);
 setappdata(h.fig, 'chanlocs', chanlocs);
 setappdata(h.fig, 'topocache', cachetopo);
+setappdata(h.fig, 'scrollkey', rand(2,2));
 
 if info.eegDb_present
     setappdata(h.fig, 'eegDb', eegDb);
@@ -571,9 +572,8 @@ selcomps_update('figh', h.fig, 'update', 'topo');
 
 
 % CHANGE
-% work on com a little more
-% ---
 % COM
+% ---
 % com is used to pass info to EEGlab history, we
 % will use it only if called from EEGlab GUI
 % com = '';
