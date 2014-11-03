@@ -561,7 +561,6 @@ setappdata(h.fig, 'icawinv',  icawinv);
 setappdata(h.fig, 'chansind', chansind);
 setappdata(h.fig, 'chanlocs', chanlocs);
 setappdata(h.fig, 'topocache', cachetopo);
-setappdata(h.fig, 'scrollkey', rand(2,2));
 
 if info.eegDb_present
     setappdata(h.fig, 'eegDb', eegDb);
