@@ -93,6 +93,15 @@ classdef sync_compsel < handle
             set_sub_button(obj, cmp, curr_stat);
             
         end
+
+        function update_main_button(obj, cmp)
+            
+            % get info
+            [~, curr_stat] = get_info_and_status(obj, cmp);
+            % change status
+            set_main_button(obj, cmp, curr_stat);
+            
+        end
         
         function clear_h(obj, h)
             

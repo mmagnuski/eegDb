@@ -59,9 +59,10 @@ end
 
 % get basic appdata
 % -----------------
-h    = getappdata(figh, 'h');
-info = getappdata(figh, 'info');
-s    = getappdata(figh, 'scheduler');
+h      = getappdata(figh, 'h');
+info   = getappdata(figh, 'info');
+s      = getappdata(figh, 'scheduler');
+snc    = getappdata(figh, 'syncer');
 
 if any(strcmp(params.update, {'topo', 'all'}))
 
@@ -114,7 +115,8 @@ if any(strcmp(params.update, {'topo', 'all'}))
             comm = '';
             set( but, 'string', int2str(cmp), ...
                 'tag', ['comp', num2str(cmp)], ...
-                'callback', comm);
+                'callback', comm, ...
+                'backgroundcolor', [1, 1, 1]);
         else
             % CHANGE - the tag is not correct, 
             %          but may not be needed
@@ -127,7 +129,8 @@ if any(strcmp(params.update, {'topo', 'all'}))
             but = h.button(stp);
             comm = '';
             set( but, 'callback', comm, 'string', '',...
-                'tag', ['comp', num2str(cmp)]);
+                'tag', ['nocomp', num2str(stp)], ...
+                'backgroundcolor', [1, 1, 1]);
         end
 
         % change tag etc.
@@ -199,7 +202,10 @@ if any(strcmp(params.update, {'topo', 'all'}))
         end
 
         % change button callback
-        set(h.button(stp), 'callback', @(src, ev) linkfun_comp_prop(h.fig, src, cmp) )
+        set(h.button(stp), 'callback', @(src, ev) linkfun_comp_prop(h.fig, src, cmp))
+
+        % change button color
+        update_main_button(snc, cmp);
     end
     
     % update info (because of visible invisible)
