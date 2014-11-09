@@ -25,6 +25,8 @@ update_sub_button(snc, cmp);
 
 % add callback to sync from this button:
 set(h.status, 'Callback', @(src, ev) snc.chng_comp_status(cmp) );
+% add deletion callback:
+set(h.fig, 'DeleteFcn', @(src, ev) snc.clear_h(h.fig) );
 
 
 % CHANGE - use spec_opt in the future

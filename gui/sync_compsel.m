@@ -1,12 +1,12 @@
 classdef sync_compsel < handle
-
-% sync_compsel allows to sync
-% compsel subguis (pop_prop windows)
-% with the main compsel window
-%
-% does not handle litening to guis (yet)
-% relies on being called from relevant callbacks
-
+    
+    % sync_compsel allows to sync
+    % compsel subguis (pop_prop windows)
+    % with the main compsel window
+    %
+    % does not handle litening to guis (yet)
+    % relies on being called from relevant callbacks
+    
     properties
         figh
         subh
@@ -29,34 +29,37 @@ classdef sync_compsel < handle
             % add subgui to syncing
             % assumes the subgui is pop_prop
             if isempty(obj.subh)
-                obj.subh.h = h;
-                obj.subh.cmp = cmp;
-            elseif ~any([obj.subh.h] == h)
-                obj.subh(end + 1).h = h;
-                obj.subh(end + 1).cmp = cmp;
+                obj.subh(1).h = h;
+                obj.subh(1).cmp = cmp;
+            else
+                check_handles(obj);
+                if ~any([obj.subh.h] == h)
+                    obj.subh(end + 1).h = h;
+                    obj.subh(end).cmp = cmp;
+                end
             end
         end
         
         
         function chng_comp_status(obj, cmp)
-    
+            
             % get info
             [info, curr_stat, indcmp] = get_info_and_status(obj, cmp);
-
+            
             % generate new state
             newstat = mod(curr_stat + 1, ...
                 size(info.comps.colorcycle, 1));
             info.comps.state(indcmp) = newstat;
             setappdata(obj.figh, 'info', info);
-
+            
             % change main gui
             % if given component is visible
             set_main_button(obj, cmp, newstat);
-
-            set_sub_button(obj, cmp, newstat);
-
-        end
             
+            set_sub_button(obj, cmp, newstat);
+            
+        end
+        
         function set_main_button(obj, cmp, newstat)
             
             % get info
@@ -65,10 +68,10 @@ classdef sync_compsel < handle
             
             if ~isempty(nbut)
                 h = getappdata(obj.figh, 'h');
-                set_button_status(obj, h.button(nbut), newstat);
+                set_button_status(obj, h.button(nbut), newstat, false);
             end
         end
-            
+        
         function set_sub_button(obj, cmp, newstat)
             
             % check if subguis and change
@@ -78,7 +81,7 @@ classdef sync_compsel < handle
                 cmph = obj.subh(ifcmp).h;
                 setappdata(cmph, 'status', newstat);
                 h = getappdata(cmph, 'h');
-                set_button_status(obj, h.status, newstat);
+                set_button_status(obj, h.status, newstat, true);
             end
         end
         
@@ -89,7 +92,13 @@ classdef sync_compsel < handle
             % change status
             set_sub_button(obj, cmp, curr_stat);
             
-        end        
+        end
+        
+        function clear_h(obj, h)
+            
+            % remove handle
+            obj.subh(obj.subh.h == h) = [];
+        end
     end
     
     methods (Access = private)
@@ -103,13 +112,16 @@ classdef sync_compsel < handle
             curr_stat = info.comps.state(indcmp);
         end
         
-        function set_button_status(obj, but, stt)
-        
+        function set_button_status(obj, but, stt, ifstr)
+            
             set(but, 'backgroundcolor', ...
-                obj.colorcycle(stt+1,:),...
-                'string', obj.stateNames{stt+1});
+                obj.colorcycle(stt+1,:))
+            
+            if ifstr
+                set(but, 'string', obj.stateNames{stt+1});
+            end
             
         end
-           
+        
     end
 end
