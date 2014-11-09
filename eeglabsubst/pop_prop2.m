@@ -241,6 +241,9 @@ h.status = uicontrol(gcf, op{:}, ...
             'Position', [40 -10 15 6].*s+q, ...
             'tag', 'rejstatus');
 
+% init status to 0
+setappdata(h.fig, 'status', 0);
+
 % HELP button
 % -------------
 
@@ -249,6 +252,7 @@ h.help  = uicontrol(gcf, op{:}, 'string', 'HELP', ...
                     'Position', [65 -10 15 6].*s+q, ...
                     'callback', 'disp(''Please, help!'');');
 
+% you don't need ok when using with eegDb
 h.ok  = uicontrol(gcf, op{:}, 'string', 'OK', ...
                   'Position', [90 -10 15 6].*s+q, ...
                   'callback', 'disp(''OK!'')');
@@ -297,9 +301,9 @@ end
 % set up guidata
 % --------------
 setappdata(h.fig, 'h', h);
+setappdata(h.fig, 'comp', comp);
 
 set(h.fig, 'color', FIGBACKCOLOR);
-h  = h.fig;
 
 
 function out = nan_mean(in)

@@ -50,6 +50,11 @@ function [EEG, com] = pop_selectcomps_new( EEG, compnum, fig, varargin )
 %     .topopts (?)
 %     .r                  
 %     .ver
+%     .comps
+%           .all   - all selected components
+%           .visible
+%           .invisible
+%           .state
 %
 % in 'appdata':
 % 'h'         - structure of handles
@@ -268,7 +273,7 @@ end
 % -----------------
 
 % h - strucutre of handles
-% the rest is in appdata
+% evetything is in relevant appdata fields
 
 if ~fig_h_passed
     
@@ -315,8 +320,8 @@ if ~fig_h_passed
     % hh = gca;
     
     % CHECK - q and s seem to be scaling factors
-    % CHANGE - does not make much sense to use these
-    %          scaling and moving factors
+    % CHANGE - does it make sense to use these
+    %          scaling and moving factors?
     q = [pos(1) pos(2) 0 0];
     s = [pos(3) pos(4) pos(3) pos(4)]./100;
     axis off;
@@ -352,29 +357,37 @@ end
 % ------------------
 % ADD / CHANGE - so that it works when some comps have been
 %                rejected...
-% CHANGE       - currently only eegDb-level 
+% CHANGE       - currently only eegDb-level
+% CONSIDER     - may be better when state is only for those comps
+%                present in comps.all 
 if info.eegDb_present 
 
     % compstate
-    info.comp.state = zeros(1, info.eegDbcompN);
-    info.comp.stateNames = {'', 'reject', 'select', 'maybe'};
-    info.comp.colorcycle = [GUIBUTTONCOLOR; eval(COLREJ); ...
+    info.comps.state = zeros(1, info.eegDbcompN);
+    info.comps.stateNames = {'', 'reject', 'select', 'maybe'};
+    info.comps.colorcycle = [GUIBUTTONCOLOR; eval(COLREJ); ...
                             eval(COLACC); [1, 0.65, 0]];
 
     % components marked as removed
     if femp(eegDb(info.r).ICA, 'remove')
-        info.compremove(eegDb(info.r).ICA.remove) = true;
-    else
-        info.compremove = [];
+        info.comps.state(eegDb(info.r).ICA.remove) = 1;
+    end
+
+    % components marked as selected
+    if femp(eegDb(info.r).ICA, 'select')
+        info.comps.state(eegDb(info.r).ICA.select) = 2;
     end
 
     % components marked as 'maybe'
     if femp(eegDb(info.r).ICA, 'ifremove')
-        info.compifremove = eegDb(info.r).ICA.ifremove;
-    else
-        info.compifremove = [];
+        info.comps.state(eegDb(info.r).ICA.ifremove) = 3;
     end
+
+    % select only those present in comps.all
+    info.comps.state = info.comps.state(info.comps.all);
+
 else
+    % CHANGE!
     % get info from EEG
     if femp(EEG.reject, 'gcompreject')
         info.compremove =  EEG.reject.gcompreject;
@@ -543,31 +556,51 @@ if ~info.eegDb_present
 end
 
 
-% initialize scheduler
-% --------------------
-% scheduler is used to resolved conflicts
-% when clicking direction buttons when plotting
-% has not been finished
-s = Scheduler();
-
 % APPDATA
 % -------
 setappdata(h.fig, 'h', h);
 setappdata(h.fig, 'EEG', EEG);
 setappdata(h.fig, 'info', info);
-setappdata(h.fig, 'scheduler', s);
 setappdata(h.fig, 'topopts', topopts);
 setappdata(h.fig, 'icawinv',  icawinv);
 setappdata(h.fig, 'chansind', chansind);
 setappdata(h.fig, 'chanlocs', chanlocs);
 setappdata(h.fig, 'topocache', cachetopo);
 
+
+% initialize scheduler
+% --------------------
+% scheduler is used to resolved conflicts
+% when clicking direction buttons while plotting
+% has not been finished
+s = Scheduler();
+
+% initialize syncer
+% -----------------
+% very simple object helpful in syncing
+% guis
+snc = sync_compsel(h.fig);
+
+
+% finish appdata
+% --------------
+setappdata(h.fig, 'syncer', snc);
+setappdata(h.fig, 'scheduler', s);
+
 if info.eegDb_present
     setappdata(h.fig, 'eegDb', eegDb);
 end
 
-% ask for gui update:
-selcomps_update('figh', h.fig, 'update', 'topo');
+
+% ask Scheduler for gui update:
+% -----------------------------
+add(s, 'run', {@selcomps_update, 'figh', h.fig, 'update', 'topo'});
+add(s, 'post', {@selcomps_topocache, h.fig});
+
+% close task and ask to run:
+close(s);
+run(s);
+
 
 
 % CHANGE
