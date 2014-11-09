@@ -53,5 +53,4 @@ end
 newh.eegDb_gui = h.figure1;
 compnum = 1:size(h.ICAw(h.r).ICA.icaweights, 1);
 pop_selectcomps_new( h.EEG, compnum, 'eegDb', h.ICAw, ...
-					'r', h.r, 'update', 'eegDb gui', ...
-					'h', newh, 'perfig', 10);
+					'r', h.r, 'h', newh, 'perfig', 10);
