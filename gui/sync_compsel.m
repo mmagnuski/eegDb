@@ -23,6 +23,7 @@ classdef sync_compsel < handle
             info = getappdata(h, 'info');
             obj.colorcycle = info.comps.colorcycle;
             obj.stateNames = info.comps.stateNames;
+            addlistener(h, 'ObjectBeingDestroyed', @(o, e) obj.close_children());
         end
         
         function add(obj, h, cmp)
@@ -107,6 +108,16 @@ classdef sync_compsel < handle
             
             % remove handle
             obj.subh(obj.subh.h == h) = [];
+        end
+
+
+        function close_children(obj)
+
+            for i = 1:length(obj.subh)
+                if ishandle(obj.subh(i).h)
+                    close(obj.subh(i).h);
+                end
+            end
         end
     end
     
