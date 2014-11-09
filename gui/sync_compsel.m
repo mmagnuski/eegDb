@@ -32,12 +32,9 @@ classdef sync_compsel < handle
             if isempty(obj.subh)
                 obj.subh(1).h = h;
                 obj.subh(1).cmp = cmp;
-            else
-                check_handles(obj);
-                if ~any([obj.subh.h] == h)
+            elseif ~any([obj.subh.h] == h)
                     obj.subh(end + 1).h = h;
                     obj.subh(end).cmp = cmp;
-                end
             end
         end
         
@@ -78,7 +75,7 @@ classdef sync_compsel < handle
             % check if subguis and change
             ifcmp = [obj.subh.cmp] == cmp;
             
-            if ifcmp
+            if any(ifcmp)
                 cmph = obj.subh(ifcmp).h;
                 setappdata(cmph, 'status', newstat);
                 h = getappdata(cmph, 'h');
@@ -107,16 +104,22 @@ classdef sync_compsel < handle
         function clear_h(obj, h)
             
             % remove handle
-            obj.subh(obj.subh.h == h) = [];
+            obj.subh([obj.subh.h] == h) = [];
         end
 
 
         function close_children(obj)
-
-            for i = 1:length(obj.subh)
+            
+            len = length(obj.subh);
+            tocls = false(1, len);
+            for i = 1:len
                 if ishandle(obj.subh(i).h)
-                    close(obj.subh(i).h);
+                    tocls(i) = true;
                 end
+            end
+            
+            if any(tocls)
+                close(obj.subh(tocls).h);
             end
         end
     end
