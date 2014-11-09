@@ -47,10 +47,22 @@
 
 function h = pop_prop2(EEG, comp, hfig, spec_opt)
 
+% TODOs
+% [ ] varargin for hfig, specopts etc.
+% [ ] CONSIDER turinging to an object
+
 if nargin < 1
 	help pop_prop;
 	return;   
 end
+
+if length(comp) > 1
+  real_comp = comp(2);
+  comp = comp(1);
+else
+  real_comp = comp;
+end
+
 if nargin < 5
 	spec_opt = {};
 end
@@ -97,9 +109,9 @@ set(h.topo, 'xlim', [-0.5, 0.5]);
 
 % just replot from cache
 topocache = getappdata(hfig, 'topocache');
-replot_topo(topocache, comp, h.topo);
+replot_topo(topocache, real_comp, h.topo);
 
-basename = ['IC', int2str(comp)];
+basename = ['IC', int2str(real_comp)];
 
 % title
 title(basename, 'fontsize', 14); 
@@ -301,7 +313,7 @@ end
 % set up guidata
 % --------------
 setappdata(h.fig, 'h', h);
-setappdata(h.fig, 'comp', comp);
+setappdata(h.fig, 'comp', real_comp);
 
 set(h.fig, 'color', FIGBACKCOLOR);
 

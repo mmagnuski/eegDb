@@ -106,7 +106,7 @@ end
 % reject and accept colors,
 COLREJ           = '[1 0.6 0.6]';
 COLACC           = '[0.75 1 0.75]';
-BACKCOLOR        = [0.8 0.8 0.8];
+% BACKCOLOR        = [0.8 0.8 0.8];
 FIGBACKCOLOR     = [0.93, 0.93, 0.93];
 GUIBUTTONCOLOR   = [0.85 0.85 0.85];
 
@@ -202,6 +202,9 @@ if info.eegDb_present
 
     % icaweights
     info.eegDbcompN = size(eegDb(info.r).ICA.icaweights, 1);
+
+    % check mapping between EEG and eegDb comps:
+    info.mapping = eegDb_get_ica_ind(EEG, eegDb(info.r));
 
     % CHANGE
     % test for problems - when EEG does not have the same num
@@ -516,9 +519,10 @@ for i = 1:length(compnum)
             return;
         end
         
-        % CHANGE - currently tags are used to 
+        % create axes
+        % CONSIDER - move axes out of the loop?
         h.ax(i) = axes('Units','Normalized', 'Position',[X Y sizewx sizewy].*s+q,...
-            'tag', ['topoaxis', num2str(ri)], 'Visible', 'off');
+            'tag', ['topoaxis', num2str(ri)], 'Visible', 'off'); %#ok<LAXES>
         
         
         % axis should be square

@@ -11,11 +11,27 @@ function linkfun_comp_prop(hfig, src, cmp)
 %     then add button functions etc and then call some
 %     update function
 
+
+info = getappdata(hfig, 'info');
+
+% if eegDb - check mapping
+if info.eegDb_present
+	eegcmp = find(info.mapping == cmp);
+
+	% do not open if no mapping
+	if isempty(eegcmp)
+		return
+	end
+else
+	eegcmp = cmp;
+end
+
 % pop prop needs EEG:
 EEG = getappdata(hfig, 'EEG');
 snc = getappdata(hfig, 'syncer');
 
-h = pop_prop2(EEG, cmp, hfig);
+% generate figure:
+h = pop_prop2(EEG, [eegcmp, cmp], hfig);
 
 % add subgui
 add(snc, h.fig, cmp);
