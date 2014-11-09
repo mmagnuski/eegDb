@@ -196,7 +196,7 @@ function [handle,Zi,grid,Xi,Yi] = topoplot(Values,loc_file,varargin)
 %
 %%%%%%%%%%%%%%%%%%%%%%%% Set defaults %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-icadefs                 % read defaults MAXTOPOPLOTCHANS and DEFAULT_ELOC and BACKCOLOR
+% icadefs                 % read defaults MAXTOPOPLOTCHANS and DEFAULT_ELOC and BACKCOLOR
 if ~exist('BACKCOLOR')  % if icadefs.m does not define BACKCOLOR
     BACKCOLOR = [.93 .96 1];  % EEGLAB standard
 end
@@ -353,6 +353,9 @@ if nargs > 2
         end
         Param = lower(Param);
         switch Param
+            
+            case 'backcolor'
+                BACKCOLOR = Value;
             case 'conv'
                 CONVHULL = lower(Value);
                 if ~strcmp(CONVHULL,'on') & ~strcmp(CONVHULL,'off')
@@ -1603,11 +1606,6 @@ end;
 %
 %%%%%%%%%%%%% Set EEGLAB background color to match head border %%%%%%%%%%%%%%%%%%%%%%%%
 %
-try,
-    icadefs;
-    set(hparent, 'color', BACKCOLOR);
-catch,
-end;
 
 hold(haxis,'off')
 axis(haxis,'off')
