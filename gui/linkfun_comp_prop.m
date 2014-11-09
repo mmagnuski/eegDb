@@ -43,9 +43,24 @@ update_sub_button(snc, cmp);
 set(h.status, 'Callback', @(src, ev) snc.chng_comp_status(cmp) );
 % add deletion callback:
 set(h.fig, 'DeleteFcn', @(src, ev) snc.clear_h(h.fig) );
-
+% add callback for ok to close figure
+set(h.ok, 'Callback', @(src, ev) close(h.fig) );
+% add callback for enter and escape
+set(h.fig, 'WindowKeyPressFcn', @prop_buttonpress);
 
 % CHANGE - use spec_opt in the future
 % pop_prop2(EEG, cmp, hfig, spec_opt);
 
 
+% button press function
+function prop_buttonpress(hObj, evnt)
+
+% get pressed character
+ch = evnt.Character;
+
+if ~isempty(ch)
+    
+    if any(strcmp(evnt.Key, {'escape', 'return'}))
+    	close(hObj);
+    end
+end
