@@ -10,6 +10,7 @@ function EEG = eegDb_fastepoch(EEG, ev, lim)
 
 % TODOs:
 % [ ] check if fillig EEG.epoch could be faster...
+% [ ] repect boundary events
 
 all_tps = {EEG.event.type};
 ms_per_sample = (1000/EEG.srate);
@@ -119,4 +120,6 @@ EEG.data = epdt;
 % correct field values
 EEG.trials = size(EEG.data, 3);
 EEG.pnts   = epoch_length;
-EEG.times  = reallim * ms_per_sample;
+EEG.times  = (reallim(1):reallim(end)) * ms_per_sample;
+EEG.xmin   = EEG.times(1)/1000;
+EEG.xmax   = EEG.times(end)/1000;
