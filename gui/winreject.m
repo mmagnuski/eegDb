@@ -207,9 +207,8 @@ else
     
     % first - recover data if not present
     if isempty(handles.EEG) || handles.r ~= handles.rEEG || ...
-            ~ICAw_vers_compare(handles.EEG.etc.recov, handles.ICAw(handles.r)...
-            .versions.(currf)) || ~isequal(handles.recovopts, ...
-            handles.last_recovered_opts)
+            ~ICAw_recov_compare(handles.EEG.etc.recov, handles.ICAw(handles.r)) ...
+            || ~isequal(handles.recovopts, handles.last_recovered_opts)
         
         % save recovery options:
         handles.last_recovered_opts = handles.recovopts;
@@ -222,11 +221,6 @@ else
         handles.EEG = recoverEEG(handles.ICAw, handles.r, 'local', handles.recovopts{:});
         handles.rEEG = handles.r;
         rEEG = handles.rEEG;
-        
-        % add version info to EEG
-        % CHECK the behavior of ICAw_ver2EEG (again):
-        handles.EEG = ICAw_ver2EEG(handles.ICAw,...
-            handles.r, handles.EEG);
         
         % update prerej field
         f = ICAw_checkfields(handles.EEG, 1,...

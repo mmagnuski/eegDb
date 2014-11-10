@@ -577,6 +577,9 @@ if ~(prerej || isempty(ICAw(r).reject.all))
     end
 end
 
+% stamp the EEG with recovery version info
+EEG = ICAw_stampEEG(ICAw, r, EEG);
+
 % just to be on the safe side: checkset
 EEG = eeg_checkset(EEG);
 
