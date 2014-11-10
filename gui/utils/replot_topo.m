@@ -72,3 +72,12 @@ end
 
 % transport color limits
 set(axh, 'CLim', topocache(gettopo).Info.CLim);
+
+% set XLim and YLim if not equal
+fld = {'XLim', 'YLim'};
+for f = 1:length(fld)
+    val = topocache(gettopo).Info.(fld{f});
+    if ~isequal(val, get(axh, fld{f}))
+        set(axh, fld{f}, val);
+    end
+end
