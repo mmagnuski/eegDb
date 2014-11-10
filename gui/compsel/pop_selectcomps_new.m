@@ -334,14 +334,14 @@ end
 % check cached topos
 % ------------------
 info.ifcached = false;
-cachetopo     = [];
+topocache     = [];
 
 % if eegDb passed - there
 if info.eegDb_present
     tst = femp(eegDb(info.r).ICA, 'topo');
     if tst
         info.ifcached = true;
-        cachetopo     = eegDb(info.r).ICA.topo;
+        topocache     = eegDb(info.r).ICA.topo;
         clear tst
     end
 end
@@ -350,7 +350,7 @@ if ~info.ifcached
     tst = femp(EEG.etc, 'topo');
     if tst
         info.ifcached = true;
-        cachetopo     = EEG.etc.topo;
+        topocache     = EEG.etc.topo;
         clear tst
     end
 end
@@ -567,7 +567,7 @@ setappdata(h.fig, 'topopts', topopts);
 setappdata(h.fig, 'icawinv',  icawinv);
 setappdata(h.fig, 'chansind', chansind);
 setappdata(h.fig, 'chanlocs', chanlocs);
-setappdata(h.fig, 'topocache', cachetopo);
+setappdata(h.fig, 'topocache', topocache);
 
 
 % initialize scheduler
