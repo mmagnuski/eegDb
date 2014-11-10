@@ -26,6 +26,10 @@ if info.eegDb_present && info.otherfigh && femp(info, 'eegDb_gui')
 		eegDb(r).ICA.(st2fld{s}) = info.comps.all(info.comps.state == s);
 	end
 
+	% pass cached topo
+	% ----------------
+	eegDb(r).ICA.topo = getappdata(figh, 'topocache');
+
 	% update h
 	h.ICAw = eegDb;
 	guidata(info.eegDb_gui, h);
