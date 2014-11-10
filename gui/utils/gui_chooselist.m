@@ -77,6 +77,7 @@ h.clearbutt = uicontrol('Style', 'pushbutton', 'Position',...
 ifcancel = false;
 h.ifcancel = ifcancel;
 set(h.fig, 'CloseRequestFcn', @close_Callback);
+set(h.fig, 'WindowKeyPressFcn', @resolve_buttonpress);
 
 %% the rest
 guidata(h.fig, h);
@@ -101,44 +102,69 @@ end
 
 function ok_Callback(hObject, eventdata, h) %#ok<*INUSL>
 
-uiresume(h);
+    uiresume(h);
 
 function canc_Callback(hObject, eventdata, h)
-h = guidata(h.fig);
-listlen = length(get(h.list, 'String'));
+    h = guidata(h.fig);
+    listlen = length(get(h.list, 'String'));
 
-if listlen > 1
-    set(h.list, 'Value', []);
-end
+    if listlen > 1
+        set(h.list, 'Value', []);
+    end
 
-h.ifcancel = true;
-guidata(h.fig, h);
+    h.ifcancel = true;
+    guidata(h.fig, h);
 
-uiresume(h.fig);
-% delete(h.fig);
+    uiresume(h.fig);
+    % delete(h.fig);
 
 function close_Callback(hObject, eventdata) %#ok<INUSD>
 
-if isequal(get(hObject, 'waitstatus'), 'waiting')
-    
+    if isequal(get(hObject, 'waitstatus'), 'waiting')
+        
+        % inform gui that its cancel and resume
+        cancel_fun(hObject);
+    else
+        % The GUI is no longer waiting, just close it
+        delete(hObject);
+    end
+
+function cancel_fun(hObject)
+
+    % get guidata
     h = guidata(hObject);
+    % set ifcancel to true
     h.ifcancel = true;
-    
+
     % Update handles structure
     guidata(hObject, h);
-    
+
     % Resume GUI
     uiresume(hObject);
-else
-    % The GUI is no longer waiting, just close it
-    delete(hObject);
-end
+
 
 function clear_Callback(hObject, eventdata, h)
-h = guidata(h);
+    h = guidata(h);
 
-listlen = length(get(h.list, 'String'));
+    listlen = length(get(h.list, 'String'));
 
-if listlen > 1
-    set(h.list, 'Value', []);
-end
+    if listlen > 1
+        set(h.list, 'Value', []);
+    end
+
+% button press function
+function resolve_buttonpress(hObj, evnt)
+
+    % get pressed character
+    ch = evnt.Character;
+
+    if ~isempty(ch)
+        
+        if strcmp(evnt.Key, 'return')
+            uiresume(hObj);
+        elseif strcmp(evnt.Key, 'escape')
+            cancel_fun(hObj);
+        elseif strcmp(evnt.Key, 'backspace')
+            clear_Callback(hObj, [], hObj);
+        end
+    end
