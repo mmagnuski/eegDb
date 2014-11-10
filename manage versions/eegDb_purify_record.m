@@ -16,7 +16,7 @@ rec = rmfield(rec, ignore);
 if femp(rec, 'ICA')
     
     inICA  = {'icasphere', 'icawinv', 'desc', ...
-		      'ifremove', 'select'};
+		      'ifremove', 'select', 'topo'};
     flds = fields(rec.ICA);
     present = cellfun(@(x) any(strcmp(x, flds)),...
     inICA);  
