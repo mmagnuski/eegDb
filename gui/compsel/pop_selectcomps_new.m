@@ -112,7 +112,7 @@ GUIBUTTONCOLOR   = [0.85 0.85 0.85];
 
 NOTPLOTCHANS = 65;
 PLOTPERFIG   = 25;
-DRAWFREQ     = 4;
+DRAWFREQ     = 1;
 onoff = {'off', 'on'};
 
 
