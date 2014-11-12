@@ -20,7 +20,7 @@ if info.eegDb_present && info.otherfigh && femp(info, 'eegDb_gui')
 	eegDb = h.ICAw;
 
 	% components marked as removed
-	st2fld = {'remove', 'select', 'ifremove'};
+	st2fld = {'reject', 'select', 'maybe'};
 
 	for s = 1:length(st2fld)
 		eegDb(r).ICA.(st2fld{s}) = info.comps.all(info.comps.state == s);

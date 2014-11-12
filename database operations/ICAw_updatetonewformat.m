@@ -26,8 +26,27 @@ function ICAw = ICAw_updatetonewformat(ICAw)
 flds = {'icaweights', 'icasphere', 'icawinv', 'icachansind',...
     'ica_remove', 'ica_ifremove', 'ICA_desc'};
 asflds = {'icaweights', 'icasphere', 'icawinv', 'icachansind',...
-    'remove', 'ifremove', 'desc'};
+    'reject', 'maybe', 'desc'};
 ICAw = ICAw_pushfields(ICAw, flds, 'ICA', asflds);
+
+% check ICA.remove and ICA.ifremove
+fldfrm = {'remove', 'ifremove'};
+fldto  = {'reject', 'maybe'};
+for r = 1:length(ICAw)
+    rm = false(1, 2);
+    for f = 1:2
+        if isfield(ICAw(r).ICA, fldfrm{f})
+            rm(f) = true;
+            ICAw(r).ICA.(fldto{f}) = ICAw(r).ICA.(fldfrm{f});
+        end
+    end
+
+    if any(rm)
+        ICAw(r).ICA = rmfield(ICAw(r).ICA, fldfrm(rm));
+    end
+end
+
+
 
 
 % MOVE BADCHAN and BADCHANLAB

@@ -372,8 +372,8 @@ if info.eegDb_present
                             eval(COLACC); [1, 0.65, 0]];
 
     % components marked as removed
-    if femp(eegDb(info.r).ICA, 'remove')
-        info.comps.state(eegDb(info.r).ICA.remove) = 1;
+    if femp(eegDb(info.r).ICA, 'reject')
+        info.comps.state(eegDb(info.r).ICA.reject) = 1;
     end
 
     % components marked as selected
@@ -382,8 +382,8 @@ if info.eegDb_present
     end
 
     % components marked as 'maybe'
-    if femp(eegDb(info.r).ICA, 'ifremove')
-        info.comps.state(eegDb(info.r).ICA.ifremove) = 3;
+    if femp(eegDb(info.r).ICA, 'maybe')
+        info.comps.state(eegDb(info.r).ICA.maybe) = 3;
     end
 
     % select only those present in comps.all

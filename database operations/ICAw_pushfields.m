@@ -16,16 +16,16 @@ if any(hasFields)
     flds = flds(hasFields);
     asflds = asflds(hasFields);
 
-for r = 1:length(ICAw)
-    for f = 1:length(flds)
-        % if moved field not empty and field moved to not present or empty
-        if ~isempty(ICAw(r).(flds{f})) && ~femp(ICAw(r).(fieldto), (asflds{f}))
-            ICAw(r).(fieldto).(asflds{f}) = ICAw(r).(flds{f});
+    for r = 1:length(ICAw)
+        for f = 1:length(flds)
+            % if moved field not empty and field moved to not present or empty
+            if ~isempty(ICAw(r).(flds{f})) && ~femp(ICAw(r).(fieldto), (asflds{f}))
+                ICAw(r).(fieldto).(asflds{f}) = ICAw(r).(flds{f});
+            end
         end
     end
-end
-
-% remove fields
-ICAw = rmfield(ICAw, flds(hasFields));
+    
+    % remove fields
+    ICAw = rmfield(ICAw, flds(hasFields));
 
 end

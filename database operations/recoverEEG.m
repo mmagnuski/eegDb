@@ -371,8 +371,8 @@ end
 
 
 %% adding ICA info
-if ~noICA && isfield(ICAw(r).ICA, 'icaweights') && ...
-        ~isempty(ICAw(r).ICA.icaweights)
+if ~noICA && femp(ICAw(r), 'ICA') && ...
+    femp(ICAw(r).ICA, 'icaweights')
     
     % =====================
     % add weights and stuff:
@@ -389,11 +389,11 @@ if ~noICA && isfield(ICAw(r).ICA, 'icaweights') && ...
     
     % =======================
     % removing bad components:
-    if ~isempty(ICAw(r).ICA.remove) && ...
+    if femp(ICAw(r).ICA, 'reject') && ...
             ~ICAnorem
         % removing comps:
         EEG = pop_subcomp( EEG, ICAw(r)...
-            .ICA.remove, 0);
+            .ICA.reject, 0);
     end
     
     % save temp icainfo
