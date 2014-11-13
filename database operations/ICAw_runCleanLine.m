@@ -1,4 +1,4 @@
-function ICAw = ICAw_runCleanLine(ICAw)
+function ICAw = ICAw_runCleanLine(ICAw, addopt)
 
 % ICAw = ICAw_runCleanLine(ICAw)
 %
@@ -13,28 +13,49 @@ function ICAw = ICAw_runCleanLine(ICAw)
 
 % TODOs:
 % [ ] check for datainfo.cleanline - if true do not run (?)
+% [ ] change file operations - use fullfile
 
-cleanr = zeros(length(ICAw), 1);
+cleanr = false(length(ICAw), 1);
 
 % scan ICAw for files to clean:
 for r = 1:length(ICAw)
-    if isfield(ICAw(r), 'cleanline') && ...
-            ~isempty(ICAw(r).cleanline) && ...
-            islogical(ICAw(r).cleanline)
-        cleanr(r) = ICAw(r).cleanline;
-    else
-        cleanr(r) = false;
+    if femp(ICAw(r), 'cleanline') && ...
+            (~islogical(ICAw(r).cleanline) || ...
+            ICAw(r).cleanline)
+        cleanr(r) = true;
     end
 end
 
 cleanr = find(cleanr);
 
 % check EEGlab path
-eeglab;
+eeg_path('add');
 
-% loop through files with cleanline
+% default options:
+opt.pad = 2;
+opt.verb = 0;
+opt.p = 0.01;
+opt.tau = 100;
+opt.winsize = 4;
+opt.winstep = 0.5;
+opt.bandwidth = 2;
+opt.plotfigures = 0;
+opt.computepower = 0;
+opt.normSpectrum = 0;
+opt.scanforlines = 1;
+opt.chanlist = 'all';
+opt.linefreqs = [50 100];
+opt.sigtype = 'Channels';
+
+% change default options if user passes these
+if exist('addopt', 'var')
+    opt = ICAw_copybase(opt, addopt);
+end
+
+% loop through files for cleanline
 for C = 1:length(cleanr)
     r = cleanr(C);
+    fprintf('cleaning record %d\n', r);
     
     % load set
     pth = ICAw_path(ICAw(r).filepath);
@@ -46,8 +67,7 @@ for C = 1:length(cleanr)
     ICAw(r).datainfo.origfilepath = ICAw(r).filepath;
     
     %% check filtering and filter if necess
-    if isfield(ICAw(r), 'filter') && ...
-            ~isempty(ICAw(r).filter)
+    if femp(ICAw(r), 'filter')
         
         % setting up filter:
         filt = [ICAw(r).filter(1),...
@@ -62,23 +82,31 @@ for C = 1:length(cleanr)
         ICAw(r).filter = [];
     end
     
+    %% check options
+    thisopt = opt;
+    if isstruct(ICAw(r).cleanline)
+        thisopt = ICAw_copybase(thisopt, ICAw(r).cleanline);
+    end
+    
     % create allchan
-    allchan = 1:size(EEG.data,1);
+    % CHANGE - do not include bad channels?
+    if strcmp(thisopt.chanlist, 'all')
+        thisopt.chanlist = 1:size(EEG.data,1);
+    end
     
-    %% run cleanline (default)
-    EEG = pop_cleanline(EEG, 'bandwidth', 2, 'chanlist', allchan,...
-        'computepower', 1, 'linefreqs', [50 100] , 'normSpectrum', 0,...
-        'p', 0.01, 'pad', 2, 'plotfigures', 0, 'scanforlines', 1,...
-        'sigtype', 'Channels', 'tau', 100, 'verb', 1, 'winsize',...
-        4, 'winstep', 0.5);
+    thisopt = struct_unroll(thisopt);
     
+    %% run cleanline
+    EEG = pop_cleanline(EEG, thisopt{:});
+    
+    %% update database record
     % update ICAw.datainfo
     ICAw(r).datainfo.cleanline = true;
     
     % cleanline done, no need to perform again
     ICAw(r).cleanline = false;
     
-    %% save file and update ICAw filepath
+    %% update ICAw filepath
     fsep = filesep;
     
     % update filepath
@@ -88,14 +116,14 @@ for C = 1:length(cleanr)
         ICAw(r).filepath = [pth, fsep, 'CleanLine', fsep];
     end
     
+    %% save file
     % check if folder exists
     if ~isdir(ICAw(r).filepath)
         mkdir(ICAw(r).filepath);
     end
     
-    
     % save set to disc
-    pop_saveset(EEG, 'filename', ICAw(r).filename, 'filepath', ICAw(r).filepath);
-    
-    
+    pop_saveset(EEG, 'filename', ICAw(r).filename, ...
+        'filepath', ICAw(r).filepath);
+     
 end
