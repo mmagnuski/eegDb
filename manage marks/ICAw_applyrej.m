@@ -70,7 +70,7 @@ for r = rs
             % CHANGE later - if we are sure they are column vectors
             %                then find(sum(reshape(cellfun), 1))
             for m = 1:length(mrkvals)
-                ind = unique([ind, find(mrkvals{m})]);
+                ind = unique([ind; find(mrkvals{m})]);
             end
             
             % fill 'removed' field :)
