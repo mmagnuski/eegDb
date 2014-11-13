@@ -1,9 +1,18 @@
-function info = ICAw_get(ICAw, rs)
+function info = ICAw_scan(ICAw, rs)
 
-% NOHELPINFO
+% FIXHELPINFO
 % Helper function for getting info about properties 
 % of database entries - it is mostly used for checking 
 % safty of chnges that user wants to introduce
+% 
+% output rows:
+% 1 - filter
+% 2 - cleanline
+% 3 - epoching
+% 4 - prerej
+% 5 - postrej
+% 6 - ica
+% 7 - removed components
 
 % returns vector of information where:
 %  0 - given option is unspecified
@@ -92,4 +101,3 @@ function vec = fillvec(vec, f, d, n)
     vec(n, f & ~d) = 1;
     vec(n,~f &  d) = 2;
     vec(n, f &  d) = -1;
-
