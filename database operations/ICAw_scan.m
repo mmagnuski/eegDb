@@ -1,4 +1,4 @@
-function info = ICAw_get(ICAw, rs)
+function info = ICAw_scan(ICAw, rs)
 
 % NOHELPINFO
 % Helper function for getting info about properties 
