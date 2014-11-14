@@ -201,8 +201,9 @@ if any(strcmp(params.update, {'topo', 'all'}))
             
         end
 
-        % change button callback
-        set(h.button(stp), 'callback', @(src, ev) linkfun_comp_prop(h.fig, src, cmp))
+        % change button callbacks
+        set(h.button(stp), 'callback', @(src, ev) linkfun_comp_prop(h.fig, src, cmp));
+        set(h.button(stp), 'ButtonDownFcn', @(src, ev) compsel_rightclick_changestatus(src, cmp, snc) );
 
         % change button color
         update_main_button(snc, cmp);
