@@ -72,7 +72,12 @@ classdef sync_compsel < handle
         
         function set_sub_button(obj, cmp, newstat)
             
-            % check if subguis and change
+            % check if subguis are registered
+            if isempty(obj.subh)
+                return
+            end
+
+            % look for subguis representing given component
             ifcmp = [obj.subh.cmp] == cmp;
             
             if any(ifcmp)
