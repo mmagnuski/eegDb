@@ -1113,9 +1113,9 @@ u(22) = uicontrol('Parent',figh, ...
                          'else '                                            g.selectcommand{3} 'end;' ];
        
   set(figh, 'windowbuttondownfcn',   g.commandselect{1});
-  set(figh, 'windowbuttonmotionfcn', g.commandselect{2});
+  % set(figh, 'windowbuttonmotionfcn', g.commandselect{2});
   set(figh, 'windowbuttonupfcn',     g.commandselect{3});
-  set(figh, 'WindowKeyPressFcn',     @eegplot_readkey);
+  set(figh, 'WindowKeyPressFcn',     @eegplot_readkey_new);
   set(figh, 'interruptible', 'off');
   set(figh, 'busyaction', 'cancel');
   
@@ -1204,6 +1204,7 @@ u(22) = uicontrol('Parent',figh, ...
   set(h, 'backgroundcolor', BUTTON_COLOR);
   h = findobj(gcf, 'tag', 'eegslider');
   set(h, 'backgroundcolor', BUTTON_COLOR);
+  set(figh, 'UserData', g);
   set(figh, 'visible', 'on');
   
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1215,13 +1216,8 @@ else
   switch data
   case 'drawp' % Redraw EEG and change position
 
-    % this test help to couple eegplot windows
-    if exist('p3')
-    	figh = p3;
-    	figure(p3);
-    else	
-    	figh = gcf;                          % figure handle
-	end;
+    % this test help to couple eegplot windows	
+    figh = gcf;                          % figure handle
 	
     if strcmp(get(figh,'tag'),'dialog')
       figh = get(figh,'UserData');
@@ -1239,15 +1235,64 @@ else
         g.time    = g.time - 1;
     end; 
     g.spacing = str2num(get(ESpacing,'string'));
-        
+
+    % p2 is used to move by an ammount of wins/secs/marks
+    if ~exist('p2', 'var')
+        p2 = 1;
+    end
+    if ~exist('p3', 'var')
+        p3 = 1;
+    end
+
     if p1 == 1
-      g.time = g.time-g.winlength;     % << subtract one window length
+      g.time = g.time - (g.winlength * p2);     % << subtract one window length
     elseif p1 == 2               
       g.time = g.time-fastif(g.winlength>=1, 1, g.winlength/5);             % < subtract one second
     elseif p1 == 3
       g.time = g.time+fastif(g.winlength>=1, 1, g.winlength/5);             % > add one second
     elseif p1 == 4
-      g.time = g.time+g.winlength;     % >> add one window length
+      g.time = g.time + (g.winlength * p2);     % >> add one window length
+    elseif p1 == 5
+      % look for next event of given kind
+      % g.winrej
+      
+      if isempty(g.winrej)
+          % no marks!
+          return
+      end
+      
+      epoch_len =  g.winrej(1,2) - g.winrej(1,1);
+      comp_mark = repmat(g.wincolor, size(g.winrej, 1), 1);
+      select_mark = sum(g.winrej(:, 3:5) == comp_mark, 2) == 3;
+      
+      if ~any(select_mark)
+          % no marks of current type
+          return
+      end
+      
+      marks = g.winrej(select_mark, 1) / epoch_len;
+      winedge = [g.time, g.time + g.winlength];
+      
+      if strcmp(p2, 'prev')
+          marks = marks(marks < winedge(1));
+      elseif strcmp(p2, 'next')
+          marks = marks(marks >= winedge(2));
+      end
+      
+      if isempty(marks)
+          % no further marks!
+          return
+      end
+    
+      halfwin = floor(g.winlength / 2);
+      p3 = min(p3, length(marks));
+      
+      if strcmp(p2, 'prev')
+          g.time = marks(end - (p3-1)) - halfwin;
+      elseif strcmp(p2, 'next')
+          g.time = marks(p3) - halfwin;
+      end
+      
     elseif p1 == 23
         g.time = g.time - 10; % << 10 subtract 10 windows % MZakrzewska
      elseif p1 == 24
@@ -1892,7 +1937,7 @@ else
       % ------------------------------
       if exist('p2') == 1
           set(gcbf, 'windowbuttondownfcn', [ 'zoom(gcbf,''down''); eegplot2(''zoom'', gcbf, 1);' ]);
-          set(gcbf, 'windowbuttonmotionfcn', g.commandselect{2});
+          % set(gcbf, 'windowbuttonmotionfcn', g.commandselect{2});
       end;
 
 	case 'updateslider' % if zoom
