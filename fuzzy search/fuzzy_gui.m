@@ -1,39 +1,3 @@
-% TODOs:
-% [ ] defferentiate enter vs escape when returning 
-%     and no option chosen but text typed
-% [ ] option not to use fuzzy search (no edit box)
-% [ ] option to reside somewhere in an already present figure
-% [ ] add option to restart highligh when new
-%     text is added (focus should be restarted too)
-% [ ] selection by mouse click
-% [ ] add slider info (non-interactive)
-% [ ] adjust box height
-% [ ] text centering
-% [ ] selecting good figure size and position
-% [ ] different color choosing
-% [ ] text color adjustment to background color
-% [ ] (?) allow setting text color
-% [x] fix return value with scrolling
-% [x] fix scrolling
-% [x] enter - accept
-% [x] highlight
-% [x] arrows - move highlight
-% [x] change ordering basing on match
-% [x] fix blank
-% [x] fix backspace action
-
-% !!!
-% move figure to the centre:
-% movegui(h.fig, 'center');
-
-% adding information about the 'focus'
-% that is indices of items that are visible
-% active - tells which are 'selected'
-% sortInds (check this) - what is the current order
-% focus - if more elements active than figure
-%         presentation capacity - informs about
-%         the index of first visible element
-
 function [out, typed] = fuzzy_gui(menu_items, opt)
 
 % NOHELPINFO
@@ -68,6 +32,34 @@ function [out, typed] = fuzzy_gui(menu_items, opt)
 % lowerText
 % active
 % focus
+
+% TODOs:
+% [ ] defferentiate enter vs escape when returning 
+%     and no option chosen but text typed
+% [ ] option not to use fuzzy search (no edit box)
+% [ ] option to reside somewhere in an already present figure
+% [ ] add option to restart highligh when new
+%     text is added (focus should be restarted too)
+% [ ] selection by mouse click
+% [ ] add slider info (non-interactive)
+% [ ] adjust box height
+% [ ] text centering
+% [ ] selecting good figure size and position
+% [ ] different color choosing
+% [ ] text color adjustment to background color
+% [ ] (?) allow setting text color
+
+% !!!
+% move figure to the centre:
+% movegui(h.fig, 'center');
+
+% adding information about the 'focus'
+% that is indices of items that are visible
+% active - tells which are 'selected'
+% sortInds (check this) - what is the current order
+% focus - if more elements active than figure
+%         presentation capacity - informs about
+%         the index of first visible element
 
 
 % check additional options in opt structure
