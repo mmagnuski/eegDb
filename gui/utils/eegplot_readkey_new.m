@@ -1,14 +1,10 @@
-function eegplot_readkey_new(hObj, evnt)
+function eegplot_readkey_new(hObj, evnt, hBox)
 
 % eegplot_buttonpress_new implements a new
 % buttonpress handler for eegplot
 
 % TODOs:
-% [x] implement 'nm' as next mark
-% [x] 'pm' as previous mark?
-% [x] 2m - two marks further
-% [ ] think it over: this function has enough 
-%     persistent values to be an object
+% [ ] selector mode
 
 persistent buffer
 persistent patterns
@@ -33,9 +29,16 @@ if isempty(patterns)
     patterns{3,2} = {@eegplot2, 'drawp', 5, 'next'};
     patterns{4,1} = {'num', 'p', 'm'};
     patterns{4,2} = {@eegplot2, 'drawp', 5, 'prev'};
+    patterns{5,1} = {'m'};
+    patterns{5,2} = {@linkfun_select_mark, hObj};
+    patterns{6,1} = {'a', 'm'};
+    patterns{6,2} = {@add_rejcol_callb, hObj};
 end
 if isempty(selected_patterns)
     selected_patterns = patterns;
+end
+if ~exist('hBox', 'var')
+    hBox = [];
 end
 
 % CHANGE:
@@ -65,6 +68,7 @@ if ~isempty(k)
         % add to buffer:
         buffer{end + 1} = k;
     end
+    fullstr = [fullstr, k];
 
     % check which patterns fit by length
     atlen = length(buffer);
@@ -97,23 +101,40 @@ if ~isempty(k)
         % clear up:
         numstr = [];
         buffer = {};
-        fullstr = [];
+        fullstr = '';
         % etc.
     elseif size(selected_patterns, 1) == 1 && ...
             length(selected_patterns{1,1}) == atlen
         % the pattern has been selected!
         fun = selected_patterns{1,2};
-
         if ~isempty(numstr)
             num = str2num(numstr);
             fun{end + 1} = num;
         end
 
-        feval(fun{:});
         % clear up:
         numstr = [];
         buffer = {};
-        fullstr = [];
+        fullstr = '';
         selected_patterns = [];
+        update_hBox(hBox, fullstr);
+
+        % evaluate action:
+        feval(fun{:});
+        
     end
+    update_hBox(hBox, fullstr);    
+end
+
+function update_hBox(h, str)
+if isempty(h) || ~ishandle(h)
+    return
+end
+if ~isempty(str)
+    if strcmp(get(h, 'Visible'), 'off')
+        set(h, 'Visible', 'on');
+    end
+    set(h, 'String', str);
+else
+    set(h, 'Visible', 'off');
 end
