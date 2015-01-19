@@ -1273,7 +1273,7 @@ elseif p1 == 5
       return
   end
   
-  epoch_len =  g.winrej(1,2) - g.winrej(1,1);
+  epoch_len =  g.winrej(1,2) - g.winrej(1,1) + 1;
   comp_mark = repmat(g.wincolor, size(g.winrej, 1), 1);
   select_mark = sum(g.winrej(:, 3:5) == comp_mark, 2) == 3;
   
@@ -1282,7 +1282,7 @@ elseif p1 == 5
       return
   end
   
-  marks = g.winrej(select_mark, 1) / epoch_len;
+  marks = (g.winrej(select_mark, 1)-1) / epoch_len;
   winedge = [g.time, g.time + g.winlength];
   
   if strcmp(p2, 'prev')
@@ -1298,6 +1298,8 @@ elseif p1 == 5
 
   halfwin = floor(g.winlength / 2);
   p3 = min(p3, length(marks));
+  
+  marks = sort(marks);
   
   if strcmp(p2, 'prev')
       g.time = marks(end - (p3-1)) - halfwin;
