@@ -1,5 +1,12 @@
 function guifun_maxim_eegaxis(h)
 
+% NOHELPINFO 
+
+% TODOs:
+% [ ] add option to go back to standard EEGlab view
+% [ ] if in max view - add a simple text label 
+%     informing on the type of mark currently chosen
+
 % test if max is not set
 g = get(h, 'userdata');
 if g.maxset
@@ -12,8 +19,13 @@ end
 ch = get(h, 'Children');
 ch = ch(strcmp('uicontrol', get(ch, 'type')));
 set(ch, 'visible', 'off');
+
+% invisibilize scale
 try
-	set(findobj('tag', 'eyeaxes', 'parent', h), 'visible', 'off');
+	t = findobj('tag', 'eyeaxes', 'parent', h);
+	get(t, 'visible');
+	tch = get(t, 'Children');
+	set(tch, 'Visible', 'off');
 end
 
 ax = findobj('tag', 'eegaxis', 'parent', h);
