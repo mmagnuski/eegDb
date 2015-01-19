@@ -298,7 +298,7 @@ try g.normed;            catch, g.normed = 0; end; %ozgur
 try g.envelope;          catch, g.envelope = 0; end;%ozgur
 try g.maxeventstring;    catch, g.maxeventstring = 10; end; % JavierLC
 try g.labels;            catch, g.labels = {'reject', 'maybe', '?'}; end; % MMagnuski
-
+try g.maxset;            catch, g.maxset = false; end;
 try 
    g.labcol; g.wincolor = g.labcol{1};       
 catch 
@@ -325,7 +325,7 @@ for index=1:length(gfields)
            'freqlimits', 'submean', 'children', 'limits', 'dispchans', 'wincolor', ...
            'maxeventstring', 'ploteventdur', 'butlabel', 'scale', 'events', 'data2', ...
            'plotdata2', 'mocap', 'selectcommand', 'ctrlselectcommand', 'datastd', ...
-           'normed', 'envelope', 'labels', 'labcol', 'linesmoothing'};
+           'normed', 'envelope', 'labels', 'labcol', 'linesmoothing', 'maxset'};
   otherwise, error(['eegplot2: unrecognized option: ''' gfields{index} '''' ]);
   end;
 end;
@@ -1560,6 +1560,14 @@ set(ax1, 'ylim',[g.elecoffset*g.spacing (g.elecoffset+g.dispchans+1)*g.spacing] 
 % ------------------
 if strcmpi(g.plotevent, 'on')
     
+    if g.maxset
+      txmodif = + 0.02;
+      rotmod = 0;
+    else
+      txmodif = -0.005;
+      rotmod = 90;
+    end
+
     % JavierLC ###############################
     MAXEVENTSTRING = g.maxeventstring;
     if MAXEVENTSTRING<0
@@ -1567,7 +1575,7 @@ if strcmpi(g.plotevent, 'on')
     elseif MAXEVENTSTRING>75
           MAXEVENTSTRING=75;
     end
-    AXES_POSITION = [0.0964286 0.15 0.842 0.75-(MAXEVENTSTRING-5)/100];
+    AXES_POSITION = get(ax1, 'Position');
     % JavierLC ###############################
     
     % find event to plot
@@ -1593,10 +1601,10 @@ if strcmpi(g.plotevent, 'on')
         evntxt = strrep(num2str(g.events(event2plot(index)).type),'_','-');
         if length(evntxt)>MAXEVENTSTRING, evntxt = [ evntxt(1:MAXEVENTSTRING-1) '...' ]; end; % truncate
         try, 
-            tmph2 = text([tmplat], ylims(2)-0.005, [EVENTFONT evntxt], ...
+            tmph2 = text([tmplat], ylims(2) + txmodif, [EVENTFONT evntxt], ...
                                 'color', g.eventcolors{ event2plot(index) }, ...
                                 'horizontalalignment', 'left',...
-                                'rotation',90);
+                                'rotation', rotmod);
         catch, end;
         
         % draw duration is not 0
@@ -1616,7 +1624,7 @@ if strcmpi(g.plotevent, 'on')
      end;
 else % JavierLC
     MAXEVENTSTRING = 10; % default
-    AXES_POSITION = [0.0964286 0.15 0.842 0.75-(MAXEVENTSTRING-5)/100];
+    AXES_POSITION = get(ax1, 'Position');
 end;
 
 if g.trialstag(1) ~= -1
@@ -1691,6 +1699,7 @@ else
 set(ax1, 'Position', AXES_POSITION) % JavierLC
 set(ax0, 'Position', AXES_POSITION) % JavierLC
 end;
+
 		
 % ordinates: even if all elec are plotted, some may be hidden
 set(ax1, 'ylim',[g.elecoffset*g.spacing (g.elecoffset+g.dispchans+1)*g.spacing] );

@@ -33,6 +33,9 @@ if isempty(patterns)
     patterns{5,2} = {@linkfun_select_mark, hObj};
     patterns{6,1} = {'a', 'm'};
     patterns{6,2} = {@add_rejcol_callb, hObj};
+    patterns{7,1} = {'x'};
+    patterns{7,2} = {@guifun_maxim_eegaxis, hObj};
+    
 end
 if isempty(selected_patterns)
     selected_patterns = patterns;
