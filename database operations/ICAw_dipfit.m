@@ -7,7 +7,6 @@ function ICAw = ICAw_dipfit(ICAw, varargin)
 % 
 
 % TODOs:
-% [XX] universalize a little bit
 % [ ] universalize even more (model and transform
 %     settings etc.
 
@@ -29,8 +28,8 @@ norpl = false;
 
 %% test varargin
 if ~isempty(varargin)
-    key = {'savepath', 'rv', 'rmout', 'norpl', 'r'};
-    var = {'save_path', 'rv_thrsh', 'out', 'norpl', 'rs'};
+    key = {'savepath', 'rv', 'rmout', 'norpl', 'r', 'remel'};
+    var = {'save_path', 'rv_thrsh', 'out', 'norpl', 'rs', 'remel'};
     v = 1;
     while v <= length(varargin)
         cmp = find(strcmp(varargin{v}, key));
@@ -45,24 +44,37 @@ if ~isempty(varargin)
     end
 end
 
+if ~exist('remel', 'var')
+    remel = [];
+end
+
 %% ==welcome to the code==
 
 % prepath:
 % prepath = '\\Swps-01222w\c';
 % addpath(['D:\Dropbox\Dropbox\MATLAB scripts & ',...
 %     'projects\EEGlab common (1)']);
-eegpth = which('eeglab');
+eegpth = fileparts(which('eeglab'));
+
+% check dipfit version
+bgpth = [eegpth, '\plugins\'];
+lst   = dir(bgpth);
+lst   = lst([lst.isdir]);
+where = regexpWhere({lst.name}, 'dipfit');
+dipver = lst(where).name(7:end);
+
+% add path
+addpath([eegpth, '\plugins\dipfit', dipver, '\']);
 
 % transform vector
 transf = [0.092784, -13.3654, -1.9004, 0.10575, 0.003062,...
     -1.5708, 10.0078, 10.0077, 10.1331];
-hdmf = [eegpth, '\\plugins\\dipfit2.2\\',...
-    'standard_BEM\\standard_vol.mat'];
-mrif = [eegpth, '\\plugins\\dipfit2.2\\',...
-    'standard_BEM\\standard_mri.mat'];
-chanf = [eegpth, '\\plugins\\dipfit2.2\\',...
-    'standard_BEM\\elec\\standard_1005.elc'];
-remel = {'E62', 'E63'};
+hdmf = [eegpth, '\plugins\dipfit', dipver, '\',...
+    'standard_BEM\standard_vol.mat'];
+mrif = [eegpth, '\plugins\dipfit', dipver, '\',...
+    'standard_BEM\standard_mri.mat'];
+chanf = [eegpth, '\plugins\dipfit', dipver, '\',...
+    'standard_BEM\elec\standard_1005.elc'];
 
 if ~isempty(save_path) && ~isdir(save_path)
     mkdir(save_path);
@@ -115,7 +127,7 @@ for r = rs
     clear elstep el elind
     
     % remove these channels and badchannels:
-    allchn(union(ICAw(r).badchan, remind)) = [];
+    allchn(union(ICAw(r).chan.bad, remind)) = [];
     goodchan = allchn;
     clear allchn remind
     
