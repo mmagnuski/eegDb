@@ -1273,6 +1273,7 @@ elseif p1 == 5
       return
   end
   
+  % now it seems +1 is not needed 80
   epoch_len =  g.winrej(1,2) - g.winrej(1,1) + 1;
   comp_mark = repmat(g.wincolor, size(g.winrej, 1), 1);
   select_mark = sum(g.winrej(:, 3:5) == comp_mark, 2) == 3;
