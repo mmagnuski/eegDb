@@ -17,6 +17,7 @@ classdef fastplot < handle
         data
         data_size   % pack into a struct?
         win_span    % pack into a struct?
+        win_size    % pack into a struct?
         win_lims    % pack into a struct?
         win_step    % pack into a struct?
     end
@@ -50,7 +51,8 @@ classdef fastplot < handle
                 (0:obj.data_size(2)-1)*obj.spacing, [obj.data_size(1), 1]);
             
             % window limits and step size
-            obj.win_lims = [1, 1000];
+            obj.win_size = 1000;
+            obj.win_lims = [1, obj.win_size];
             obj.win_span = obj.win_lims(1):obj.win_lims(2);
             obj.win_step = 1000;
             
@@ -94,6 +96,14 @@ classdef fastplot < handle
             if ~exist('value', 'var')
                 value = 1;
             end
+            % do not go further if move is not possible
+            if value == 0 || ...
+                    ((obj.win_lims(1) == 1) && value < 0) ...
+                    || ((obj.win_lims(2) == obj.data_size(1)) ...
+                    && value > 0)
+                return
+            end
+            
             if ~exist('mlt', 'var')
                 mlt = 1;
             end
@@ -101,7 +111,18 @@ classdef fastplot < handle
                 unit = obj.win_step;
             end
             
-            obj.win_lims = obj.win_lims + mlt * value * unit;
+            % create and test new window limits
+            wlims = obj.win_lims + mlt * value * unit;
+            if value > 0 && wlims(2) > obj.data_size(1)
+                wlims(2) = obj.data_size(1);
+                wlims(1) = max([1, wlims(2) - obj.win_length + 1]);
+            end
+            if value < 0 && wlims(1) < 1
+                wlims(1) = 1;
+                wlims(2) = min([obj.data_size(1), ...
+                    wlims(1) + obj.win_length - 1]);
+            end
+            obj.win_lims = wlims;
             obj.refresh();
         end
             
