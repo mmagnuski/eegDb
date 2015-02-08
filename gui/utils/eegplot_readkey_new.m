@@ -1,10 +1,11 @@
-function eegplot_readkey_new(hObj, evnt, hBox)
+function eegplot_readkey_new(hObj, evnt, hBox, new_pattern)
 
 % eegplot_buttonpress_new implements a new
 % buttonpress handler for eegplot
 
 % TODOs:
-% [ ] selector mode
+% [ ] change into an object?
+% [ ] selector mode (?)
 
 persistent buffer
 persistent patterns
@@ -19,6 +20,9 @@ if isempty(nums)
 end
 if isempty(buffer)
     buffer = {};
+end
+if exist('new_pattern', 'var')
+    patterns = new_pattern;
 end
 if isempty(patterns)
     patterns{1,1} = {'num', 'leftarrow'};
