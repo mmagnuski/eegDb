@@ -17,10 +17,6 @@ classdef fastplot < handle
         data
         data_size   % pack into a struct?
         win_span    % pack into a struct?
-    end
-    
-    % CHANGE, this is temporary:
-    properties (SetAccess = public, GetAccess = public)
         win_lims    % pack into a struct?
         win_step    % pack into a struct?
     end
@@ -90,6 +86,21 @@ classdef fastplot < handle
             timetaken = toc;
             fprintf('time taken: %f\n', timetaken);
         end
+        
+        
+        function move(obj, value, unit)
+            % ADD - mode of win_step?
+            if ~exist('value', 'var')
+                value = 1;
+            end
+            if ~exist('unit', 'var')
+                unit = obj.win_step;
+            end
+            
+            obj.win_lims = obj.win_lims + value * unit;
+            obj.refresh();
+        end
+            
         
         % maybe should be private? :
         function ev = events_in_range(obj, rng)
