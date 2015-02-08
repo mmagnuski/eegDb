@@ -88,16 +88,20 @@ classdef fastplot < handle
         end
         
         
-        function move(obj, value, unit)
+        function move(obj, value, mlt, unit)
+            % CHANGE - mlt is temporary
             % ADD - mode of win_step?
             if ~exist('value', 'var')
                 value = 1;
+            end
+            if ~exist('mlt', 'var')
+                mlt = 1;
             end
             if ~exist('unit', 'var')
                 unit = obj.win_step;
             end
             
-            obj.win_lims = obj.win_lims + value * unit;
+            obj.win_lims = obj.win_lims + mlt * value * unit;
             obj.refresh();
         end
             
@@ -149,6 +153,9 @@ classdef fastplot < handle
             
             % plot events
             obj.plotevents();
+            
+            % set keyboard shortcuts
+            obj.init_keypress();
         end
         
         
@@ -204,6 +211,20 @@ classdef fastplot < handle
             end
         end
         
+        
+        function init_keypress(obj)
+            % create shortcut patterns:
+            pattern{1,1} = {'num', 'leftarrow'};
+            pattern{1,2} = {@obj.move, -1};
+            pattern{2,1} = {'num', 'rightarrow'};
+            pattern{2,2} = {@obj.move, 1};
+            
+            % initialize 
+            eegplot_readkey_new([], [], [], pattern);
+            
+            % add eegplot_readkey to WindowKeyPressFcn
+            set(obj.h.fig, 'WindowKeyPressFcn', @eegplot_readkey_new);
+        end
     end
     
     
