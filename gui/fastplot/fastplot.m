@@ -118,12 +118,12 @@ classdef fastplot < handle
             wlims = obj.win_lims + mlt * value * unit;
             if value > 0 && wlims(2) > obj.data_size(1)
                 wlims(2) = obj.data_size(1);
-                wlims(1) = max([1, wlims(2) - obj.win_length + 1]);
+                wlims(1) = max([1, wlims(2) - obj.win_size + 1]);
             end
             if value < 0 && wlims(1) < 1
                 wlims(1) = 1;
                 wlims(2) = min([obj.data_size(1), ...
-                    wlims(1) + obj.win_length - 1]);
+                    wlims(1) + obj.win_size - 1]);
             end
             obj.win_lims = wlims;
             obj.refresh();
