@@ -57,9 +57,12 @@ classdef fastplot < handle
             obj.win_step = 1000;
             
             % get screen resolution:
+            unts = get(0, 'unit');
+            ifpix = strcmp(unts, 'pixel');
+            if ~ifpix; set(0, 'unit', 'pixel'); end
             obj.opt.scrsz = get(0, 'ScreenSize');
             obj.opt.scrsz = obj.opt.scrsz([3, 4]);
-            
+            if ~ifpix; set(0, 'unit', unts); end
             % launch the plot
             obj.launchplot();
         end
