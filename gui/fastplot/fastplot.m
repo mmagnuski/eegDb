@@ -172,8 +172,9 @@ classdef fastplot < handle
             obj.h.lines = plot(obj.data(obj.win_span, :));
             
             % set y limits and y lim mode (for faster replotting)
-            set(obj.h.ax, 'YLim', [-(obj.data_size(2)+1) * obj.spacing,...
-                obj.spacing], 'YLimMode', 'manual');
+            obj.h.ylim = [-(obj.data_size(2)+1) * obj.spacing,...
+                obj.spacing];
+            set(obj.h.ax, 'YLim', obj.h.ylim, 'YLimMode', 'manual');
             
             % plot events
             obj.plotevents();
@@ -223,7 +224,7 @@ classdef fastplot < handle
             if ~isempty(ev.latency)
                 numev = length(ev.latency);
                 ev.latency = ev.latency - obj.win_lims(1);
-                ylim = get(obj.h.ax, 'YLim');
+                ylim = obj.h.ylim;
                 % plot lines
                 hold on;
                 obj.h.eventlines = line( ...
