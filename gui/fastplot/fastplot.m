@@ -164,6 +164,7 @@ classdef fastplot < handle
             obj.h.fig = figure('Position', [10, 50, ss(1)-20, ss(2)-200]);
             obj.h.ax = axes('Position', [0.05, 0.05, 0.9, 0.85]);
             obj.h.eventlines = [];
+            obj.h.eventlabels = [];
             
             % plot data
             % ---------
@@ -218,6 +219,10 @@ classdef fastplot < handle
                 delete(obj.h.eventlines);
                 obj.h.eventlines = [];
             end
+            if ~isempty(obj.h.eventlabels)
+                delete(obj.h.eventlabels);
+                obj.h.eventlabels = [];
+            end
             
             ev = obj.events_in_range();
             
@@ -232,6 +237,14 @@ classdef fastplot < handle
                     repmat(ylim', [1, numev]), ...
                     'Color', [0.5, 0.2, 0.3], ...
                     'LineWidth', 3.5);
+
+                % plot event textboxes
+                for i = 1:numev
+                    obj.h.eventlabels(i) = text(ev.latency(i), obj.spacing*2, ...
+                        obj.event.alltypes(ev.type(i)), 'clipping', 'off', ...
+                        'BackgroundColor', obj.event.color(ev.type(i),:), ...
+                        'Margin', 2.5, 'VerticalAlignment', 'bottom');
+                end
                 hold off;
             end
         end
