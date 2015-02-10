@@ -259,11 +259,11 @@ classdef fastplot < handle
                 % how many elements to reuse, how many new to draw:
                 reuse = min([numev, numlns]);
                 drawnew = max([0, plot_diff]);
-                
-                if numlns > 0 
+
+                if numlns > 0
                     % set available lines and labels
 
-                    % create indexer 
+                    % create indexer
                     ind = 1:reuse;
                     % create necessary data in cell format
                     X = mat2cell(lineX(:, ind), 2, ones(reuse, 1))';
