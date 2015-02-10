@@ -225,40 +225,84 @@ classdef fastplot < handle
         
         
         function plotevents(obj)
-            % currently previous event lines are deleted
-            % not reused (this should change soon)
-            if ~isempty(obj.h.eventlines)
-                delete(obj.h.eventlines);
-                obj.h.eventlines = [];
-            end
-            if ~isempty(obj.h.eventlabels)
-                delete(obj.h.eventlabels);
-                obj.h.eventlabels = [];
-            end
+            % reuse lines and labels
+            numlns = length(obj.h.eventlines);
             
+            % get events to plot
             ev = obj.events_in_range();
-            
-            if ~isempty(ev.latency)
-                numev = length(ev.latency);
-                ev.latency = ev.latency - obj.win_lims(1);
-                ylim = obj.h.ylim;
-                % plot lines
-                hold on;
-                obj.h.eventlines = line( ...
-                    repmat(ev.latency, [2, 1]), ...
-                    repmat(ylim', [1, numev]), ...
-                    'Color', [0.5, 0.2, 0.3], ...
-                    'LineWidth', 3.5);
+            numev = length(ev.latency);
 
-                % plot event textboxes
-                for i = 1:numev
-                    obj.h.eventlabels(i) = text(ev.latency(i), obj.spacing*2, ...
-                        obj.event.alltypes(ev.type(i)), 'clipping', 'off', ...
-                        'BackgroundColor', obj.event.color(ev.type(i),:), ...
-                        'Margin', 2.5, 'VerticalAlignment', 'bottom');
-                end
-                hold off;
+            % check how many events to plot compared
+            % to those already present
+            plot_diff = numev - numlns;
+
+            % hide unnecessary lines and tags
+            if plot_diff < 0
+                inds = numlns:-1:numlns + plot_diff + 1;
+                set(obj.h.eventlines(inds), ...
+                    'Visible', 'off'); % maybe set HitTest to 'off' ?
+                set(obj.h.eventlabels(inds), ...
+                    'Visible', 'off');
             end
+
+            if numev > 0
+                % get necessary info to plot:
+                ylim = obj.h.ylim;
+                ev.latency = ev.latency - obj.win_lims(1);
+                lineX = repmat(ev.latency, [2, 1]);
+                lineY = repmat(ylim', [1, numev]);
+                labelX = ev.latency';
+                labelY = repmat(obj.spacing * 2, [numev, 1]);
+                colors = mat2cell(obj.event.color(ev.type, :), ones(numev, 1), 3);
+                strVal = obj.event.alltypes(ev.type)';
+
+                % how many elements to reuse, how many new to draw:
+                reuse = min([numev, numlns]);
+                drawnew = max([0, plot_diff]);
+                
+                if numlns > 0 
+                    % set available lines and labels
+
+                    % create indexer 
+                    ind = 1:reuse;
+                    % create necessary data in cell format
+                    X = mat2cell(lineX(:, ind), 2, ones(reuse, 1))';
+                    Y = mat2cell(lineY(:, ind), 2, ones(reuse, 1))';
+                    pos = mat2cell([labelX(ind), labelY(ind)], ones(reuse, 1), 2);
+
+                    % set lines
+                    set(obj.h.eventlines(ind), {'XData', 'YData', 'Color'}, ...
+                        [X(ind), Y(ind), colors(ind)]);
+                    % set labels
+                    set(obj.h.eventlabels(ind), {'Position', 'String', 'BackgroundColor'}, ...
+                        [pos, strVal(ind), colors(ind)]);
+                end
+
+                if drawnew > 0
+                    % draw new lines and labels
+
+                    % create indexer
+                    ind = reuse+1:(reuse + drawnew);
+
+                    hold on; % change to myHoldOn later on
+
+                    % lines
+                    obj.h.eventlines(ind) = line(lineX(:,ind), ...
+                        lineY(:,ind), 'LineWidth', 2.5);
+                    set(obj.h.eventlines(ind), {'Color'},...
+                        colors(ind));
+
+                    % labels
+                    obj.h.eventlabels(ind) = text(labelX(ind), labelY(ind), ...
+                        strVal(ind), {'BackgroundColor'}, colors(ind), ...
+                        'Margin', 2.5, 'VerticalAlignment', 'bottom', ...
+                        'clipping', 'off');
+
+                    hold off; % change to myHoldOff later
+
+                end
+            end
+
         end
         
         
