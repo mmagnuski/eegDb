@@ -21,6 +21,10 @@ classdef fastplot < handle
         win_lims    % pack into a struct?
         win_step    % pack into a struct?
     end
+
+    properties (SetAccess = public, GetAccess = public)
+        scrollmethod
+    end
     
     % TODOs:
     % [ ] - think about adding time-pointers to events so that extensively
@@ -40,6 +44,9 @@ classdef fastplot < handle
             obj.data_size = [orig_size(1), orig_size(2) * orig_size(3)];
             obj.data = reshape(EEG.data, obj.data_size)';
             obj.data_size = fliplr(obj.data_size);
+
+            % default scroll method
+            obj.scrollmethod = 'allset';
             
             % get event and epoch info
             obj.get_epoch(EEG);
@@ -74,7 +81,7 @@ classdef fastplot < handle
             obj.win_span = obj.win_lims(1):obj.win_lims(2);
             
             if ~exist('mthd', 'var')
-                mthd = 'set';
+                mthd = obj.scrollmethod;
             end
             
             tic;
@@ -82,8 +89,13 @@ classdef fastplot < handle
                 case 'replot'
                     delete(obj.h.lines);
                     obj.h.lines = plot(obj.data(obj.win_span, :));
-                case 'set'
-                    for i = 1:obj.data_size(2)
+                case 'allset'
+                    dat = mat2cell(obj.data(obj.win_span, :), ...
+                        diff(obj.win_lims) + 1, ones(1, ...
+                        obj.data_size(2)))';
+                    set(obj.h.lines, {'YData'}, dat);
+                case 'loopset'
+                    for i = 1:length(obj.h.lines)
                         set(obj.h.lines(i), 'YData', obj.data(obj.win_span, i));
                     end
             end
