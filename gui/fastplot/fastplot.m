@@ -301,10 +301,10 @@ classdef fastplot < handle
 
                     % set lines
                     set(obj.h.eventlines(ind), {'XData', 'YData', 'Color'}, ...
-                        [X(ind), Y(ind), colors(ind)]);
-                    % set labels
+                        [X(ind), Y(ind), colors(ind)], 'Visible', 'on');
+                    % set labels (this takes the longest - maybe change)
                     set(obj.h.eventlabels(ind), {'Position', 'String', 'BackgroundColor'}, ...
-                        [pos, strVal(ind), colors(ind)]);
+                        [pos, strVal(ind), colors(ind)], 'Visible', 'on');
                 end
 
                 if drawnew > 0
