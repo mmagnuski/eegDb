@@ -99,6 +99,7 @@ classdef fastplot < handle
                     end
             end
             obj.plotevents();
+            obj.plot_epochlimits();
             timetaken = toc;
             fprintf('time taken: %f\n', timetaken);
         end
@@ -161,6 +162,26 @@ classdef fastplot < handle
                 ev.time = [];
             end
         end
+
+        function ep = epochlimits_in_range(obj, rng)
+            % default - range in samples
+            % default - range from winlim
+            ep.latency = [];
+
+            if isempty(obj.epoch)
+                return
+            end
+            if ~exist('rng', 'var')
+                rng = obj.window.lims;
+            end
+            % look for event with latency within given range
+            lookfor = obj.epoch.limits >= rng(1) & ...
+                obj.epoch.limits <= rng(2);
+            if any(lookfor)
+                % return event latency and type
+                ep.latency = obj.epoch.limits(lookfor);
+            end
+        end
         
     end
     
@@ -191,6 +212,8 @@ classdef fastplot < handle
             
             % plot events
             obj.plotevents();
+            % plot epoch limits
+            obj.plot_epochlimits();
             
             % set keyboard shortcuts
             obj.init_keypress();
@@ -310,6 +333,54 @@ classdef fastplot < handle
             end
 
         end
+
+
+        function plot_epochlimits(obj)
+            % check what epoch limits are in range
+            ep = epochlimits_in_range(obj);
+            ep.latency = ep.latency - obj.window.lims(1);
+
+            if ~isempty(ep)
+                drawnlims = length(obj.h.epochlimits);
+                newlims = length(ep.latency);
+
+                plot_diff = newlims - drawnlims;
+
+                % hide unnecessary lines and tags
+                if plot_diff < 0
+                    inds = drawnlims:-1:drawnlims + plot_diff + 1;
+                    set(obj.h.epochlimits(inds), ...
+                        'Visible', 'off'); % maybe set HitTest to 'off' ?
+                end
+
+                reuse = min([newlims, drawnlims]);
+                drawnew = max([0, plot_diff]);
+
+                ylm = obj.h.ylim + [-20, 20];
+                xDat = repmat(ep.latency, [2, 1]);
+                yDat = repmat(ylm', [1, newlims]);
+
+                % change those present
+                if reuse > 0
+                    ind = 1:reuse;
+                    xDt = mat2cell(xDat(:, ind), 2, ones(reuse, 1))';
+                    yDt = mat2cell(yDat(:, ind), 2, ones(reuse, 1))';
+                    
+                    set(obj.h.epochlimits(ind), {'XData', 'YData'}, ...
+                        [xDt, yDt], 'Visible', 'on');
+                end
+
+                % draw new
+                if drawnew > 0
+                    ind = reuse+1:newlims;
+                    obj.h.epochlimits(ind) = line(xDat(:,ind), ...
+                        yDat(:, ind), 'Color', [0, 0, 0], ...
+                        'LineWidth', 3);
+                end
+            end
+
+        end
+
         
         
         function init_keypress(obj)
