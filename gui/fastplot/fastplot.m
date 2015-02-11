@@ -2,9 +2,11 @@ classdef fastplot < handle
     
     % Properties:
     % h        -  structure of handles to:
-    %     fig    - fastplot figure
-    %     ax     - axis with eeg signal
-    %     lines  - eeg signal lines
+    %     fig         - fastplot figure
+    %     ax          - axis with eeg signal
+    %     lines       - eeg signal lines
+    %     eventlines  - lines showing event timing
+    %     eventlabels - labels showing event type
     
     % currently - one epoch at time
     properties (SetAccess = private, GetAccess = public)
