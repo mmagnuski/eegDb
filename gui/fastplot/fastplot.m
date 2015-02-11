@@ -18,10 +18,7 @@ classdef fastplot < handle
         spacing  % should be in opts?
         data
         data_size   % pack into a struct?
-        win_span    % pack into a struct?
-        win_size    % pack into a struct?
-        win_lims    % pack into a struct?
-        win_step    % pack into a struct?
+        window
     end
 
     properties (SetAccess = public, GetAccess = public)
@@ -60,10 +57,10 @@ classdef fastplot < handle
                 (0:obj.data_size(2)-1)*obj.spacing, [obj.data_size(1), 1]);
             
             % window limits and step size
-            obj.win_size = 1000;
-            obj.win_lims = [1, obj.win_size];
-            obj.win_span = obj.win_lims(1):obj.win_lims(2);
-            obj.win_step = 1000;
+            obj.window.size = 1000;
+            obj.window.lims = [1, obj.window.size];
+            obj.window.span = obj.window.lims(1):obj.window.lims(2);
+            obj.window.step = 1000;
             
             % get screen resolution:
             unts = get(0, 'unit');
@@ -80,7 +77,7 @@ classdef fastplot < handle
         function refresh(obj, mthd) % should check if sth actually changed
             % during re-plotting:
             % always use set 'XData', 'YData'
-            obj.win_span = obj.win_lims(1):obj.win_lims(2);
+            obj.window.span = obj.window.lims(1):obj.window.lims(2);
             
             if ~exist('mthd', 'var')
                 mthd = obj.scrollmethod;
@@ -90,15 +87,15 @@ classdef fastplot < handle
             switch mthd
                 case 'replot'
                     delete(obj.h.lines);
-                    obj.h.lines = plot(obj.data(obj.win_span, :));
+                    obj.h.lines = plot(obj.data(obj.window.span, :));
                 case 'allset'
-                    dat = mat2cell(obj.data(obj.win_span, :), ...
-                        diff(obj.win_lims) + 1, ones(1, ...
+                    dat = mat2cell(obj.data(obj.window.span, :), ...
+                        diff(obj.window.lims) + 1, ones(1, ...
                         obj.data_size(2)))';
                     set(obj.h.lines, {'YData'}, dat);
                 case 'loopset'
                     for i = 1:length(obj.h.lines)
-                        set(obj.h.lines(i), 'YData', obj.data(obj.win_span, i));
+                        set(obj.h.lines(i), 'YData', obj.data(obj.window.span, i));
                     end
             end
             obj.plotevents();
@@ -109,14 +106,14 @@ classdef fastplot < handle
         
         function move(obj, value, mlt, unit)
             % CHANGE - mlt is temporary
-            % ADD - mode of win_step?
+            % ADD - mode of window.step?
             if ~exist('value', 'var')
                 value = 1;
             end
             % do not go further if move is not possible
             if value == 0 || ...
-                    ((obj.win_lims(1) == 1) && value < 0) ...
-                    || ((obj.win_lims(2) == obj.data_size(1)) ...
+                    ((obj.window.lims(1) == 1) && value < 0) ...
+                    || ((obj.window.lims(2) == obj.data_size(1)) ...
                     && value > 0)
                 return
             end
@@ -125,21 +122,21 @@ classdef fastplot < handle
                 mlt = 1;
             end
             if ~exist('unit', 'var')
-                unit = obj.win_step;
+                unit = obj.window.step;
             end
             
             % create and test new window limits
-            wlims = obj.win_lims + mlt * value * unit;
+            wlims = obj.window.lims + mlt * value * unit;
             if value > 0 && wlims(2) > obj.data_size(1)
                 wlims(2) = obj.data_size(1);
-                wlims(1) = max([1, wlims(2) - obj.win_size + 1]);
+                wlims(1) = max([1, wlims(2) - obj.window.size + 1]);
             end
             if value < 0 && wlims(1) < 1
                 wlims(1) = 1;
                 wlims(2) = min([obj.data_size(1), ...
-                    wlims(1) + obj.win_size - 1]);
+                    wlims(1) + obj.window.size - 1]);
             end
-            obj.win_lims = wlims;
+            obj.window.lims = wlims;
             obj.refresh();
         end
             
@@ -149,7 +146,7 @@ classdef fastplot < handle
             % default - range in samples
             % default - range from winlim
             if ~exist('rng', 'var')
-                rng = obj.win_lims;
+                rng = obj.window.lims;
             end
             % look for event with latency within given range
             lookfor = obj.event.latency >= rng(1) & ...
@@ -179,12 +176,13 @@ classdef fastplot < handle
             obj.h.ax = axes('Position', [0.05, 0.05, 0.9, 0.85]);
             obj.h.eventlines = [];
             obj.h.eventlabels = [];
+            obj.h.epochlimits = [];
             
             % plot data
             % ---------
             % CHANGE!
             % use 'ColorOrder' to set color of electrodes
-            obj.h.lines = plot(obj.data(obj.win_span, :));
+            obj.h.lines = plot(obj.data(obj.window.span, :));
             
             % set y limits and y lim mode (for faster replotting)
             obj.h.ylim = [-(obj.data_size(2)+1) * obj.spacing,...
@@ -250,7 +248,7 @@ classdef fastplot < handle
             if numev > 0
                 % get necessary info to plot:
                 ylim = obj.h.ylim;
-                ev.latency = ev.latency - obj.win_lims(1);
+                ev.latency = ev.latency - obj.window.lims(1);
                 lineX = repmat(ev.latency, [2, 1]);
                 lineY = repmat(ylim', [1, numev]);
                 labelX = ev.latency';
