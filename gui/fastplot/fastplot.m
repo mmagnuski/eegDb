@@ -48,7 +48,7 @@ classdef fastplot < handle
             obj.scrollmethod = 'allset';
             
             % get event and epoch info
-            obj.get_epoch(EEG);
+            obj.get_epoch(EEG, orig_size);
             
             % calculate spacing
             chan_sd = std(obj.data, [], 1);
@@ -197,7 +197,7 @@ classdef fastplot < handle
         end
         
         
-        function get_epoch(obj, EEG)
+        function get_epoch(obj, EEG, orig_size)
             obj.event.latency = [EEG.event.latency];
             % later add compressed lat for example by:
             % obj.event.latency(25:25:end);
@@ -220,7 +220,13 @@ classdef fastplot < handle
             obj.event.color = rand(obj.event.numtypes,3);
             
             % get epoch info:
-            % TODO
+            obj.opt.srate = EEG.srate;
+            obj.opt.stime = 1000 / EEG.srate;
+            % obj.opt.halfsample = obj.opt.stime / 2;
+            if length(orig_size) > 2 && orig_size(3) > 1
+                obj.epoch.num = orig_size(3);
+                obj.epoch.limits = orig_size(2):orig_size(2):obj.data_size(1) + obj.opt.stime / 2;
+            end
         end
         
         
