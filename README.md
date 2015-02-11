@@ -7,7 +7,8 @@
 The easiest way to install is to copy the repository to your local drive either by:
 * grabbing a zip file provided on the lower right
 * or using `git clone`
-* or copy-pasting file by file? (no, that's not a very good idea, the list just did not feel complete without a third option
+* or copy-pasting file by file? (no, that's not a very good idea, the list just did not feel complete without a third option  
+
 Then make sure that the directory you copied the repository into (let's say it's `D:\TOOLS\eegDb\`) is on your matlab path and that `eegDb_setup` runs without errors:
 ```matlab
 addpath('D:\TOOLS\eegDb\');
