@@ -1,9 +1,9 @@
-function ICAw = ICAw_buildbase(PTH, varargin)
+function eegDb = eegDb_buildbase(PTH, varargin)
 
-% ICAw_buildbase allows to create an ICAw structure
+% eegDb_buildbase allows to create an eegDb structure
 % from files in a given folder
 %
-% ICAw = ICAw_buildbase(filepath)
+% eegDb = eegDb_buildbase(filepath)
 %
 % FIXHELPINFO
 % CHANGE - PRIORITY
@@ -21,8 +21,8 @@ function ICAw = ICAw_buildbase(PTH, varargin)
 
 % optional/undecided fields:
 % ---------
-% ICAw(f).subjectcode = [];
-% ICAw(f).cleanline = [];
+% eegDb(f).subjectcode = [];
+% eegDb(f).cleanline = [];
 
 
 %% options for now:
@@ -98,7 +98,7 @@ ch.bad = [];
 % ----------------
 
 % create obligatory fields:
-ICAw = struct('filename', fls, 'filepath', PTH, ...
+eegDb = struct('filename', fls, 'filepath', PTH, ...
     'datainfo', [], 'filter', [], 'chan', ch, ...
     'epoch', epo, 'marks', mrk, 'reject', rej, ...
     'ICA', ica, 'notes', []);
@@ -118,12 +118,12 @@ for f = 1:length(fls)
     
     % datainfo
     % --------
-    ICAw(f).datainfo.ref = [];
-    ICAw(f).datainfo.ref_name = unique({EEG.chanlocs.ref});
-    ICAw(f).datainfo.srate = EEG.srate;
-    ICAw(f).datainfo.filtered = [];
-    ICAw(f).datainfo.cleanline = [];
-    ICAw(f).datainfo.chanlocs = EEG.chanlocs;
+    eegDb(f).datainfo.ref = [];
+    eegDb(f).datainfo.ref_name = unique({EEG.chanlocs.ref});
+    eegDb(f).datainfo.srate = EEG.srate;
+    eegDb(f).datainfo.filtered = [];
+    eegDb(f).datainfo.cleanline = [];
+    eegDb(f).datainfo.chanlocs = EEG.chanlocs;
     
     
     % notify about progress
