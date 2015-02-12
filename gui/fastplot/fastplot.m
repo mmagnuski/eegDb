@@ -181,6 +181,8 @@ classdef fastplot < handle
             if any(lookfor)
                 % return event latency and type
                 ep.latency = obj.epoch.limits(lookfor);
+                ep.nums = find(lookfor);
+                ep.nums = [ep.nums, ep.nums(end)+1];
             end
         end
         
@@ -248,6 +250,7 @@ classdef fastplot < handle
             obj.opt.stime = 1000 / EEG.srate;
             % obj.opt.halfsample = obj.opt.stime / 2;
             if length(orig_size) > 2 && orig_size(3) > 1
+                obj.epoch.mode = true;
                 obj.epoch.num = orig_size(3);
                 obj.epoch.limits = orig_size(2):orig_size(2):obj.data_size(1) + obj.opt.stime / 2;
             end
@@ -340,6 +343,8 @@ classdef fastplot < handle
             % check what epoch limits are in range
             ep = epochlimits_in_range(obj);
             ep.latency = ep.latency - obj.window.lims(1);
+            obj.epoch.current_limits = ep.latency;
+            obj.epoch.current_nums = ep.nums;
 
             if ~isempty(ep)
                 drawnlims = length(obj.h.epochlimits);
