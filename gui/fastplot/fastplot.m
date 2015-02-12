@@ -220,6 +220,9 @@ classdef fastplot < handle
             
             % set keyboard shortcuts
             obj.init_keypress();
+            % set click callback
+            set(obj.h.ax, 'ButtonDownFcn', @(h, e) obj.testButtonPress());
+
         end
         
         
@@ -402,6 +405,40 @@ classdef fastplot < handle
             % add eegplot_readkey to WindowKeyPressFcn
             set(obj.h.fig, 'WindowKeyPressFcn', @eegplot_readkey_new);
         end
+
+
+        function testButtonPress(obj)
+            % axesHandle  = get(objectHandle,'Parent');
+            coord = get(obj.h.ax,'CurrentPoint');
+            coord = coord(1, 1:2);
+            % fprintf('x: %1.2f, y: %1.2f\n', coord(1), coord(2));
+
+            % test where x is located relative to epoch.current_limits
+            if obj.epoch.mode
+                x = coord(1);
+                if ~(obj.epoch.current_limits(1) == 0)
+                    epoch_lims = [0, obj.epoch.current_limits];
+                else
+                    epoch_lims = obj.epoch.current_limits;
+                end
+
+                % check which epoch was clicked
+                selected = obj.epoch.current_nums(...
+                    find(x > epoch_lims, 1, 'last'));
+
+                c = obj.marks.current;
+                if obj.marks.selected(c,selected)
+                    obj.marks.selected(c,selected) = false;
+                else
+                    obj.marks.selected(c,selected) = true;
+                end
+
+                % plot the change
+                obj.plot_marks();
+            end
+        end
+
+
     end
     
     
