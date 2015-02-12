@@ -21,7 +21,7 @@ if ischar(ev)
 end
 
 if iscell(ev)
-    % make sure it is row-wise
+    % make sure it is column-wise
     sz = size(ev);
     if sz(1) > sz(2)
         ev = ev';
