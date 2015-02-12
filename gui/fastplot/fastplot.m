@@ -201,6 +201,7 @@ classdef fastplot < handle
             obj.h.eventlines = [];
             obj.h.eventlabels = [];
             obj.h.epochlimits = [];
+            obj.h.backpatches = [];
             
             % plot data
             % ---------
@@ -256,6 +257,12 @@ classdef fastplot < handle
                 obj.epoch.mode = true;
                 obj.epoch.num = orig_size(3);
                 obj.epoch.limits = orig_size(2):orig_size(2):obj.data_size(1) + obj.opt.stime / 2;
+
+                % marks
+                obj.marks.names    = {'reject'};
+                obj.marks.colors   = [0.85, 0.3, 0.1];
+                obj.marks.current  = 1;
+                obj.marks.selected = false(1, obj.epoch.num);
             end
         end
         
@@ -390,7 +397,6 @@ classdef fastplot < handle
 
         end
 
-        
         
         function init_keypress(obj)
             % create shortcut patterns:
