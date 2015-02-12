@@ -92,10 +92,11 @@ classdef fastplot < handle
                     dat = mat2cell(obj.data(obj.window.span, :), ...
                         diff(obj.window.lims) + 1, ones(1, ...
                         obj.data_size(2)))';
-                    set(obj.h.lines, {'YData'}, dat);
+                    set(obj.h.lines, {'YData'}, dat, 'HitTest', 'off');
                 case 'loopset'
                     for i = 1:length(obj.h.lines)
-                        set(obj.h.lines(i), 'YData', obj.data(obj.window.span, i));
+                        set(obj.h.lines(i), 'YData', ...
+                            obj.data(obj.window.span, i), 'HitTest', 'off');
                     end
             end
             obj.plotevents();
@@ -203,7 +204,7 @@ classdef fastplot < handle
             % ---------
             % CHANGE!
             % use 'ColorOrder' to set color of electrodes
-            obj.h.lines = plot(obj.data(obj.window.span, :));
+            obj.h.lines = plot(obj.data(obj.window.span, :), 'HitTest', 'off');
             
             % set y limits and y lim mode (for faster replotting)
             obj.h.ylim = [-(obj.data_size(2)+1) * obj.spacing,...
