@@ -8,6 +8,11 @@ classdef fastplot < handle
     %     eventlines  - lines showing event timing
     %     eventlabels - labels showing event type
     
+    % REMEMBER
+    % opt could contain data_names field that could inform the
+    % user about the name of currently displayed dataset
+
+
     % currently - one epoch at time
     properties (SetAccess = private, GetAccess = public)
         h      % handles to the graphical objects
@@ -17,6 +22,7 @@ classdef fastplot < handle
         marks  % info about marks
         spacing  % should be in opts?
         data
+        data2
         data_size   % pack into a struct?
         window
     end
@@ -37,7 +43,7 @@ classdef fastplot < handle
     % --------------
     methods
         
-        function obj = fastplot(EEG)
+        function obj = fastplot(EEG, varargin)
             % define some of the class properties
             orig_size = size(EEG.data);
             obj.data_size = [orig_size(1), orig_size(2) * orig_size(3)];
@@ -46,13 +52,18 @@ classdef fastplot < handle
 
             % default scroll method
             obj.scrollmethod = 'allset';
+            obj.opt.readfield = {'data'};
+            obj.opt.readfrom = 1;
             
             % get event and epoch info
             obj.get_epoch(EEG, orig_size);
             
             % calculate spacing
-            chan_sd = std(obj.data, [], 1);
-            obj.spacing = 2 * max(chan_sd);
+            obj.opt.chan_sd = std(obj.data, [], 1);
+            obj.spacing = 2 * max(obj.opt.chan_sd);
+            obj.arg_parser(varargin);
+
+            % introduce spacing to the data
             obj.data = obj.data - repmat(...
                 (0:obj.data_size(2)-1)*obj.spacing, [obj.data_size(1), 1]);
             
@@ -84,19 +95,20 @@ classdef fastplot < handle
             end
             
             tic;
+            dat = obj.(obj.opt.readfield{obj.opt.readfrom});
             switch mthd
                 case 'replot'
                     delete(obj.h.lines);
-                    obj.h.lines = plot(obj.data(obj.window.span, :));
+                    obj.h.lines = plot(dat(obj.window.span, :));
                 case 'allset'
-                    dat = mat2cell(obj.data(obj.window.span, :), ...
+                    dat = mat2cell(dat(obj.window.span, :), ...
                         diff(obj.window.lims) + 1, ones(1, ...
                         obj.data_size(2)))';
                     set(obj.h.lines, {'YData'}, dat, 'HitTest', 'off');
                 case 'loopset'
                     for i = 1:length(obj.h.lines)
                         set(obj.h.lines(i), 'YData', ...
-                            obj.data(obj.window.span, i), 'HitTest', 'off');
+                            dat(obj.window.span, i), 'HitTest', 'off');
                     end
             end
             obj.plotevents();
@@ -187,12 +199,44 @@ classdef fastplot < handle
         end
         
     end
-    
-    
+
+
     % PRIVATE METHODS
     % ---------------
     methods (Access = private)
         
+        function arg_parser(obj, args)
+            % helper function that lets to parse matlab style arguments
+            % (why oh why matlab doesn't have named function arguments?)
+            first_char = find(cellfun(@ischar, args));
+            if isempty(first_char) || (~isempty(first_char) && first_char > 1)
+                % some non-named arguments were given
+                % check if EEG struct
+                if isstruct(args{1}) && isfield(args{1}, 'data')
+                    % another EEG data coming in!
+                    obj.data2 = reshape(args{1}.data, fliplr(obj.data_size))';
+
+                    % introduce spacing to data2:
+                    obj.data2 = obj.data2 - repmat(...
+                        (0:obj.data_size(2)-1)*obj.spacing, [obj.data_size(1), 1]);
+                    obj.opt.readfield(end + 1) = {'data2'};
+                end
+            end
+
+            % now check for 'data2' argument
+            if ~isempty(first_char)
+                str_args = args(first_char:end);
+                ifkey = strcmp('data2', str_args)
+                if any(ifkey)
+                    ind = find(ifkey);
+                    ind = ind(1);
+                    obj.data2 = str_args{ind + 1};
+                    obj.opt.readfield(end + 1) = {'data2'};
+                end
+            end
+        end
+                    
+
         function launchplot(obj)
             % figure setup
             ss = obj.opt.scrsz;
@@ -404,6 +448,10 @@ classdef fastplot < handle
             pattern{1,2} = {@obj.move, -1};
             pattern{2,1} = {'num', 'rightarrow'};
             pattern{2,2} = {@obj.move, 1};
+            pattern{3,1} = {'uparrow'};
+            pattern{3,2} = {@obj.swap, 1};
+            pattern{4,1} = {'downarrow'};
+            pattern{4,2} = {@obj.swap, 2};
             
             % initialize 
             eegplot_readkey_new([], [], [], pattern);
@@ -445,8 +493,16 @@ classdef fastplot < handle
         end
 
 
-        function plot_marks(obj)
+        function swap(obj, val)
+            % maybe change name to swapdata or dataswap
+            % CHANGE - the tests should be a little more elaborate
+            if length(obj.opt.readfield) > 1
+                obj.opt.readfrom = val;
+                obj.refresh();
+            end
+        end
 
+        function plot_marks(obj)
             % get selected epochs
             epoch_lims = obj.epoch.current_limits;
             epoch_num = obj.epoch.current_nums;
