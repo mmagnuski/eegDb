@@ -448,8 +448,8 @@ classdef fastplot < handle
         function plot_marks(obj)
 
             % get selected epochs
-            epoch_lim = obj.epochs.current_limits;
-            epoch_num = obj.epochs.current_nums;
+            epoch_lims = obj.epoch.current_limits;
+            epoch_num = obj.epoch.current_nums;
             selected  = find(obj.marks.selected(1, epoch_num));
 
             if ~isempty(selected)
