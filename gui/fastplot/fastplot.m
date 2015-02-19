@@ -277,7 +277,7 @@ classdef fastplot < handle
             % obj.event.latency(25:25:end);
             % also latency limits would be nice to have:
             % obj.event.latlims = obj.event.latency([1, end]);
-            
+
             % code event types with integers
             temptype = {EEG.event.type};
             obj.event.alltypes = unique(temptype);
@@ -288,11 +288,11 @@ classdef fastplot < handle
             for i = 1:obj.event.numtypes
                 obj.event.type(type2ind{i}) = i;
             end
-            
+
             % CHANGE
             % event colors - random at the moment
             obj.event.color = rand(obj.event.numtypes,3);
-            
+
             % get epoch info:
             obj.opt.srate = EEG.srate;
             obj.opt.stime = 1000 / EEG.srate;
@@ -309,8 +309,8 @@ classdef fastplot < handle
                 obj.marks.selected = false(1, obj.epoch.num);
             end
         end
-        
-        
+
+
         function plotevents(obj)
             % reuse lines and labels
             numlns = length(obj.h.eventlines);
