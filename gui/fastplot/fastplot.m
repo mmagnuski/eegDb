@@ -346,8 +346,8 @@ classdef fastplot < handle
                 ev.latency = ev.latency - obj.window.lims(1);
                 lineX = repmat(ev.latency, [2, 1]);
                 lineY = repmat(ylim', [1, numev]);
-                labelX = ev.latency';
-                labelY = repmat(obj.spacing * 2, [numev, 1]);
+                labelX = double(ev.latency');
+                labelY = double(repmat(obj.spacing * 2, [numev, 1]));
                 colors = mat2cell(obj.event.color(ev.type, :), ones(numev, 1), 3);
                 strVal = obj.event.alltypes(ev.type);
 
@@ -388,10 +388,19 @@ classdef fastplot < handle
                         colors(ind));
 
                     % labels
+                    try
                     obj.h.eventlabels(ind) = text(labelX(ind), labelY(ind), ...
                         strVal(ind), {'BackgroundColor'}, colors(ind), ...
                         'Margin', 2.5, 'VerticalAlignment', 'bottom', ...
                         'clipping', 'off');
+                    catch
+                        for i = ind
+                            obj.h.eventlabels(i) = text(labelX(i), labelY(i), ...
+                                strVal(i), 'BackgroundColor', colors{i}, ...
+                                'Margin', 2.5, 'VerticalAlignment', 'bottom', ...
+                                'clipping', 'off');
+                        end
+                    end
 
                     hold off; % change to myHoldOff later
 
