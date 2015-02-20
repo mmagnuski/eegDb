@@ -1197,7 +1197,7 @@ winreject_refresh(h);
 function plot_opt_fun(h)
 
 colol = selcol_GUI; 
-set(hs.edit(1), 'userdata', colol);
+set(h.edit(1), 'userdata', colol);
 
 function some_other_callback(hnd)
 
