@@ -579,6 +579,9 @@ setappdata(h.fig, 'chansind', chansind);
 setappdata(h.fig, 'chanlocs', chanlocs);
 setappdata(h.fig, 'topocache', topocache);
 
+% window callback(s)
+set(h.fig, 'WindowKeyPressFcn', @compsel_compare_changes);
+
 
 % initialize scheduler
 % --------------------
