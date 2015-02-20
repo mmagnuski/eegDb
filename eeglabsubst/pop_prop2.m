@@ -313,6 +313,7 @@ end
 % set up guidata
 % --------------
 setappdata(h.fig, 'h', h);
+setappdata(h.fig, 'EEG', EEG);
 setappdata(h.fig, 'comp', real_comp);
 
 set(h.fig, 'color', FIGBACKCOLOR);
