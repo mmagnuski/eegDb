@@ -152,7 +152,8 @@ prs = inputParser;
 prs.FunctionName = 'pop_selectcomps_new';
 
 % addParamValue is addParameter in new MATLAB...
-% moreover addParamValue is not recommended...
+% moreover addParamValue is not recommended... argh...
+% we will need our own parser
 addParamValue(prs, 'perfig',  PLOTPERFIG, @isnumeric);
 addParamValue(prs, 'fill',    true,       @islogical);
 addParamValue(prs, 'eegDb',   [],         @iseegDb);
