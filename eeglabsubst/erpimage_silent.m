@@ -3358,7 +3358,13 @@ else
     amps   = [];    % null outputs unless coherfreq specified
     cohers = [];
 end
-axhndls = [ax1 axcb ax2 ax3 ax4];
+
+if ~(isnan(ax3) || isnan(ax4)) 
+    axhndls = [ax1 axcb ax2 ax3 ax4];
+else
+    axhndls = [ax1 axcb ax2];
+end
+
 if exist('ur_outsort')
     outsort = ur_outsort; % restore outsort clipped values, if any
 end
