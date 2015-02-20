@@ -1404,6 +1404,7 @@ end
 % plot good channels on top of bad channels 
 % (if g.eloc_file(i).badchan = 0... 
 % or there is no bad channel information)
+w = warning ('off','all');
 for i = 1:g.chans
     if strcmpi(g.plotdata2, 'on')
          tmpcolor = [ 1 0 0 ];
@@ -1426,6 +1427,7 @@ for i = 1:g.chans
     end
            
 end
+warning(w);
  
 % draw selected channels
 % ------------------------
