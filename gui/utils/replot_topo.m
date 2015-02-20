@@ -5,6 +5,12 @@ function replot_topo(topocache, compN, axh)
 % TODOs:
 % [ ] - needs some more work, cleaning up etc.
 
+persistent is2014b
+if isempty(is2014b)
+    v = version('-release');
+    is2014b = strcmp(v, '2014b');
+end
+
 % kill axes children:
 killch = get(axh, 'Children');
 delete(killch);
@@ -66,8 +72,13 @@ for nump = start:-1:1
     command(stp:end) = []; %#ok<NASGU>
     
     % execute command
-    hnd(nump) = eval([topo{nump, 1}, '(', addcom,...
-        '''Parent'', axh, command{:});']);
+    if ~( strcmp(topo{nump, 1}, 'contour') && is2014b )
+        hnd(nump) = eval([topo{nump, 1}, '(', addcom,...
+            '''Parent'', axh, command{:});']);
+    else
+        [~, hnd(nump)] = eval([topo{nump, 1}, '(', addcom,...
+            '''Parent'', axh, command{:});']);
+    end
 end
 
 % transport color limits
