@@ -797,7 +797,11 @@ if ~isempty(g.events)
                     'string', 'Event types', 'callback', 'eegplot2(''drawlegend'', gcbf)');
 end;
 
-set(u,'Units','Normalized')
+for i = 1:length(u)
+    if ~isa(u(i), 'matlab.graphics.GraphicsPlaceholder')
+        set(u(i), 'Units', 'Normalized');
+    end
+end
 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Set up uimenus
@@ -1400,6 +1404,7 @@ end
 % plot good channels on top of bad channels 
 % (if g.eloc_file(i).badchan = 0... 
 % or there is no bad channel information)
+w = warning ('off','all');
 for i = 1:g.chans
     if strcmpi(g.plotdata2, 'on')
          tmpcolor = [ 1 0 0 ];
@@ -1422,6 +1427,7 @@ for i = 1:g.chans
     end
            
 end
+warning(w);
  
 % draw selected channels
 % ------------------------
@@ -1884,18 +1890,18 @@ Yl = [ g.spacing g.spacing; g.spacing 0; 0 0] + YLim(1);
 plot(Xl(1,:),Yl(1,:),'color',DEFAULT_AXIS_COLOR,'clipping','off', 'tag','eyeline'); hold on;
 plot(Xl(2,:),Yl(2,:),'color',DEFAULT_AXIS_COLOR,'clipping','off', 'tag','eyeline');
 plot(Xl(3,:),Yl(3,:),'color',DEFAULT_AXIS_COLOR,'clipping','off', 'tag','eyeline');
-text(.5,(YLim(2)-YLim(1))/23+Yl(1),num2str(g.spacing,4),...
+text(.5,double((YLim(2)-YLim(1))/23+Yl(1)),num2str(g.spacing,4),...
 	 'HorizontalAlignment','center','FontSize',10,...
 	 'tag','thescalenum')
-text(Xl(2)+.1,Yl(1),'+','HorizontalAlignment','left',...
+text(double(Xl(2)+.1), double(Yl(1)),'+','HorizontalAlignment','left',...
      'verticalalignment','middle', 'tag', 'thescale')
-text(Xl(2)+.1,Yl(4),'-','HorizontalAlignment','left',...
+text(double(Xl(2)+.1), double(Yl(4)),'-','HorizontalAlignment','left',...
      'verticalalignment','middle', 'tag', 'thescale')
 if ~isempty(SPACING_UNITS_STRING)
-     text(.5,-YLim(2)/23+Yl(4),SPACING_UNITS_STRING,...
+     text(.5,double(-YLim(2)/23+Yl(4)),SPACING_UNITS_STRING,...
 		 'HorizontalAlignment','center','FontSize',10, 'tag', 'thescale')
 end
-text(.5,(YLim(2)-YLim(1))/10+Yl(1),'Scale',...
+text(.5,double((YLim(2)-YLim(1))/10+Yl(1)),'Scale',...
 	 'HorizontalAlignment','center','FontSize',10, 'tag', 'thescale')
 set(eyeaxes, 'tag', 'eyeaxes');
 

@@ -961,8 +961,8 @@ else
 end
 
 set(hs.edit(1), 'userdata', coldef);
-set(hs.edit(1), 'callback', ['colol = selcol_GUI; set(',...
-    num2str(hs.edit(1), 32), ', ''userdata'', colol);'],...
+set(hs.edit(1), 'callback', ...
+    @(obj, evnt) plot_opt_fun(hs),...
     'style', 'pushbutton');
 
 
@@ -1025,11 +1025,10 @@ else
 end
 
 set(hs.edit(4), 'userdata', coldef);
-hnd = num2str(hs.edit(4), 32);
-set(hs.edit(4), 'callback', ['st = get(', ...
-    hnd, ', ''string''); vl = get(', hnd, ...
-    ', ''value''); set(', hnd, ', ''userdata'',',...
-    'st{vl});'], 'style', 'popupmenu', ...
+thish = hs.edit(4);
+set(hs.edit(4), 'callback', ...
+    @(obj, evnt) some_other_callback(thish), ...
+    'style', 'popupmenu', ...
     'string', {'on'; 'off'}, 'value', val);
 clear hnd coldef epdef coldefadr epdefadr
 
@@ -1037,7 +1036,8 @@ clear hnd coldef epdef coldefadr epdefadr
 % =======================
 % OK and CANCEL Callbacks
 set(hs.ok, 'Callback', {@coolopt, hObject, hs});
-set(hs.cancel, 'Callback', ['close(', num2str(hs.hf), ');']);
+thish = hs.hf;
+set(hs.cancel, 'Callback', @(o, e) myclosefun(thish));
 
 % function dealing with how to plot badchans:
 function badplot_callback(h, e)
@@ -1193,3 +1193,18 @@ guidata(h.figure1, h);
 
 % refresh GUI:
 winreject_refresh(h);
+
+function plot_opt_fun(h)
+
+colol = selcol_GUI; 
+set(hs.edit(1), 'userdata', colol);
+
+function some_other_callback(hnd)
+
+st = get(hnd, 'string'); 
+vl = get(hnd, 'value'); 
+set(hnd, 'userdata', st{vl});
+
+function myclosefun(h)
+
+close(h);

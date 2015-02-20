@@ -21,6 +21,12 @@ if ischar(ev)
 end
 
 if iscell(ev)
+    % make sure it is column-wise
+    sz = size(ev);
+    if sz(1) > sz(2)
+        ev = ev';
+    end
+    % turn to event indices
     ev = cellfun(@(x) strcmp(x, all_tps), ev, 'uni', false);
     ev = cell2mat(ev');
     ev = find(sum(ev,1) > 0);

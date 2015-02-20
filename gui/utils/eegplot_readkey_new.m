@@ -6,14 +6,23 @@ function eegplot_readkey_new(hObj, evnt, hBox, new_pattern)
 % TODOs:
 % [ ] consider adding variable arguments (varargin)
 % [ ] change into an object?
-% [ ] selector mode (?)
+% [ ] selector mode
 
+persistent h
 persistent buffer
 persistent patterns
 persistent fullstr % may not be needed
 persistent numstr
 persistent nums
 persistent selected_patterns
+
+if isempty(h)
+    h = hObj;
+end
+if ~isequal(h, hObj)
+    h = hObj;
+    patterns = [];
+end
 
 if isempty(nums)
     nums = '0123456789';

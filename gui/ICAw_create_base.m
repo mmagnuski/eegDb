@@ -1,8 +1,8 @@
 function varargout = ICAw_create_base(varargin)
 
-% ICAW_CREATE_BASE - GUI for creating ICAw database
+% ICAw_CREATE_BASE - GUI for creating eegDb database
 % The same can be performed using specific calls
-% to functions like ICAw_buildbase etc.
+% to functions like eegDb_buildbase etc.
 % FIXHELPINFO
 
 % Last Modified by GUIDE v2.5 24-May-2014 17:54:02
@@ -11,8 +11,8 @@ function varargout = ICAw_create_base(varargin)
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @ICAw_create_base_OpeningFcn, ...
-                   'gui_OutputFcn',  @ICAw_create_base_OutputFcn, ...
+                   'gui_OpeningFcn', @eegDb_create_base_OpeningFcn, ...
+                   'gui_OutputFcn',  @eegDb_create_base_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -31,11 +31,11 @@ end
 %     that can narrow GUI usage
 % [ ] add choose by rule
 
-% --- Executes just before ICAw_create_base is made visible.
-function ICAw_create_base_OpeningFcn(hObject, ~, handles, varargin)
+% --- Executes just before eegDb_create_base is made visible.
+function eegDb_create_base_OpeningFcn(hObject, ~, handles, varargin)
 % This function has no output args, see OutputFcn.
 
-% Choose default command line output for ICAw_create_base
+% Choose default command line output for eegDb_create_base
 handles.output = [];
 handles.path = [];
 handles.GoodToGo = false;
@@ -50,12 +50,12 @@ handles.cancel = false;
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes ICAw_create_base wait for user response (see UIRESUME)
+% UIWAIT makes eegDb_create_base wait for user response (see UIRESUME)
 uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = ICAw_create_base_OutputFcn(a, b, handles)  %#ok<INUSL>
+function varargout = eegDb_create_base_OutputFcn(a, b, handles)  %#ok<INUSL>
 % varargout  cell array for returning output args (see VARARGOUT);
 
 % Get default command line output from handles structure
@@ -284,31 +284,31 @@ function EpochOpt_Callback(hObject, eventdata, h)
 
 h = guidata(hObject);
 
-% create a temporary ICAw base and pass it to 
+% create a temporary eegDb base and pass it to 
 % ICAw_gui_epoch
 
 [strPth, flist] = get_path_and_files(h);
 
-ICAw_temp = struct('filepath', strPth, 'filename', flist);
+eegDb_temp = struct('filepath', strPth, 'filename', flist);
 
-% here ADD some code to fill this temp ICAw struct
+% here ADD some code to fill this temp eegDb struct
 % with epoch data present in 
-if femp(h, 'ICAw')
+if femp(h, 'eegDb')
     % add epoching options
     opt = [];
-    if femp(h.ICAw(1), 'epoch')
-        opt.epoch = h.ICAw(1).epoch;
+    if femp(h.eegDb(1), 'epoch')
+        opt.epoch = h.eegDb(1).epoch;
     end
     
     % update if relevant
     if ~isempty(opt)
-        ICAw_temp = ICAw_copybase(ICAw, opt);
+        eegDb_temp = ICAw_copybase(eegDb, opt);
     end
 end
 
-ICAw_temp = ICAw_gui_epoch(ICAw_temp);
-if isstruct(ICAw_temp)
-    h.ICAw = ICAw_temp;
+eegDb_temp = ICAw_gui_epoch(eegDb_temp);
+if isstruct(eegDb_temp)
+    h.eegDb = eegDb_temp;
     set(h.OK, 'Enable', 'on');
     guidata(h.figure1, h);
 end
@@ -318,7 +318,7 @@ function OK_Callback(hObject, ~, h)
 
 h = guidata(hObject);
 
-if femp(h, 'ICAw')
+if femp(h, 'eegDb')
     % ICAw = h.ICAw;
     opt = [];
     if femp(h, 'PassFilt')
@@ -331,19 +331,19 @@ if femp(h, 'ICAw')
         opt.filter(2,:) = h.PassFilt;
     end
     
-    if femp(h.ICAw(1), 'epoch')
-        opt.epoch = h.ICAw(1).epoch;
+    if femp(h.eegDb(1), 'epoch')
+        opt.epoch = h.eegDb(1).epoch;
     end
     
     [strPth, flist] = get_path_and_files(h);
-    ICAw = ICAw_buildbase(strPth, flist);
+    eegDb = eegDb_buildbase(strPth, flist);
     
     if ~isempty(opt)
-        ICAw = ICAw_copybase(ICAw, opt);
+        eegDb = ICAw_copybase(eegDb, opt);
     end
     
     % ICAw = ICAw_updatetonewformat(ICAw);
-    h.output = ICAw;
+    h.output = eegDb;
     guidata(hObject, h);
     uiresume(h.figure1);
 end
