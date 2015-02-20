@@ -575,7 +575,7 @@ if strcmpi(whitebk, 'on')
     BACKCOLOR = [ 1 1 1 ];
 end;
 
-cmap = colormap;
+cmap = colormap('jet');
 cmaplen = size(cmap,1);
 
 if strcmp(STYLE,'blank')    % else if Values holds numbers of channels to mark
