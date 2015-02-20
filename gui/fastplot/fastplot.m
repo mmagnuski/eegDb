@@ -208,6 +208,10 @@ classdef fastplot < handle
         function arg_parser(obj, args)
             % helper function that lets to parse matlab style arguments
             % (why oh why matlab doesn't have named function arguments?)
+            
+            if isempty(args)
+                return
+            end
             first_char = find(cellfun(@ischar, args));
             if isempty(first_char) || (~isempty(first_char) && first_char > 1)
                 % some non-named arguments were given
@@ -226,7 +230,7 @@ classdef fastplot < handle
             % now check for 'data2' argument
             if ~isempty(first_char)
                 str_args = args(first_char:end);
-                ifkey = strcmp('data2', str_args)
+                ifkey = strcmp('data2', str_args);
                 if any(ifkey)
                     ind = find(ifkey);
                     ind = ind(1);
