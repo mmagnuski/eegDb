@@ -8,7 +8,9 @@ function replot_topo(topocache, compN, axh)
 persistent is2014b
 if isempty(is2014b)
     v = version('-release');
-    is2014b = strcmp(v, '2014b');
+    v_year = str2num(v(1:4)); %#ok<ST2NM>
+    is2014b = v_year > 2014 || ...
+        (v_year == 2014 && strcmp(v(5), 'b'));
 end
 
 % kill axes children:
@@ -84,6 +86,10 @@ end
 % transport color limits
 set(axh, 'CLim', topocache(gettopo).Info.CLim);
 
+% temp fix - set colormap
+% (should be modifiable)
+colormap('jet');
+
 % set XLim and YLim if not equal
 fld = {'XLim', 'YLim'};
 for f = 1:length(fld)
@@ -91,4 +97,7 @@ for f = 1:length(fld)
     if ~isequal(val, get(axh, fld{f}))
         set(axh, fld{f}, val);
     end
+end
+if is2014b
+    set(axh, 'Visible', 'off');
 end
