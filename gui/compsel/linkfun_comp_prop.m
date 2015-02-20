@@ -62,5 +62,10 @@ if ~isempty(ch)
     
     if any(strcmp(evnt.Key, {'escape', 'return'}))
     	close(hObj);
+    elseif strcmp(evnt.Key, 'c')
+        comp = getappdata(hObj, 'comp');
+        EEG = getappdata(hObj, 'EEG');
+        EEG2 = pop_subcomp(EEG, comp, 0);
+        fst = fastplot(EEG, EEG2);
     end
 end
