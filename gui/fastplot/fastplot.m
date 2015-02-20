@@ -60,7 +60,7 @@ classdef fastplot < handle
             
             % calculate spacing
             obj.opt.chan_sd = std(obj.data, [], 1);
-            obj.spacing = 2 * max(obj.opt.chan_sd);
+            obj.spacing = 2 * mean(obj.opt.chan_sd);
             obj.arg_parser(varargin);
 
             % introduce spacing to the data
