@@ -285,6 +285,10 @@ classdef fastplot < handle
             % code event types with integers
             temptype = {EEG.event.type};
             obj.event.alltypes = unique(temptype);
+            sz = size(obj.event.alltypes);
+            if sz(2) > sz(1)
+                obj.event.alltypes = obj.event.alltypes';
+            end
             obj.event.numtypes = length(obj.event.alltypes);
             type2ind = cellfun(@(x) find(strcmp(x, temptype)), ...
                 obj.event.alltypes, 'UniformOutput', false);
@@ -345,7 +349,7 @@ classdef fastplot < handle
                 labelX = ev.latency';
                 labelY = repmat(obj.spacing * 2, [numev, 1]);
                 colors = mat2cell(obj.event.color(ev.type, :), ones(numev, 1), 3);
-                strVal = obj.event.alltypes(ev.type)';
+                strVal = obj.event.alltypes(ev.type);
 
                 % how many elements to reuse, how many new to draw:
                 reuse = min([numev, numlns]);
