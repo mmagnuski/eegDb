@@ -113,6 +113,7 @@ classdef fastplot < handle
             end
             obj.plotevents();
             obj.plot_epochlimits();
+            obj.plot_marks();
             timetaken = toc;
             fprintf('time taken: %f\n', timetaken);
         end
@@ -524,20 +525,19 @@ classdef fastplot < handle
             epoch_lims = obj.epoch.current_limits;
             epoch_num = obj.epoch.current_nums;
             selected  = find(obj.marks.selected(1, epoch_num));
+            
+            % hide unnecessary patches
+            oldnum = length(obj.h.backpatches);
+            newnum = length(selected);
+            plot_diff = newnum - oldnum;
+            
+            if plot_diff < 0
+                inds = oldnum:-1:oldnum + plot_diff + 1;
+                set(obj.h.backpatches(inds), ...
+                    'Visible', 'off'); % maybe set HitTest to 'off' ?
+            end
 
             if ~isempty(selected)
-                oldnum = length(obj.h.backpatches);
-                newnum = length(selected);
-
-                plot_diff = newnum - oldnum;
-
-                % hide unnecessary patches
-                if plot_diff < 0
-                    inds = oldnum:-1:oldnum + plot_diff + 1;
-                    set(obj.h.backpatches(inds), ...
-                        'Visible', 'off'); % maybe set HitTest to 'off' ?
-                end
-
                 reuse = min([newnum, oldnum]);
                 drawnew = max([0, plot_diff]);
 
@@ -557,19 +557,19 @@ classdef fastplot < handle
                 ylm = obj.h.ylim;
                 vert = repmat([ylm([1, 1, 2, 2])'], [1, newnum*2]);
                 sel = [selected; selected + 1];
-                x = reshape(epoch_lims(sel(:)), [2, 3])
-                vert(1:2:end,:) = [x; flipud(x)];
-                vert = mat2cell(vert(:, ind), 4, ones(newnum, 1) * 2)';
+                x = reshape(epoch_lims(sel(:)), [2, numel(sel)/2]);
+                vert(:,1:2:end) = [x; flipud(x)];
+                vert = mat2cell(vert, 4, ones(newnum, 1) * 2)';
 
                 % init colors
                 colors = mat2cell(obj.marks.colors(ones(newnum, 1), :), ...
-                    ones(numev, 1), 3);
+                    ones(newnum, 1), 3);
                 % faces are always 1:4 so need to init
 
                 % CHANGE:
                 % change those present
                 if reuse > 0
-                    ind = 1:reuse*2;
+                    ind = 1:reuse;
 
                     set(obj.h.backpatches(ind), {'Vertices'}, ...
                         vert(ind), 'Faces', 1:4, 'Visible', 'on');
@@ -579,8 +579,9 @@ classdef fastplot < handle
                 if drawnew > 0
                     ind = reuse+1:newnum;
                     obj.h.backpatches(ind) = patch({'Vertices', 'FaceColor'}, ...
-                        [vert(ind), colors(ind)], 'EdgeColor', 'none', ...
-                        'HitTest', 'off');
+                        [vert(ind), colors(ind)], 'Faces', 1:4, ...
+                        'EdgeColor', 'none', 'HitTest', 'off', ...
+                        'FaceAlpha', 0.5);
                 end
             end
         end
