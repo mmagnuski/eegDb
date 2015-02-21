@@ -245,7 +245,9 @@ classdef fastplot < handle
         function launchplot(obj)
             % figure setup
             ss = obj.opt.scrsz;
-            obj.h.fig = figure('Position', [10, 50, ss(1)-20, ss(2)-200]);
+            obj.h.fig = figure('Position', [10, 50, ...
+                ss(1)-20, ss(2)-200], 'Toolbar', 'none', ...
+                'Menubar', 'none');
             obj.h.ax = axes('Position', [0.05, 0.05, 0.9, 0.85]);
             obj.h.eventlines = [];
             obj.h.eventlabels = [];
