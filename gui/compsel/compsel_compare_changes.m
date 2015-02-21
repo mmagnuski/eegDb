@@ -28,9 +28,19 @@ if strcmp(evnt.Key, 'c')
         if warn
         	mh = msgbox(warntext, 'Some components have already been removed', ...
         		'warn');
-            ah = get( h, 'CurrentAxes' );
-            ch = get( ah, 'Children' );
+            % change msgbox fontsize following a helpful post here:
+            % https://www.mathworks.com/matlabcentral/newsreader/view_thread/73331
+            ch = findobj(mh, 'Type', 'Text');
+            extent0 = get( ch, 'Extent' ); % text extent in old font
             set( ch, 'FontSize', 14 );
+            extent1 = get( ch, 'Extent' ); % text extent in new font
+
+            % need to resize the msgbox object to accommodate new FontName 
+            % and FontSize
+            delta = extent1 - extent0; % change in extent
+            pos = get( mh, 'Position' ); % msgbox current position
+            pos = pos + delta; % change size of msgbox
+            set( mh, 'Position', pos ); % set new position
         end
     end
 end
