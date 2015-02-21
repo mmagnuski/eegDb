@@ -557,7 +557,7 @@ classdef fastplot < handle
 
                 % init vertices
                 ylm = obj.h.ylim;
-                vert = repmat([ylm([1, 1, 2, 2])'], [1, newnum*2]);
+                vert = repmat(ylm([1, 1, 2, 2])', [1, newnum*2]);
                 sel = [selected; selected + 1];
                 x = reshape(epoch_lims(sel(:)), [2, numel(sel)/2]);
                 vert(:,1:2:end) = [x; flipud(x)];
