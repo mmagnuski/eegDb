@@ -10,7 +10,7 @@ function is = iseegDb(s, rs)
 % output:
 % is - boolean; whether passed input is an eegDb structure
 %
-% see also: sistruct, fields
+% see also: isstruct, fields
 
 if ~isstruct(s)
 	is = false;
