@@ -34,10 +34,11 @@ if ~exist('rs', 'var')
 end
 ischarorcell = @(x) ischar(x) || iscell(x);
 isnumorstruct = @(x) isnumeric(x) || isstruct(x);
+isemptyorstruct = @(x) isempty(x) || isstruct(x);
 
 % check fields content
 check_fields = {ischarorcell, ischarorcell, @isstruct, isnumorstruct,...
-				@isstruct, @isstruct, @isstruct, @isstruct};
+				@isstruct, @isstruct, isemptyorstruct, isemptyorstruct};
 
 for r = rs
 	for f = 1:length(obligatory_fields)
