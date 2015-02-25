@@ -582,8 +582,8 @@ classdef fastplot < handle
                     ind = reuse+1:newnum;
                     obj.h.backpatches(ind) = patch({'Vertices', 'FaceColor'}, ...
                         [vert(ind), colors(ind)], 'Faces', 1:4, ...
-                        'EdgeColor', 'none', 'HitTest', 'off', ...
-                        'FaceAlpha', 0.5);
+                        'EdgeColor', 'none', 'HitTest', 'off');
+                    uistack(obj.h.backpatches(ind), 'bottom');
                 end
             end
         end
