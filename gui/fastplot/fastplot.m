@@ -63,9 +63,17 @@ classdef fastplot < handle
             obj.spacing = 2 * mean(obj.opt.chan_sd);
             obj.arg_parser(varargin);
 
+            chan_pos = (0:obj.data_size(2)-1)*obj.spacing;
+
             % introduce spacing to the data
             obj.data = obj.data - repmat(...
-                (0:obj.data_size(2)-1)*obj.spacing, [obj.data_size(1), 1]);
+                chan_pos, [obj.data_size(1), 1]);
+
+            % electrode position
+            obj.opt.electrode_names = {EEG.chanlocs.labels};
+            obj.opt.electrode_positions = -chan_pos;
+            obj.opt.ylabels = fliplr(obj.opt.electrode_names(5:5:end));
+            obj.opt.ypos    = fliplr(obj.opt.electrode_positions(5:5:end));
             
             % window limits and step size
             obj.window.size = 1000;
@@ -249,6 +257,7 @@ classdef fastplot < handle
                 ss(1)-20, ss(2)-200], 'Toolbar', 'none', ...
                 'Menubar', 'none');
             obj.h.ax = axes('Position', [0.05, 0.05, 0.9, 0.85]);
+
             obj.h.eventlines = [];
             obj.h.eventlabels = [];
             obj.h.epochlimits = [];
@@ -264,6 +273,12 @@ classdef fastplot < handle
             obj.h.ylim = [-(obj.data_size(2)+1) * obj.spacing,...
                 obj.spacing];
             set(obj.h.ax, 'YLim', obj.h.ylim, 'YLimMode', 'manual');
+            
+            % label electrodes
+            set(obj.h.ax, 'YTickMode', 'manual');
+            set(obj.h.ax, 'YTickLabelMode', 'manual');
+            set(obj.h.ax, 'YTick', obj.opt.ypos);
+            set(obj.h.ax, 'YTickLabel', obj.opt.ylabels);
             
             % plot events
             obj.plotevents();
