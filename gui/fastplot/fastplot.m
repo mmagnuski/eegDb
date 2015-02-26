@@ -7,6 +7,16 @@ classdef fastplot < handle
     %     lines       - eeg signal lines
     %     eventlines  - lines showing event timing
     %     eventlabels - labels showing event type
+    %
+    % marks    -  structure containing information about marks
+    %             (marks should optimally have different name AND color)
+    %             contains following fields:
+    %     names       - cell array of mark names
+    %     colors      - M by 3 matrix of mark colors (M - number of marks)
+    %     current     - integer; informs which mark is currently selected
+    %     selected    - M by E boolean matrix; informs which epochs are marked
+    %                   with which mark types (M - number of marks, E - number
+    %                   of epochs)
     
     % REMEMBER
     % opt could contain data_names field that could inform the
