@@ -216,6 +216,55 @@ classdef fastplot < handle
                 ep.nums = [ep.nums, ep.nums(end)+1];
             end
         end
+
+        function add_mark(obj, mark)
+            % allows to add mark types to fastplot
+            % this does not mark epochs but adds new mark types 
+            % 
+            % Arguments:
+            % mark  - structure containing fields:
+            %     name - string; name of the mark
+            %     color - 1 by 3 matrix; color of the mark
+            %
+            % Example:
+            % p = fastplot(EEG);
+            % new_mark.name = 'new mark';
+            % new_mark.color = [0.4, 0.7, 0.2];
+            % p.add_mark(new_mark);
+            %
+            % see also: fastplot
+
+            % CHANGE later - support for mark structs longer than one entry
+
+            % check if input is correct
+            if ~isstruct(mark)
+                error('fastplot add_mark error: mark should be a structure');
+            end
+
+            flds = fields(mark);
+            needs_fields = {'name', 'color'};
+            has_fields = cellfun(@(x) any(strcmp(x, flds)), needs_fields);
+            if ~all(has_fields)
+                error(['fastplot add_mark error: mark structure should ',...
+                    'contain both name and color fields;']);
+            end
+
+            % check if the name is not present:
+            name_new = ~any(strcmp(mark.name, obj.marks.names));
+            if ~name_new
+                % currently pass silently, later maybe more checks
+                return
+            end
+
+            % CONSIDER: pass mark to _add_mark 
+            %           (private function without safety checks)
+
+            % CHANGE - check color too
+
+            % add mark to obj.marks
+            obj.marks.names{end + 1} = mark.name;
+            obj.marks.colors(end + 1, :) = mark.color;
+        end
         
     end
 
