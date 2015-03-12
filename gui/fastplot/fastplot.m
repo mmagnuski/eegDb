@@ -621,11 +621,12 @@ classdef fastplot < handle
                 % ---------------
 
                 % add edges to epoch_lims
+                [pre, post] = deal([]);
                 if ~(epoch_lims(1) == 0)
                     pre = 0;
                 end
-                if ~(epoch_lims(end) == 1000) %window.length
-                    post = 1000;
+                if ~(epoch_lims(end) == obj.window.length) %window.length
+                    post = obj.window.length;
                 end
                 epoch_lims = [pre, epoch_lims, post];
 
