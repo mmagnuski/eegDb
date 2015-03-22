@@ -439,6 +439,7 @@ if femp(ICAw(r), 'postfilter')
 end
 
 %% epoching
+if femp(ICAw(r), 'epoch')
 if femp(ICAw(r).epoch, 'locked') && ~ICAw(r).epoch.locked
     
     % ==============
@@ -490,6 +491,7 @@ elseif ~isempty(ICAw(r).epoch.events) && ...
     if segment && ~nosegment
         EEG = segmentEEG(EEG, ICAw(r).epoch.segment);
     end
+end
 end
 
 % CHANGE

@@ -34,6 +34,10 @@ if testdatainfo
 end
 
 whatepoching = 0;
+if isempty(eegDb.epoch)
+    return
+end
+
 % test if locked value is present and what it says:
 if femp(eegDb.epoch, 'locked')
     whatepoching = eegDb.epoch.locked + 1;
