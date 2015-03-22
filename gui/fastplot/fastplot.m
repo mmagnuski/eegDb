@@ -392,6 +392,11 @@ classdef fastplot < handle
                 obj.marks.colors   = [0.85, 0.3, 0.1];
                 obj.marks.current  = 1;
                 obj.marks.selected = false(1, obj.epoch.num);
+
+                % set mark limits
+                num_marks = length(obj.marks);
+                obj.marks.num2vertx = arrayfun(@(x) obj.create_vert_y(x, ylim), ...
+                    1:num_marks, 'UniformOutput', false);
             end
         end
 
@@ -667,3 +672,7 @@ classdef fastplot < handle
     
     
 end
+
+function verty = create_vert_y(x, ylim)
+    verty = repmat(linspace(ylim(1), ylim(2), x+1), [2, 1]);
+    verty = nowmark(:);
