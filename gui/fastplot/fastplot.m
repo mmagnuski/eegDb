@@ -387,11 +387,13 @@ classdef fastplot < handle
                 obj.epoch.num = orig_size(3);
                 obj.epoch.limits = orig_size(2):orig_size(2):obj.data_size(1) + obj.opt.stime / 2;
 
-                % marks
-                obj.marks.names    = {'reject'};
-                obj.marks.colors   = [0.85, 0.3, 0.1];
-                obj.marks.current  = 1;
-                obj.marks.selected = false(1, obj.epoch.num);
+                % set default marks
+                if isempty(obj.marks)
+                    obj.marks.names    = {'reject'};
+                    obj.marks.colors   = [0.85, 0.3, 0.1];
+                    obj.marks.current  = 1;
+                    obj.marks.selected = false(1, obj.epoch.num);
+                end
 
                 % set mark limits
                 num_marks = length(obj.marks);
