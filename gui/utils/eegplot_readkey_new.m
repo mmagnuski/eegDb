@@ -1,10 +1,13 @@
-function eegplot_readkey_new(hObj, evnt, hBox)
+function eegplot_readkey_new(hObj, evnt, hBox, new_pattern)
 
 % eegplot_buttonpress_new implements a new
 % buttonpress handler for eegplot
 
 % TODOs:
+% [ ] consider adding variable arguments (varargin)
+% [ ] change into an object?
 % [ ] selector mode
+
 persistent h
 persistent buffer
 persistent patterns
@@ -28,6 +31,9 @@ end
 if isempty(buffer)
     buffer = {};
 end
+if exist('new_pattern', 'var')
+    patterns = new_pattern;
+end
 if isempty(patterns)
     patterns{1,1} = {'num', 'leftarrow'};
     patterns{1,2} = {@eegplot2, 'drawp', 1};
@@ -42,9 +48,9 @@ if isempty(patterns)
     patterns{6,1} = {'a', 'm'};
     patterns{6,2} = {@add_rejcol_callb, hObj};
     patterns{7,1} = {'x'};
-    patterns{7,2} = {@guifun_maxim_eegaxis, hObj};
-    
+    patterns{7,2} = {@guifun_maxim_eegaxis, hObj};    
 end
+
 if isempty(selected_patterns)
     selected_patterns = patterns;
 end
@@ -52,6 +58,10 @@ if ~exist('hBox', 'var')
     hBox = [];
 end
 
+% do not go further if no events to handle
+if isempty(evnt)
+    return
+end
 % CHANGE:
 % we don't care about case so we don't want modifiers
 if ~isempty(evnt.Modifier)
