@@ -102,11 +102,11 @@
 %  'showwin'     = ['on'|'off'] Show sorting window behind ERP trace. {default: 'off'}
 %
 % Plot time-varying spectral amplitude instead of potential:
-% 'plotamps'     = ['on'|'off'] Image amplitudes at each trial and latency instead of 
+% 'plotamps'     = ['on'|'off'] Image amplitudes at each trial and latency instead of
 %                  potential values. Note: Currently requires 'coher' (below) with alpha signif.
 %                  Use 'cycles' (see below) > (its default) 3 for better frequency specificity,
 %                  {default: plot potential, not amplitudes, with no minimum}. The average power
-%                  (in log space) before time 0 is automatically removed. Note that the 
+%                  (in log space) before time 0 is automatically removed. Note that the
 %                  'baseline' parameter has no effect on 'plotamps'. Instead use
 %                  change "baselinedb" or "basedB" in the 'limits' parameter. By default
 %                  the baseline is removed before time 0.
@@ -125,6 +125,8 @@
 %                      thresholds (as from outputs ampsig, cohsig) to save time. {default: none}
 %   'caxis'          = [lo hi] Set color axis limits. Else [fraction] Set caxis limits at
 %                      (+/-)fraction*max(abs(data)) {default: symmetrical in dB, based on data limits}
+%
+%   'keepaxis'        =  prevent erpimage from deleting current axis. Defaulf: false
 %
 % Add epoch-mean ERP to plot:
 %   'erp'      = ['on'|'off'|1|2|3|4] Plot ERP time average of the trials below the
@@ -165,7 +167,7 @@
 %                       eloc_info (EEG.chaninfo), if empty ([]) or absent, implies the 'X' direction
 %                       points towards the nose and all channels are plotted {default: no scalp map}
 %   'spec'           = [loHz,hiHz] Plot the mean data spectrum at upper right of image.
-%   'specaxis'       = ['log'|'lin] Use 'lin' for linear spectrum frequency scaling, 
+%   'specaxis'       = ['log'|'lin] Use 'lin' for linear spectrum frequency scaling,
 %                       else 'log' for log scaling {default: 'log'}
 %   'horz'           = [epochs_vector] Plot horizontal lines at specified epoch numbers.
 %   'vert'           = [times_vector] Plot vertical dashed lines at specified latencies
@@ -207,7 +209,7 @@
 %                        of data}.
 % 'baselinedb'        = [low_boundary high_boundary] a time window (in msec) whose mean amplitude in
 %                        each trial will be removed from each trial (e.g., [-100 0]). Use basedB in limits
-%                        to remove a fixed value. Default is time before 0. If you do not want to use a 
+%                        to remove a fixed value. Default is time before 0. If you do not want to use a
 %                        baseline for amplitude plotting, enter a NaN value.
 % 'filt'              = [low_boundary high_boundary] a two element vector indicating the frequency
 %                        cut-offs for a 3rd order Butterworth filter that will be applied to each
@@ -401,6 +403,7 @@ Rmerp     = 'no';
 percentiles = [];
 percentileflag = NO;
 erp_ptiles = 1;
+keepaxis = false;    % keep axis option  MZ/MM edit
 
 minerp = NaN; % default limits
 maxerp = NaN;
@@ -549,14 +552,14 @@ if nargin > 6
             else
                 timeStretchColors = Arg{3};
             end
-%             fprintf('The %d events specified in each trial will be time warped to latencies:',length(timeStretchRef)-2);
-%             fprintf(' %.0f', times(1)+1000*(timeStretchRef(2:end-1)-1)/srate); % converted from frames to ms -sm
-%             fprintf(' ms\n');
+            %             fprintf('The %d events specified in each trial will be time warped to latencies:',length(timeStretchRef)-2);
+            %             fprintf(' %.0f', times(1)+1000*(timeStretchRef(2:end-1)-1)/srate); % converted from frames to ms -sm
+            %             fprintf(' ms\n');
             timestretchflag = NO;
         elseif Coherflag == YES
             if length(Arg) > 3 || length(Arg) < 1
                 help erpimage
-%                 fprintf('\nerpimage(): coher arg must be size <= 3.\n');
+                %                 fprintf('\nerpimage(): coher arg must be size <= 3.\n');
                 return
             end
             coherfreq = Arg(1);
@@ -569,7 +572,7 @@ if nargin > 6
                 Cohsigflag = YES;
                 alpha  = Arg(3);
                 if alpha < 0 || alpha > 0.1
-%                     fprintf('\nerpimage(): alpha value %g out of bounds.\n',alpha);
+                    %                     fprintf('\nerpimage(): alpha value %g out of bounds.\n',alpha);
                     return
                 end
             end
@@ -578,7 +581,7 @@ if nargin > 6
         elseif Topoflag == YES;
             if length(Arg) < 2
                 help erpimage
-%                 fprintf('\nerpimage(): topo arg must be a list of length 2 or 3.\n');
+                %                 fprintf('\nerpimage(): topo arg must be a list of length 2 or 3.\n');
                 return
             end
             topomap = Arg{1};
@@ -588,7 +591,7 @@ if nargin > 6
             end;
             Topoflag = NO;
         elseif Specflag == YES;
-            if length(Arg) ~= 2 
+            if length(Arg) ~= 2
                 error('\nerpimage(): ''spec'' flag argument must be a numeric array of length 2.\n');
                 return
             end
@@ -598,11 +601,11 @@ if nargin > 6
         elseif SpecAxisflag == YES;
             SpecAxis = Arg;
             if ~strcmpi(SpecAxis,'lin') && ~strcmpi(SpecAxis,'log')
-              error('\nerpimage(): spectrum axis type must be ''lin'' or ''log''.\n');
-              return
+                error('\nerpimage(): spectrum axis type must be ''lin'' or ''log''.\n');
+                return
             end
             if strcmpi(SpecAxis,'lin')
-               SpecAxis = 'linear';   % convert to MATLAB Xscale keyword
+                SpecAxis = 'linear';   % convert to MATLAB Xscale keyword
             end
             SpecAxisflag = NO;
         elseif Renormflag == YES
@@ -622,21 +625,21 @@ if nargin > 6
             %  [lotime hitime loerp hierp loamp hiamp locoher hicoher]
             if size(Arg,1) ~= 1 || size(Arg,2) < 2 || size(Arg,2) > 9
                 help erpimage
-%                 fprintf('\nerpimage(): limits arg must be a vector sized (1,2<->9).\n');
+                %                 fprintf('\nerpimage(): limits arg must be a vector sized (1,2<->9).\n');
                 return
             end
             if  ~isnan(Arg(1)) & (Arg(2) <= Arg(1))
                 help erpimage
-%                 fprintf('\nerpimage(): time limits out of order or out of range.\n');
+                %                 fprintf('\nerpimage(): time limits out of order or out of range.\n');
                 return
             end
             if Arg(1) < min(times)
                 Arg(1) = min(times);
-%                 fprintf('Adjusting mintime limit to first data value %g\n',min(times));
+                %                 fprintf('Adjusting mintime limit to first data value %g\n',min(times));
             end
             if Arg(2) > max(times)
                 Arg(2) = max(times);
-%                 fprintf('Adjusting maxtime limit to last data value %g\n',max(times));
+                %                 fprintf('Adjusting maxtime limit to last data value %g\n',max(times));
             end
             timelimits = Arg(1:2);
             if length(Arg)> 2
@@ -647,7 +650,7 @@ if nargin > 6
             end
             if ~isnan(maxerp) & maxerp <= minerp
                 help erpimage
-%                 fprintf('\nerpimage(): erp limits args out of order.\n');
+                %                 fprintf('\nerpimage(): erp limits args out of order.\n');
                 return
             end
             if length(Arg)> 4
@@ -658,7 +661,7 @@ if nargin > 6
             end
             if maxamp <= minamp
                 help erpimage
-%                 fprintf('\nerpimage(): amp limits args out of order.\n');
+                %                 fprintf('\nerpimage(): amp limits args out of order.\n');
                 return
             end
             if length(Arg)> 6
@@ -669,7 +672,7 @@ if nargin > 6
             end
             if maxcoh <= mincoh
                 help erpimage
-%                 fprintf('\nerpimage(): coh limits args out of order.\n');
+                %                 fprintf('\nerpimage(): coh limits args out of order.\n');
                 return
             end
             if length(Arg)>8
@@ -688,7 +691,7 @@ if nargin > 6
                 auxvar = Arg{1};
                 auxcolors = Arg{2};
             elseif isa(Arg,'cell')==YES
-%                 fprintf('\nerpimage(): auxvars argument must be a matrix or length-2 cell array.\n');
+                %                 fprintf('\nerpimage(): auxvars argument must be a matrix or length-2 cell array.\n');
                 return
             else
                 auxvar = Arg; % no auxcolors specified
@@ -713,14 +716,14 @@ if nargin > 6
         elseif Signifflag == YES
             signifs = Arg; % [low_amp hi_amp coher]
             if length(signifs) ~= 3
-%                 fprintf('\nerpimage(): signif arg [%g] must have 3 values\n',Arg);
+                %                 fprintf('\nerpimage(): signif arg [%g] must have 3 values\n',Arg);
                 return
             end
             Signifflag = NO;
         elseif Allcohersflag == YES
             data2=Arg;
             if size(data2) ~= size(data)
-%                 fprintf('\nerpimage(): allcohers data matrix must be the same size as data.\n');
+                %                 fprintf('\nerpimage(): allcohers data matrix must be the same size as data.\n');
                 return
             end
             Allcohersflag = NO;
@@ -831,8 +834,8 @@ if nargin > 6
         elseif Erpalphaflag == YES
             erpalpha = Arg(1);
             if erpalpha < MIN_ERPALPHA | erpalpha > MAX_ERPALPHA
-%                 fprintf('\nerpimage(): erpalpha value is out of bounds [%g, %g]\n',...
-%                     MIN_ERPALPHA,MAX_ERPALPHA);
+                %                 fprintf('\nerpimage(): erpalpha value is out of bounds [%g, %g]\n',...
+                %                     MIN_ERPALPHA,MAX_ERPALPHA);
                 return
             end
             Erpalphaflag = NO;
@@ -998,6 +1001,8 @@ if nargin > 6
             Srateflag = YES;
         elseif strcmpi(Arg,'erp_grid')
             erp_grid = YES;
+        elseif strcmp(Arg, 'keepaxis') % MZ edit
+            keepaxis = true;
         elseif strcmpi(Arg,'baseline')
             if a < nargin,
                 a = a+1;
@@ -1057,9 +1062,9 @@ if nargin > 6
         else
             help erpimage
             if isstr(Arg)
-%                 fprintf('\nerpimage(): unknown arg %s\n',Arg);
+                %                 fprintf('\nerpimage(): unknown arg %s\n',Arg);
             else
-%                 fprintf('\nerpimage(): unknown arg %d, size(%d,%d)\n',a,size(Arg,1),size(Arg,2));
+                %                 fprintf('\nerpimage(): unknown arg %d, size(%d,%d)\n',a,size(Arg,1),size(Arg,2));
             end
             return
         end
@@ -1069,16 +1074,16 @@ end
 if exist('img_ylab','var') || exist('img_ytick_lab','var'),
     oops=0;
     if exist('phargs','var'),
-%         fprintf('********* Warning *********\n');
-%         fprintf('Options ''img_ylab'' and ''img_ytick_lab'' have no effect when sorting by phase.\n');
+        %         fprintf('********* Warning *********\n');
+        %         fprintf('Options ''img_ylab'' and ''img_ytick_lab'' have no effect when sorting by phase.\n');
         oops=0;
     elseif exist('valargs','var'),
-%         fprintf('********* Warning *********\n');
-%         fprintf('Options ''img_ylab'' and ''img_ytick_lab'' have no effect when sorting by EEG voltage.\n');
+        %         fprintf('********* Warning *********\n');
+        %         fprintf('Options ''img_ylab'' and ''img_ytick_lab'' have no effect when sorting by EEG voltage.\n');
         oops=0;
     elseif exist('ampargs','var'),
-%         fprintf('********* Warning *********\n');
-%         fprintf('Options ''img_ylab'' and ''img_ytick_lab'' have no effect when sorting by frequency amplitude.\n');
+        %         fprintf('********* Warning *********\n');
+        %         fprintf('Options ''img_ylab'' and ''img_ytick_lab'' have no effect when sorting by frequency amplitude.\n');
         oops=0;
     end
     if oops
@@ -1092,47 +1097,47 @@ if   Caxflag == YES ...
         |Alignflag == YES ...
         |Limitflag == YES
     help erpimage
-%     fprintf('\nerpimage(): missing option arg.\n')
+    %     fprintf('\nerpimage(): missing option arg.\n')
     return
 end
 if (Allampsflag | exist('data2')) & ( any(isnan(coherfreq)) | ~Cohsigflag )
-%     fprintf('\nerpimage(): allamps and allcohers flags require coher freq, srate, and cohsig.\n');
+    %     fprintf('\nerpimage(): allamps and allcohers flags require coher freq, srate, and cohsig.\n');
     return
 end
 if Allampsflag & exist('data2')
-%     fprintf('\nerpimage(): cannot image both allamps and allcohers.\n');
+    %     fprintf('\nerpimage(): cannot image both allamps and allcohers.\n');
     return
 end
 if ~exist('srate') | srate <= 0
-%     fprintf('\nerpimage(): Data srate must be specified and > 0.\n');
+    %     fprintf('\nerpimage(): Data srate must be specified and > 0.\n');
     return
 end
 if ~isempty(auxvar)
     % whos auxvar
     if size(auxvar,1) ~= ntrials & size(auxvar,2) ~= ntrials
-%         fprintf('\nerpimage(): auxvar size should be (N,ntrials), e.g., (N,%d)\n',...
-%             ntrials);
+        %         fprintf('\nerpimage(): auxvar size should be (N,ntrials), e.g., (N,%d)\n',...
+        %             ntrials);
         return
     end
     if size(auxvar,1) == ntrials & size(auxvar,2) ~= ntrials  % make (N,frames)
         auxvar = auxvar';
     end
     if size(auxvar,2) ~= ntrials
-%         fprintf('\nerpimage(): auxvar size should be (N,ntrials), e.g., (N,%d)\n',...
-%             ntrials);
+        %         fprintf('\nerpimage(): auxvar size should be (N,ntrials), e.g., (N,%d)\n',...
+        %             ntrials);
         return
     end
     if exist('auxcolors')==YES % if specified
         if isa(auxcolors,'cell')==NO % if auxcolors is not a cell array
-%             fprintf(...
-%                 '\nerpimage(): auxcolors argument to auxvar flag must be a cell array.\n');
+            %             fprintf(...
+            %                 '\nerpimage(): auxcolors argument to auxvar flag must be a cell array.\n');
             return
         end
     end
 elseif exist('timeStretchRef') & ~isempty(timeStretchRef)
     if ~isnan(aligntime)
-%         fprintf(['\nerpimage(): options "align" and ' ...
-%             '"timewarp" are not compatiable.\n']);
+        %         fprintf(['\nerpimage(): options "align" and ' ...
+        %             '"timewarp" are not compatiable.\n']);
         return;
     end
     
@@ -1154,7 +1159,7 @@ elseif exist('timeStretchRef') & ~isempty(timeStretchRef)
     
     auxvarInd = 1-strcmp('',timeStretchColors); % indicate which lines to draw
     newauxvars = ((timeStretchRef(find(auxvarInd))-1)/srate+times(1)/1000) * 1000; % convert back to ms
-%     fprintf('Overwriting vert with auxvar\n');
+    %     fprintf('Overwriting vert with auxvar\n');
     verttimes = [newauxvars'];
     verttimesColors = {timeStretchColors{find(auxvarInd)}};
     newauxvars = repmat(newauxvars, [1 ntrials]);
@@ -1182,53 +1187,53 @@ end
 
 if exist('phargs')
     if phargs(3) > srate/2
-%         fprintf(...
-%             '\nerpimage(): Phase-sorting frequency (%g Hz) must be less than Nyquist rate (%g Hz).',...
-%             phargs(3),srate/2);
+        %         fprintf(...
+        %             '\nerpimage(): Phase-sorting frequency (%g Hz) must be less than Nyquist rate (%g Hz).',...
+        %             phargs(3),srate/2);
     end
     
     if frames < cycles*srate/phargs(3)
-%         fprintf('\nerpimage(): phase-sorting freq. (%g) too low: epoch length < %d cycles.\n',...
-%             phargs(3),cycles);
+        %         fprintf('\nerpimage(): phase-sorting freq. (%g) too low: epoch length < %d cycles.\n',...
+        %             phargs(3),cycles);
         return
     end
     if length(phargs)==4 & phargs(4) > srate/2
         phargs(4) = srate/2;
     end
     if length(phargs)==5 & (phargs(5)>180 | phargs(5) < -180)
-%         fprintf('\nerpimage(): coher topphase (%g) out of range.\n',topphase);
+        %         fprintf('\nerpimage(): coher topphase (%g) out of range.\n',topphase);
         return
     end
 end
 if exist('ampargs')
     if abs(ampargs(3)) > srate/2
-%         fprintf(...
-%             '\nerpimage(): amplitude-sorting frequency (%g Hz) must be less than Nyquist rate (%g Hz).',...
-%             abs(ampargs(3)),srate/2);
+        %         fprintf(...
+        %             '\nerpimage(): amplitude-sorting frequency (%g Hz) must be less than Nyquist rate (%g Hz).',...
+        %             abs(ampargs(3)),srate/2);
     end
     
     if frames < cycles*srate/abs(ampargs(3))
-%         fprintf('\nerpimage(): amplitude-sorting freq. (%g) too low: epoch length < %d cycles.\n',...
-%             abs(ampargs(3)),cycles);
+        %         fprintf('\nerpimage(): amplitude-sorting freq. (%g) too low: epoch length < %d cycles.\n',...
+        %             abs(ampargs(3)),cycles);
         return
     end
     if length(ampargs)==4 & abs(ampargs(4)) > srate/2
         ampargs(4) = srate/2;
-%         fprintf('> Reducing max ''ampsort'' frequency to Nyquist rate (%g Hz)\n',srate/2)
+        %         fprintf('> Reducing max ''ampsort'' frequency to Nyquist rate (%g Hz)\n',srate/2)
     end
 end
 if ~any(isnan(coherfreq))
     if coherfreq(1) <= 0 | srate <= 0
-%         fprintf('\nerpimage(): coher frequency (%g) out of range.\n',coherfreq(1));
+        %         fprintf('\nerpimage(): coher frequency (%g) out of range.\n',coherfreq(1));
         return
     end
     if coherfreq(end) > srate/2 | srate <= 0
-%         fprintf('\nerpimage(): coher frequency (%g) out of range.\n',coherfreq(end));
+        %         fprintf('\nerpimage(): coher frequency (%g) out of range.\n',coherfreq(end));
         return
     end
     if frames < cycles*srate/coherfreq(1)
-%         fprintf('\nerpimage(): coher freq. (%g) too low:  epoch length < %d cycles.\n',...
-%             coherfreq(1),cycles);
+        %         fprintf('\nerpimage(): coher freq. (%g) too low:  epoch length < %d cycles.\n',...
+        %             coherfreq(1),cycles);
         return
     end
 end
@@ -1240,7 +1245,7 @@ if ~isstr(aligntime) & ~isnan(aligntime)
     if ~isinf(aligntime) ...
             & (aligntime < timelimits(1) | aligntime > timelimits(2))
         help erpimage
-%         fprintf('\nerpimage(): requested align time outside of time limits.\n');
+        %         fprintf('\nerpimage(): requested align time outside of time limits.\n');
         return
     end
 end
@@ -1249,7 +1254,7 @@ end
 %
 nans = find(isnan(data));
 if length(nans)
-%     fprintf('Replaced %d nan in data with 0s.\n');
+    %     fprintf('Replaced %d nan in data with 0s.\n');
     data(nans) = 0;
 end
 %
@@ -1280,7 +1285,7 @@ end
 %
 if any(isnan(sortvar))
     nanlocs = find(isnan(sortvar));
-%     fprintf('Removing %d trials with NaN sortvar values.\n', length(nanlocs));
+    %     fprintf('Removing %d trials with NaN sortvar values.\n', length(nanlocs));
     data(:,nanlocs) = [];
     sortvar(nanlocs) = [];
     if exist('data2') == 1
@@ -1305,8 +1310,8 @@ if strcmpi(mvavg_type,'Gaussian'),
         avewidth = DEFAULT_SDEV;
     elseif avewidth < 1,
         help erpimage
-%         fprintf('\nerpimage(): Variable avewidth cannot be < 1.\n')
-%         fprintf('\nerpimage(): avewidth needs to be a positive integer.\n')
+        %         fprintf('\nerpimage(): Variable avewidth cannot be < 1.\n')
+        %         fprintf('\nerpimage(): avewidth needs to be a positive integer.\n')
         return
     end
     wt_wind=exp(-0.5*([-3*avewidth:3*avewidth]/avewidth).^2)';
@@ -1320,8 +1325,8 @@ if strcmpi(mvavg_type,'Gaussian'),
         end
         wt_wind=exp(-0.5*([-3*avewidth:3*avewidth]/avewidth).^2)';
         wt_wind=wt_wind/sum(wt_wind);
-%         fprintf('avewidth is too big for this number of trials.\n');
-%         fprintf('Changing avewidth to maximum possible size: %d\n',avewidth);
+        %         fprintf('avewidth is too big for this number of trials.\n');
+        %         fprintf('Changing avewidth to maximum possible size: %d\n',avewidth);
         avewidth=length(wt_wind);
     end
 else
@@ -1331,10 +1336,10 @@ else
         avewidth = DEFAULT_AVEWIDTH;
     elseif avewidth < 1
         help erpimage
-%         fprintf('\nerpimage(): Variable avewidth cannot be < 1.\n')
+        %         fprintf('\nerpimage(): Variable avewidth cannot be < 1.\n')
         return
     elseif avewidth > ntrials
-%         fprintf('Setting variable avewidth to max %d.\n',ntrials)
+        %         fprintf('Setting variable avewidth to max %d.\n',ntrials)
         avewidth = ntrials;
     end
     wt_wind=ones(1,avewidth)/avewidth;
@@ -1362,31 +1367,31 @@ if ~isempty(flt)
         end
     end
     
-%     fprintf('\nFiltering data with 3rd order Butterworth filter: ');
+    %     fprintf('\nFiltering data with 3rd order Butterworth filter: ');
     if (flt(1)==0),
         %lowpass filter the data
         [B A]=butter(3,flt(2)*2/srate,'low');
-%         fprintf('lowpass at %.0f Hz\n',flt(2));
+        %         fprintf('lowpass at %.0f Hz\n',flt(2));
     elseif (flt(2)==(srate/2)),
         %highpass filter the data
         [B A]=butter(3,flt(1)*2/srate,'high');
-%         fprintf('highpass at %.0f Hz\n',flt(1));
+        %         fprintf('highpass at %.0f Hz\n',flt(1));
     elseif (flt(1)<0)
         %bandstop filter the data
         flt=-flt;
         [B A]=butter(3,flt*2/srate,'stop');
-%         fprintf('stopband from %.0f to %.0f Hz\n',flt(1),flt(2));
+        %         fprintf('stopband from %.0f to %.0f Hz\n',flt(1),flt(2));
     else
         %bandpass filter the data
         [B A]=butter(3,flt*2/srate);
-%         fprintf('bandpass from %.0f to %.0f Hz\n',flt(1),flt(2));
+        %         fprintf('bandpass from %.0f to %.0f Hz\n',flt(1),flt(2));
     end
     s=size(data);
     for trial=1:s(2),
         data(:,trial)=filtfilt(B,A,double(data(:,trial)));
     end
     if isempty(baseline)
-%         fprintf('Note, you might want to re-baseline the data using the erpimage ''baseline'' option.\n\n');
+        %         fprintf('Note, you might want to re-baseline the data using the erpimage ''baseline'' option.\n\n');
     end
 end
 
@@ -1414,7 +1419,7 @@ if ~isempty(baseline),
         end_pt=find_crspnd_pt(baseline(2),times,1:length(times));
         end_pt=floor(end_pt);
     end
-%     fprintf('\nRemoving pre-stimulus mean baseline from %.1f to %.1f msec.\n\n',times(strt_pt),times(end_pt));
+    %     fprintf('\nRemoving pre-stimulus mean baseline from %.1f to %.1f msec.\n\n',times(strt_pt),times(end_pt));
     bsln_mn=mean(data(strt_pt:end_pt,:),1);
     data=data-repmat(bsln_mn,length(times),1);
 end
@@ -1444,14 +1449,14 @@ end;
 if isstr(aligntime) | ~isnan(aligntime)
     if ~isstr(aligntime) & isinf(aligntime)
         aligntime= median(sortvar);
-%         fprintf('Aligning data to median sortvar.\n');
+        %         fprintf('Aligning data to median sortvar.\n');
         % Alternative below: trimmed median - ignore top/bottom 5%
         %   ssv = sort(sortvar); % ssv = 'sorted sortvar'
         %   aligntime= median(ssv(ceil(ntrials/20)):floor(19*ntrials/20));
     end
     
     if ~isstr(aligntime)
-%         fprintf('Realigned sortvar plotted at %g ms.\n',aligntime);
+        %         fprintf('Realigned sortvar plotted at %g ms.\n',aligntime);
         aligndata=zeros(frames,ntrials); % begin with matrix of zeros()
         shifts = zeros(1,ntrials);
         for t=1:ntrials, %%%%%%%%% foreach trial %%%%%%%%%
@@ -1461,13 +1466,13 @@ if isstr(aligntime) | ~isnan(aligntime)
                 if frames-shft > 0
                     aligndata(shft+1:frames,t)=data(1:frames-shft,t);
                 else
-%                     fprintf('No aligned data for epoch %d - shift (%d frames) too large.\n',t,shft);
+                    %                     fprintf('No aligned data for epoch %d - shift (%d frames) too large.\n',t,shft);
                 end
             elseif shft < 0 % shift left
                 if frames+shft > 0
                     aligndata(1:frames+shft,t)=data(1-shft:frames,t);
                 else
-%                     fprintf('No aligned data for epoch %d - shift (%d frames) too large.\n',t,shft);
+                    %                     fprintf('No aligned data for epoch %d - shift (%d frames) too large.\n',t,shft);
                 end
             else % shft == 0
                 aligndata(:,t) = data(:,t);
@@ -1476,7 +1481,7 @@ if isstr(aligntime) | ~isnan(aligntime)
         if ~isempty(auxvar)
             auxvar = auxvar+shifts;
         end;
-%         fprintf('Shifted epochs by %d to %d frames.\n',min(shifts),max(shifts));
+        %         fprintf('Shifted epochs by %d to %d frames.\n',min(shifts),max(shifts));
         data = aligndata;                       % now data is aligned to sortvar
     else
         aligntime = str2num(aligntime);
@@ -1498,10 +1503,10 @@ if exist('phargs') == 1 % if phase-sort the data trials
     if length(phargs) >= 4 & phargs(3) ~= phargs(4) % find max frequency
         % in specified band
         if exist('psd') == 2 % requires Signal Processing Toolbox
-%             fprintf('Computing data spectrum using psd().\n');
+            %             fprintf('Computing data spectrum using psd().\n');
             [pxx,freqs] = psd(data(:),max(1024, pow2(ceil(log2(frames)))),srate,frames,0);
         else % EEGLAB native work-around
-%             fprintf('Computing data spectrum using spec().\n');
+            %             fprintf('Computing data spectrum using spec().\n');
             [pxx,freqs] = spec(data(:),max(1024, pow2(ceil(log2(frames)))),srate,frames,0);
         end;
         % gf = gcf; % figure;plot(freqs,pxx); %xx=axis; %axis([phargs(3) phargs(4) xx(3) xx(4)]); %figure(gf);
@@ -1515,7 +1520,7 @@ if exist('phargs') == 1 % if phase-sort the data trials
     else
         freq = phargs(3); % else use specified frequency
     end
-%     fprintf('Sorting trials on phase at %.2g Hz.\n',freq);
+    %     fprintf('Sorting trials on phase at %.2g Hz.\n',freq);
     
     [amps, cohers, cohsig, ampsig, allamps, allphs] = ...
         phasecoher(data,length(times),srate,freq,cycles,0, ...
@@ -1565,13 +1570,13 @@ if exist('phargs') == 1 % if phase-sort the data trials
     [tmp ampsortidx] = sort(phsamp); % sort amplitudes
     if amprej>=0
         ampsortidx = ampsortidx(ceil(amprej*length(ampsortidx))+1:end); % if amprej==0, select all trials
-%         fprintf('Retaining %d epochs (%g percent) with largest power at the analysis frequency,\n',...
-%             length(ampsortidx),100*(1-amprej));
+        %         fprintf('Retaining %d epochs (%g percent) with largest power at the analysis frequency,\n',...
+        %             length(ampsortidx),100*(1-amprej));
     else % amprej < 0
         amprej = 1+amprej; % subtract from end
         ampsortidx = ampsortidx(1:floor(amprej*length(ampsortidx)));
-%         fprintf('Retaining %d epochs (%g percent) with smallest power at the analysis frequency,\n',...
-%             length(ampsortidx),amprej*100);
+        %         fprintf('Retaining %d epochs (%g percent) with smallest power at the analysis frequency,\n',...
+        %             length(ampsortidx),amprej*100);
     end
     %
     % Remove low|high-amplitude trials %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1609,7 +1614,7 @@ if exist('phargs') == 1 % if phase-sort the data trials
     phaseangles = -phaseangles; % Note: phsangles now descend from pi
     % TEST auxvar = 360 + (1000/256)*(256/5)*phaseangles/(2*pi); % plot phase+360 in ms for test
     
-%     fprintf('Size of data = [%d,%d]\n',size(data,1),size(data,2));
+    %     fprintf('Size of data = [%d,%d]\n',size(data,1),size(data,2));
     sortidx = ampsortidx(sortidx); % return original trial indices in final sorted order
     %
     % %%%%%%%%%%%%%%% Sort data by amplitude %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1617,10 +1622,10 @@ if exist('phargs') == 1 % if phase-sort the data trials
 elseif exist('ampargs') == 1 % if amplitude-sort
     if length(ampargs) == 4 % find max frequency in specified band
         if exist('psd') == 2
-%             fprintf('Computing data spectrum using psd().\n');
+            %             fprintf('Computing data spectrum using psd().\n');
             [pxx,freqs] = psd(data(:),max(1024, pow2(ceil(log2(frames)))),srate,frames,0);
         else
-%             fprintf('Computing data spectrum using spec().\n');
+            %             fprintf('Computing data spectrum using spec().\n');
             [pxx,freqs] = spec(data(:),max(1024, pow2(ceil(log2(frames)))),srate,frames,0);
         end;
         pxx = 10*log10(pxx);
@@ -1642,10 +1647,10 @@ elseif exist('ampargs') == 1 % if amplitude-sort
         freq = abs(ampargs(3)); % else use specified frequency
     end
     if length(freq) == 1
-%         fprintf('Sorting data epochs by amplitude at frequency %2.1f Hz \n', freq);
+        %         fprintf('Sorting data epochs by amplitude at frequency %2.1f Hz \n', freq);
     else
-%         fprintf('Sorting data epochs by amplitude at %d frequencies (%2.1f Hz to %.1f Hz) \n',...
-%             length(freq),freq(1),freq(end));
+        %         fprintf('Sorting data epochs by amplitude at %d frequencies (%2.1f Hz to %.1f Hz) \n',...
+        %             length(freq),freq(1),freq(end));
     end
     SPECWININCR = 10;	% make spectral sorting time windows increment by 10 ms
     if isinf(ampargs(1))
@@ -1655,21 +1660,21 @@ elseif exist('ampargs') == 1 % if amplitude-sort
     end
     if ~isinf(ampargs(1)) % single time given
         if length(freq) == 1
-%             fprintf('   in a %1.1f-cycle (%1.0f ms) time window centered at %1.0f ms.\n',...
-%                 cycles,1000/freq(1)*cycles,ampargs(1));
+            %             fprintf('   in a %1.1f-cycle (%1.0f ms) time window centered at %1.0f ms.\n',...
+            %                 cycles,1000/freq(1)*cycles,ampargs(1));
         else
-%             fprintf('   in %1.1f-cycle (%1.0f-%1.0f ms) time windows centered at %1.0f ms.\n',...
-%                 cycles,1000/freq(1)*cycles,1000/freq(end)*cycles,ampargs(1));
+            %             fprintf('   in %1.1f-cycle (%1.0f-%1.0f ms) time windows centered at %1.0f ms.\n',...
+            %                 cycles,1000/freq(1)*cycles,1000/freq(end)*cycles,ampargs(1));
         end
     else % range of times
         [dummy sortwin_st ] = min(abs(times-ampwins(1)));
         [dummy sortwin_end] = min(abs(times-ampwins(end)));
         if length(freq) == 1
-%             fprintf('   in %d %1.1f-cycle (%1.0f ms) time windows centered from %1.0f to  %1.0f ms.\n',...
-%                 length(ampwins),cycles,1000/freq(1)*cycles,times(sortwin_st),times(sortwin_end));
+            %             fprintf('   in %d %1.1f-cycle (%1.0f ms) time windows centered from %1.0f to  %1.0f ms.\n',...
+            %                 length(ampwins),cycles,1000/freq(1)*cycles,times(sortwin_st),times(sortwin_end));
         else
-%             fprintf('   in %d %1.1f-cycle (%1.0f-%1.0f ms) time windows centered from %1.0f to %1.0f ms.\n',...
-%                 length(ampwins),cycles,1000/freq(1)*cycles,1000/freq(end)*cycles,times(sortwin_st),times(sortwin_end));
+            %             fprintf('   in %d %1.1f-cycle (%1.0f-%1.0f ms) time windows centered from %1.0f to %1.0f ms.\n',...
+            %                 length(ampwins),cycles,1000/freq(1)*cycles,1000/freq(end)*cycles,times(sortwin_st),times(sortwin_end));
         end
     end
     
@@ -1702,15 +1707,15 @@ elseif exist('ampargs') == 1 % if amplitude-sort
         filtersize = cycles * length(tmprange) / (winlen+1);
         timecenter = median(winloc)/srate*1000+times(1); % center of window in ms
         phaseangles = phaseangles + 2*pi*(timecenter-ampargs(1))*freq(end);
-%         fprintf(...
-%             '    Data time limits reached -> now uses a %1.1f cycles (%1.0f ms) window centered at %1.0f ms\n', ...
-%             filtersize, 1000/freq(1)*filtersize, timecenter);
-%         fprintf(...
-%             '    Wavelet length is %d; Phase has been linearly interpolated to latency et %1.0f ms.\n', ...
-%             length(winloc(1,:)), ampargs(1));
+        %         fprintf(...
+        %             '    Data time limits reached -> now uses a %1.1f cycles (%1.0f ms) window centered at %1.0f ms\n', ...
+        %             filtersize, 1000/freq(1)*filtersize, timecenter);
+        %         fprintf(...
+        %             '    Wavelet length is %d; Phase has been linearly interpolated to latency et %1.0f ms.\n', ...
+        %             length(winloc(1,:)), ampargs(1));
     end
     if length(freq) == 1
-%         fprintf('Amplitudes are computed using a wavelet of %d frames.\n',length(winloc(1,:)));
+        %         fprintf('Amplitudes are computed using a wavelet of %d frames.\n',length(winloc(1,:)));
     end
     
     %
@@ -1720,14 +1725,14 @@ elseif exist('ampargs') == 1 % if amplitude-sort
     [tmp n] = sort(phsamps); % sort amplitudes
     if ampargs(2)>=0
         n = n(ceil(ampargs(2)*length(n))+1:end); % if rej 0, select all trials
-%         fprintf('Retaining %d epochs (%g percent) with largest power at the analysis frequency,\n',...
-%             length(n),100*(1-ampargs(2)));
+        %         fprintf('Retaining %d epochs (%g percent) with largest power at the analysis frequency,\n',...
+        %             length(n),100*(1-ampargs(2)));
     else % ampargs(2) < 0
         ampargs(2) = 1+ampargs(2); % subtract from end
-%         n = n(1:floor(ampargs(2)*length(n)));
-%         fprintf(...
-%             'Retaining %d epochs (%g percent) with smallest power at the analysis frequency,\n',...
-%             length(n),ampargs(2)*100);
+        %         n = n(1:floor(ampargs(2)*length(n)));
+        %         fprintf(...
+        %             'Retaining %d epochs (%g percent) with smallest power at the analysis frequency,\n',...
+        %             length(n),ampargs(2)*100);
     end
     %
     % Remove low|high-amplitude trials %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1751,14 +1756,14 @@ elseif exist('ampargs') == 1 % if amplitude-sort
     if ~isempty(auxvar)
         auxvar = auxvar(:,sortidx);
     end
-%     fprintf('Size of data = [%d,%d]\n',size(data,1),size(data,2));
+    %     fprintf('Size of data = [%d,%d]\n',size(data,1),size(data,2));
     
     sortidx = n(sortidx); % return original trial indices in final sorted order
     %
     %%%%%%%%%%%%%%%%%%%%%% Don't Sort trials %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %
 elseif Nosort == YES
-%     fprintf('Not sorting data on input sortvar.\n');
+    %     fprintf('Not sorting data on input sortvar.\n');
     sortidx = 1:ntrials;
     %
     %%%%%%%%%%%%%%%%%%%%%% Sort trials on (mean) value %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1774,10 +1779,10 @@ elseif exist('valargs')
         endtime = times(endframe);
     end
     if length(valargs)==1 || sttime == endtime
-%         fprintf('Sorting data on value at time %4.0f ms.\n',sttime);
+        %         fprintf('Sorting data on value at time %4.0f ms.\n',sttime);
     elseif length(valargs)>1
-%         fprintf('Sorting data on mean value between %4.0f and %4.0f ms.\n',...
-%             sttime,endtime);
+        %         fprintf('Sorting data on mean value between %4.0f and %4.0f ms.\n',...
+        %             sttime,endtime);
     end
     if endframe>stframe
         sortval = mean(data(stframe:endframe,:));
@@ -1805,7 +1810,7 @@ elseif exist('valargs')
     %%%%%%%%%%%%%%%%%%%%%% Sort trials on sortvar %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %
 else
-%     fprintf('Sorting data on input sortvar.\n');
+    %     fprintf('Sorting data on input sortvar.\n');
     [sortvar,sortidx] = sort(sortvar);
     data = data(:,sortidx);
     if ~isempty(auxvar)
@@ -1832,20 +1837,20 @@ else
             tie_dist(loop_ct)=n_ids;
         end
     end
-%     fprintf('%.2f%c of the trials (i.e., %d out of %d) have the same sortvar value as at least one other trial.\n', ...
-%         100*n_ties/length(sortvar),37,n_ties,length(sortvar));
-%     fprintf('Distribution of number ties per unique value of sortvar:\n');
+    %     fprintf('%.2f%c of the trials (i.e., %d out of %d) have the same sortvar value as at least one other trial.\n', ...
+    %         100*n_ties/length(sortvar),37,n_ties,length(sortvar));
+    %     fprintf('Distribution of number ties per unique value of sortvar:\n');
     if exist('prctile')
         try
-%             fprintf('Min: %d, 25th ptile: %d, Median: %d, 75th ptile: %d, Max: %d\n',min(tie_dist),round(prctile(tie_dist,25)), ...
-%                 round(median(tie_dist)),round(prctile(tie_dist,75)),max(tie_dist));
+            %             fprintf('Min: %d, 25th ptile: %d, Median: %d, 75th ptile: %d, Max: %d\n',min(tie_dist),round(prctile(tie_dist,25)), ...
+            %                 round(median(tie_dist)),round(prctile(tie_dist,75)),max(tie_dist));
         catch
         end;
     end;
     if replace_ties==YES,
-%         fprintf('Trials with tied sorting values will be replaced by their mean.\n');
+        %         fprintf('Trials with tied sorting values will be replaced by their mean.\n');
     end
-%     fprintf('\n');
+    %     fprintf('\n');
 end
 
 %if max(sortvar)<0
@@ -1904,13 +1909,13 @@ if ~Allampsflag & ~exist('data2') % if imaging potential,
     
     if avewidth > 1 || decfactor > 1
         if Nosort == YES
-%             fprintf('Smoothing the data using a window width of %g epochs ',avewidth);
+            %             fprintf('Smoothing the data using a window width of %g epochs ',avewidth);
         else
-%             fprintf('Smoothing the sorted epochs with a %g-epoch moving window.',...
-%                 avewidth);
+            %             fprintf('Smoothing the sorted epochs with a %g-epoch moving window.',...
+            %                 avewidth);
         end
-%         fprintf('\n');
-%         fprintf('  and a decimation factor of %g\n',decfactor);
+        %         fprintf('\n');
+        %         fprintf('  and a decimation factor of %g\n',decfactor);
         
         if ~exist('phargs') % if not phase-sorted trials
             [data,outtrials] = movav(data,1:ntrials,avewidth,decfactor,[],[],wt_wind);
@@ -1978,7 +1983,7 @@ if ~Allampsflag & ~exist('data2') % if imaging potential,
     if ~isempty(Caxis)
         mindat = Caxis(1);
         maxdat = Caxis(2);
-%         fprintf('Using the specified caxis range of [%g,%g].\n', mindat, maxdat);
+        %         fprintf('Using the specified caxis range of [%g,%g].\n', mindat, maxdat);
     else
         mindat = min(min(data));
         maxdat = max(max(data));
@@ -1988,13 +1993,13 @@ if ~Allampsflag & ~exist('data2') % if imaging potential,
             adjmax = (1-caxfraction)/2*(maxdat-mindat);
             mindat = mindat+adjmax;
             maxdat = maxdat-adjmax;
-%             fprintf(...
-%                 'The caxis range will be %g times the sym. abs. data range -> [%g,%g].\n',...
-%                 caxfraction,mindat,maxdat);
+            %             fprintf(...
+            %                 'The caxis range will be %g times the sym. abs. data range -> [%g,%g].\n',...
+            %                 caxfraction,mindat,maxdat);
         else
-%             fprintf(...
-%                 'The caxis range will be the sym. abs. data range -> [%g,%g].\n',...
-%                 mindat,maxdat);
+            %             fprintf(...
+            %                 'The caxis range will be the sym. abs. data range -> [%g,%g].\n',...
+            %                 mindat,maxdat);
         end
     end
 end % if ~Allampsflag & ~exist('data2')
@@ -2011,12 +2016,6 @@ end
 %% %%%%%%%%%%% Image the aligned/sorted/smoothed data %%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 if strcmpi(NoShow, 'no')
-    %% MMagnuski EDIT - bad plotting
-    % here erpimage by default deletes current axis,
-    % this is just wrong and immoral!
-    % so we'll try to change it to make erpimage possible to plug into
-    % different kinds of figures
-    
     if ~any(isnan(coherfreq))       % if plot three time axes
         image_loy = 3*PLOT_HEIGHT;
     elseif Erpflag == YES   % elseif if plot only one time axes
@@ -2026,15 +2025,20 @@ if strcmpi(NoShow, 'no')
     end
     
     gcapos=get(gca,'Position');
-    %delete(gca)
+    if ~keepaxis % MZ/MM edit
+        delete(gca)
+    end
+    
     if isempty(topomap)
         image_top = 1;
     else
         image_top = 0.9;
     end
-    %ax1=axes('Position',...
-    %   [gcapos(1) gcapos(2)+image_loy*gcapos(4) ...
-    %   gcapos(3) (image_top-image_loy)*gcapos(4)]);
+    if ~keepaxis % MZ/MM edit
+        ax1=axes('Position',...
+            [gcapos(1) gcapos(2)+image_loy*gcapos(4) ...
+            gcapos(3) (image_top-image_loy)*gcapos(4)]);
+    end
 end;
 ind = isnan(data);    % find nan's in data
 [i j]=find(ind==1);
@@ -2095,8 +2099,8 @@ elseif Allampsflag %%%%%%%%%%%%%%%% Plot allamps instead of data %%%%%%%%%%%%%%
     end
     
     if ~isnan(signifs) % plot received significance levels
-%         fprintf(['Computing and plotting received ERSP and ITC signif. ' ...
-%             'levels...\n']);
+        %         fprintf(['Computing and plotting received ERSP and ITC signif. ' ...
+        %             'levels...\n']);
         [amps,cohers,cohsig,ampsig,allamps] = ...
             phasecoher(urdata,length(times),srate,coherfreq,cycles,0, ...
             [], [], timeStretchRef, timeStretchMarks);
@@ -2105,13 +2109,13 @@ elseif Allampsflag %%%%%%%%%%%%%%%% Plot allamps instead of data %%%%%%%%%%%%%%
         cohsig = signifs(3);
         
     elseif alpha>0 % compute significance levels
-%         fprintf('Computing and plotting %g ERSP and ITC signif. level...\n',alpha);
+        %         fprintf('Computing and plotting %g ERSP and ITC signif. level...\n',alpha);
         [amps,cohers,cohsig,ampsig,allamps] = ...
             phasecoher(urdata,length(times),srate,coherfreq, ...
             cycles, alpha, [], [], ...
             timeStretchRef, timeStretchMarks');
         % Note: need to receive cohsig and ampsig to get allamps
-%         fprintf('Coherence significance level: %g\n',cohsig);
+        %         fprintf('Coherence significance level: %g\n',cohsig);
         
     else % no plotting of significance
         [amps,cohers,cohsig,ampsig,allamps] = ...
@@ -2126,8 +2130,8 @@ elseif Allampsflag %%%%%%%%%%%%%%%% Plot allamps instead of data %%%%%%%%%%%%%%
     if length(base)<2
         base = 1:floor(length(times)/4); % default first quarter-epoch
     end
-%     fprintf('Using %g to %g ms as amplitude baseline.\n',...
-%         times(1),times(base(end)));
+    %     fprintf('Using %g to %g ms as amplitude baseline.\n',...
+    %         times(1),times(base(end)));
     
     % fprintf('#2 Size of allamps = [%d %d]\n',size(allamps,1),size(allamps,2));
     
@@ -2138,16 +2142,16 @@ elseif Allampsflag %%%%%%%%%%%%%%%% Plot allamps instead of data %%%%%%%%%%%%%%
     
     if avewidth > 1 || decfactor > 1
         if Nosort == YES
-%             fprintf(...
-%                 'Smoothing the amplitude epochs using a window width of %g epochs ',...
-%                 avewidth);
+            %             fprintf(...
+            %                 'Smoothing the amplitude epochs using a window width of %g epochs ',...
+            %                 avewidth);
         else % sort trials
-%             fprintf(...
-%                 'Smoothing the sorted amplitude epochs with a %g-epoch moving window.',...
-%                 avewidth);
+            %             fprintf(...
+            %                 'Smoothing the sorted amplitude epochs with a %g-epoch moving window.',...
+            %                 avewidth);
         end
-%         fprintf('\n');
-%         fprintf('  and a decimation factor of %g\n',decfactor);
+        %         fprintf('\n');
+        %         fprintf('  and a decimation factor of %g\n',decfactor);
         
         %fprintf('4 Size of allamps = [%d %d]\n',size(allamps,1),size(allamps,2));
         
@@ -2197,8 +2201,8 @@ elseif Allampsflag %%%%%%%%%%%%%%%% Plot allamps instead of data %%%%%%%%%%%%%%
         for index=1:length(percentiles)
             outpercent{index} = compute_percentile( sortvar, percentiles(index), outtrials, avewidth);
         end;
-%         fprintf('Output allamps data will be %d frames by %d smoothed trials.\n',...
-%             frames,length(outtrials));
+        %         fprintf('Output allamps data will be %d frames by %d smoothed trials.\n',...
+        %             frames,length(outtrials));
         
     else % if no smoothing
         outtrials = 1:ntrials;
@@ -2210,7 +2214,7 @@ elseif Allampsflag %%%%%%%%%%%%%%%% Plot allamps instead of data %%%%%%%%%%%%%%
     ampsig = 20*log10(ampsig);   % convert amplitude signif thresholds to dB
     
     if alpha>0
-%         fprintf('Amplitude significance levels: [%g %g] dB\n',ampsig(1),ampsig(2));
+        %         fprintf('Amplitude significance levels: [%g %g] dB\n',ampsig(1),ampsig(2));
     end
     
     if isnan(baseamp) % if not specified in 'limits'
@@ -2235,8 +2239,8 @@ elseif Allampsflag %%%%%%%%%%%%%%%% Plot allamps instead of data %%%%%%%%%%%%%%
     if ~isempty(Caxis)
         mindat = Caxis(1);
         maxdat = Caxis(2);
-%         fprintf('Using the specified caxis range of [%g,%g].\n',...
-%             mindat,maxdat);
+        %         fprintf('Using the specified caxis range of [%g,%g].\n',...
+        %             mindat,maxdat);
     else
         
         % Changed -JH
@@ -2253,13 +2257,13 @@ elseif Allampsflag %%%%%%%%%%%%%%%% Plot allamps instead of data %%%%%%%%%%%%%%
             adjmax = (1-caxfraction)/2*(maxdat-mindat);
             mindat = mindat+adjmax;
             maxdat = maxdat-adjmax;
-%             fprintf(...
-%                 'The caxis range will be %g times the sym. abs. data range -> [%g,%g].\n',...
-%                 caxfraction,mindat,maxdat);
+            %             fprintf(...
+            %                 'The caxis range will be %g times the sym. abs. data range -> [%g,%g].\n',...
+            %                 caxfraction,mindat,maxdat);
         else
-%             fprintf(...
-%                 'The caxis range will be the sym. abs. data range -> [%g,%g].\n',...
-%                 mindat,maxdat);
+            %             fprintf(...
+            %                 'The caxis range will be the sym. abs. data range -> [%g,%g].\n',...
+            %                 mindat,maxdat);
         end
     end
     %
@@ -2267,7 +2271,7 @@ elseif Allampsflag %%%%%%%%%%%%%%%% Plot allamps instead of data %%%%%%%%%%%%%%
     %
     
     if strcmpi(NoShow, 'no')
-%         fprintf('Plotting amplitudes at freq %g Hz instead of potentials.\n',coherfreq);
+        %         fprintf('Plotting amplitudes at freq %g Hz instead of potentials.\n',coherfreq);
         if TIMEX
             imagesc(times,outtrials,allamps',[mindat,maxdat]);% plot time on x-axis
             set(gca,'Ydir','normal');
@@ -2289,19 +2293,19 @@ elseif exist('data2') %%%%%% Plot allcohers instead of data %%%%%%%%%%%%%%%%%%%
         coherfreq = mean(freq); % use phase-sort frequency
     end
     if alpha>0
-%         fprintf('Computing and plotting %g coherence significance level...\n',alpha);
+        %         fprintf('Computing and plotting %g coherence significance level...\n',alpha);
         
         % [amps,cohers,cohsig,ampsig,allcohers] = ...
         %   crosscoher(urdata,data2,length(times),srate,coherfreq,cycles,alpha);
         
-%         fprintf('Inter-Trial Coherence significance level: %g\n',cohsig);
-%         fprintf('Amplitude significance levels: [%g %g]\n',ampsig(1),ampsig(2));
+        %         fprintf('Inter-Trial Coherence significance level: %g\n',cohsig);
+        %         fprintf('Amplitude significance levels: [%g %g]\n',ampsig(1),ampsig(2));
     else
         % [amps,cohers,cohsig,ampsig,allcohers] = ...
         %    crosscoher(urdata,data2,length(times),srate,coherfreq,cycles,0);
     end
     if ~exist('allcohers')
-%         fprintf('\nerpimage(): allcohers not returned....\n')
+        %         fprintf('\nerpimage(): allcohers not returned....\n')
         return
     end
     allamps = allcohers; % output variable
@@ -2326,16 +2330,16 @@ elseif exist('data2') %%%%%% Plot allcohers instead of data %%%%%%%%%%%%%%%%%%%
     
     if avewidth > 1 || decfactor > 1
         if Nosort == YES
-%             fprintf(...
-%                 'Smoothing the amplitude epochs using a window width of %g epochs '...
-%                 ,avewidth);
+            %             fprintf(...
+            %                 'Smoothing the amplitude epochs using a window width of %g epochs '...
+            %                 ,avewidth);
         else
-%             fprintf(...
-%                 'Smoothing the sorted amplitude epochs with a %g-epoch moving window.'...
-%                 ,avewidth);
+            %             fprintf(...
+            %                 'Smoothing the sorted amplitude epochs with a %g-epoch moving window.'...
+            %                 ,avewidth);
         end
-%         fprintf('\n');
-%         fprintf('  and a decimation factor of %g\n',decfactor);
+        %         fprintf('\n');
+        %         fprintf('  and a decimation factor of %g\n',decfactor);
         % fprintf('4 Size of allcohers = [%d %d]\n',size(allcohers,1),size(allcohers,2));
         
         [allcohers,outtrials] = movav(allcohers,1:ntrials,avewidth,decfactor,[],[],wt_wind);
@@ -2353,20 +2357,20 @@ elseif exist('data2') %%%%%% Plot allcohers instead of data %%%%%%%%%%%%%%%%%%%
     if ~isempty(Caxis)
         mindat = Caxis(1);
         maxdat = Caxis(2);
-%         fprintf('Using the specified caxis range of [%g,%g].\n',...
-%             mindat,maxdat);
+        %         fprintf('Using the specified caxis range of [%g,%g].\n',...
+        %             mindat,maxdat);
     else
         mindat = -1;
         maxdat = 1
-%         fprintf(...
-%             'The caxis range will be the sym. abs. data range [%g,%g].\n',...
-%             mindat,maxdat);
+        %         fprintf(...
+        %             'The caxis range will be the sym. abs. data range [%g,%g].\n',...
+        %             mindat,maxdat);
     end
     %
     %%%%%%%%%%%%%%%%%%%%% Image coherences at coherfreq %%%%%%%%%%%%%%%%%%%%%%%%%%
     %
     if strcmpi(NoShow, 'no')
-%         fprintf('Plotting coherences at freq %g Hz instead of potentials.\n',coherfreq);
+        %         fprintf('Plotting coherences at freq %g Hz instead of potentials.\n',coherfreq);
         if TIMEX
             imagesc(times,outtrials,allcohers',[mindat,maxdat]);% plot time on x-axis
             set(gca,'Ydir','normal');
@@ -2387,14 +2391,14 @@ end
 %Change limits on ERPimage y-axis if requested
 if ~isempty(sortvar_limits)
     if exist('phargs','var'),
-%         fprintf('********* Warning *********\n');
-%         fprintf('Specifying sorting variable limits has no effect when sorting by phase.\n');
+        %         fprintf('********* Warning *********\n');
+        %         fprintf('Specifying sorting variable limits has no effect when sorting by phase.\n');
     elseif exist('valargs','var'),
-%         fprintf('********* Warning *********\n');
-%         fprintf('Specifying sorting variable limits has no effect when sorting by mean EEG voltage.\n');
+        %         fprintf('********* Warning *********\n');
+        %         fprintf('Specifying sorting variable limits has no effect when sorting by mean EEG voltage.\n');
     elseif exist('ampargs','var'),
-%         fprintf('********* Warning *********\n');
-%         fprintf('Specifying sorting variable limits has no effect when sorting by frequency amp.\n');
+        %         fprintf('********* Warning *********\n');
+        %         fprintf('Specifying sorting variable limits has no effect when sorting by frequency amp.\n');
     else
         v=axis;
         img_mn=find_crspnd_pt(sortvar_limits(1),outsort,outtrials);
@@ -2411,7 +2415,7 @@ if ~isempty(sortvar_limits)
         id1=find(sortvar>=sortvar_limits(1));
         id2=find(sortvar<=sortvar_limits(2));
         id=intersect(id1,id2);
-%         fprintf('%d epochs fall within sortvar limits.\n',length(id));
+        %         fprintf('%d epochs fall within sortvar limits.\n',length(id));
         urdata=urdata(:,id);
         if ~isempty(tsurdata),
             tsurdata=tsurdata(:,id);
@@ -2422,9 +2426,9 @@ end
 
 if strcmpi(NoShow, 'no')
     v=axis;
-%     fprintf('Output data will be %d frames by %d smoothed trials.\n',...
-%         frames,v(4)-v(3)+1);
-%     fprintf('Outtrials: %3.2f to %4.2f\n',v(3),v(4));
+    %     fprintf('Output data will be %d frames by %d smoothed trials.\n',...
+    %         frames,v(4)-v(3)+1);
+    %     fprintf('Outtrials: %3.2f to %4.2f\n',v(3),v(4));
 end;
 
 %
@@ -2451,8 +2455,8 @@ if strcmpi(NoShow, 'no')
             img_ytick_lab=unique(img_ytick_lab); %make sure it is sorted
             in_range=find((img_ytick_lab>=mn) & (img_ytick_lab<=mx));
             if length(img_ytick_lab)~=length(in_range),
-%                 fprintf('\n***Warning***\n');
-%                 fprintf('''img_trialax_ticks'' exceed smoothed sorting variable values. Max/min values are %f/%f.\n\n',mn,mx);
+                %                 fprintf('\n***Warning***\n');
+                %                 fprintf('''img_trialax_ticks'' exceed smoothed sorting variable values. Max/min values are %f/%f.\n\n',mn,mx);
                 img_ytick_lab=img_ytick_lab(in_range);
             end
         end
@@ -2483,17 +2487,17 @@ if ~isempty(verttimes)
         verttimes = verttimes';
     end
     if size(verttimes,1) ~= 1 & size(verttimes,1) ~= ntrials
-%         fprintf('\nerpimage(): vert arg matrix must have 1 or %d rows\n',ntrials);
+        %         fprintf('\nerpimage(): vert arg matrix must have 1 or %d rows\n',ntrials);
         return
     end;
     if strcmpi(NoShow, 'no')
         if size(verttimes,1) == 1
-%             fprintf('Plotting %d lines at times: ',size(verttimes,2));
+            %             fprintf('Plotting %d lines at times: ',size(verttimes,2));
         else
-%             fprintf('Plotting %d traces starting at times: ',size(verttimes,2));
+            %             fprintf('Plotting %d traces starting at times: ',size(verttimes,2));
         end
         for vt = verttimes % for each column
-%             fprintf('%g ',vt(1));
+            %             fprintf('%g ',vt(1));
             if isnan(aligntime) % if NOT re-aligned data
                 if TIMEX          % overplot vt on image
                     if length(vt)==1
@@ -2534,7 +2538,7 @@ if ~isempty(verttimes)
             end
         end
         %end
-%         fprintf('\n');
+        %         fprintf('\n');
     end;
 end
 
@@ -2543,7 +2547,7 @@ end
 %
 if ~isempty(horzepochs)
     if size(horzepochs,1) > 1 & size(horzepochs,1) > 1
-%         fprintf('\nerpimage(): horz arg must be a vector\n');
+        %         fprintf('\nerpimage(): horz arg must be a vector\n');
         return
     end;
     if strcmpi(NoShow, 'no')
@@ -2551,9 +2555,9 @@ if ~isempty(horzepochs)
             %trial axis in units of sorting variable
             mx=max(outsort);
             mn=min(outsort);
-%             fprintf('Plotting %d lines at epochs corresponding to sorting variable values: ',length(horzepochs));
+            %             fprintf('Plotting %d lines at epochs corresponding to sorting variable values: ',length(horzepochs));
             for he = horzepochs % for each horizontal line
-%                 fprintf('%g ',he);
+                %                 fprintf('%g ',he);
                 %find trial number corresponding to this value of sorting
                 %variable:
                 if (he>mn) && (he<mx)
@@ -2567,9 +2571,9 @@ if ~isempty(horzepochs)
             end
             
         else %trial axis in units of trials
-%             fprintf('Plotting %d lines at epochs: ',length(horzepochs));
+            %             fprintf('Plotting %d lines at epochs: ',length(horzepochs));
             for he = horzepochs % for each horizontal line
-%                 fprintf('%g ',he);
+                %                 fprintf('%g ',he);
                 if TIMEX          % overplot he on image
                     plot([timelimits(1) timelimits(2)],[he he],LINESTYLE,'Linewidth',HORZWIDTH);
                 else
@@ -2577,7 +2581,7 @@ if ~isempty(horzepochs)
                 end
             end
         end
-%         fprintf('\n');
+        %         fprintf('\n');
     end;
 end
 if strcmpi(NoShow, 'no')
@@ -2605,8 +2609,8 @@ end;
 if strcmpi(NoShow, 'no') & ( min(outsort) < timelimits(1) ...
         |max(outsort) > timelimits(2))
     ur_outsort = outsort; % store the pre-adjusted values
-%     fprintf('Not all sortvar values within time vector limits: \n')
-%     fprintf('        outliers will be shown at nearest limit.\n');
+    %     fprintf('Not all sortvar values within time vector limits: \n')
+    %     fprintf('        outliers will be shown at nearest limit.\n');
     i = find(outsort< timelimits(1));
     outsort(i) = timelimits(1);
     i = find(outsort> timelimits(2));
@@ -2691,12 +2695,12 @@ end;
 if strcmpi(NoShow, 'no')
     
     if NoShowVar == YES
-%         fprintf('Not overplotting sorted sortvar on data.\n');
+        %         fprintf('Not overplotting sorted sortvar on data.\n');
         
     elseif isnan(aligntime) % plot sortvar on un-aligned data
         
         if Nosort == NO;
-%             fprintf('Overplotting sorted sortvar on data.\n');
+            %             fprintf('Overplotting sorted sortvar on data.\n');
         end
         hold on;
         if TIMEX      % overplot sortvar
@@ -2707,7 +2711,7 @@ if strcmpi(NoShow, 'no')
         drawnow
     else % plot re-aligned zeros on sortvar-aligned data
         if Nosort == NO;
-%             fprintf('Overplotting sorted sortvar on data.\n');
+            %             fprintf('Overplotting sorted sortvar on data.\n');
         end
         hold on;
         if TIMEX      % overplot re-aligned 0 time on image
@@ -2717,7 +2721,7 @@ if strcmpi(NoShow, 'no')
             plot([[min(outtrials) max(outtrials)],aligntime aligntime],...
                 'k','LineWidth',SORTWIDTH);
         end
-%         fprintf('Overplotting realigned times-zero on data.\n');
+        %         fprintf('Overplotting realigned times-zero on data.\n');
         hold on;
         
         if TIMEX      % overplot realigned sortvar on image
@@ -2734,7 +2738,7 @@ end;
 %
 if strcmpi(NoShow, 'no')
     if ~isempty(auxvar)
-%         fprintf('Overplotting auxvar(s) on data.\n');
+        %         fprintf('Overplotting auxvar(s) on data.\n');
         hold on;
         auxtrials = outtrials(:)' ; % make row vector
         
@@ -2784,27 +2788,30 @@ end;
 %
 %% %%%%%%%%%%%%%%%%%%%%%% Plot colorbar %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-ax1 = gca;
+
 if strcmpi(NoShow, 'no')
-    if Colorbar == YES
-        
-        pos=get(ax1,'Position');
-        
-        % MMagnuski EDIT:
-        % check units:
-        uni = get(ax1,'Units');
-        
-        if strcmp(uni, 'normalized')
-        axcb=axes('Position',...
-            [pos(1)+pos(3)+0.02 pos(2) ...
-            0.03 pos(4)]);
-        elseif strcmp(uni, 'pixels')
-            axcb=axes('Units', 'pixels', 'Position',...
-            [pos(1)+pos(3)+10 pos(2) 20 pos(4)], ...
-            'Parent', gcf);
+    if Colorbar == YES    
+        if keepaxis % MZ/MM edit
+            ax1 = gca;
+            pos=get(ax1,'Position');
+            uni = get(ax1,'Units');
+            
+            if strcmp(uni, 'normalized')
+                axcb=axes('Position',...
+                    [pos(1)+pos(3)+0.02 pos(2) ...
+                    0.03 pos(4)]);
+            elseif strcmp(uni, 'pixels')
+                axcb=axes('Units', 'pixels', 'Position',...
+                    [pos(1)+pos(3)+10 pos(2) 20 pos(4)], ...
+                    'Parent', gcf);
+            end
+            clear uni
+        else
+            pos=get(ax1,'Position');
+            axcb=axes('Position',...
+                [pos(1)+pos(3)+0.02 pos(2) ...
+                0.03 pos(4)]);
         end
-        clear uni
-        
         cbar(axcb,0,[mindat,maxdat]); % plot colorbar to right of image
         title(cbar_title);
         set(axcb,'fontsize',TICKFONT,'xtick',[]);
@@ -2821,13 +2828,13 @@ erp = [];
 if Erpflag == YES
     if exist('erpalpha')
         if erp_ptiles>1,
-%             fprintf(['\nOnly plotting one ERP (i.e., not plotting ERPs from %d percentile splits) ' ...
-%                 'because ''erpalpha'' option was chosen.  You can''t plot both.\n\n'],erp_ptiles)
+            %             fprintf(['\nOnly plotting one ERP (i.e., not plotting ERPs from %d percentile splits) ' ...
+            %                 'because ''erpalpha'' option was chosen.  You can''t plot both.\n\n'],erp_ptiles)
         end
         [erp erpsig] = nan_mean(fastif(length(tsurdata) > 0, tsurdata',urdata'), ...
             erpalpha);
-%         fprintf('   Mean ERP (p<%g) significance threshold: +/-%g\n', ...
-%             erpalpha,mean(erpsig));
+        %         fprintf('   Mean ERP (p<%g) significance threshold: +/-%g\n', ...
+        %             erpalpha,mean(erpsig));
     else
         %potentially make ERPs of 50%, 33%, or 25% split of trials
         n_trials=size(urdata,2);
@@ -2911,18 +2918,22 @@ if Erpflag == YES & strcmpi(NoShow, 'no')
         ax2=axes('Position',...
             [gcapos(1) gcapos(2)+2/3*image_loy*gcapos(4) ...
             gcapos(3) (image_loy/3-YGAP)*gcapos(4)]);
-    else %% MMagnuski & MZakrzewska EDIT
+    elseif keepaxis %% MMagnuski & MZakrzewska EDIT
         if strcmp('pixels', get(ax1, 'Units'))
-        ax2=axes('Units', 'pixels', 'Position',...
-            [gcapos(1) gcapos(2)-35 gcapos(3) 35], ...
-            'Parent', gcf, 'visible', 'off');
+            ax2=axes('Units', 'pixels', 'Position',...
+                [gcapos(1) gcapos(2)-35 gcapos(3) 35], ...
+                'Parent', gcf, 'visible', 'off');
         elseif strcmp('normalized',get(ax1, 'Units'))
-        ax2=axes('Units', 'normalized', 'Position',...
-            [gcapos(1) gcapos(2)-0.05 gcapos(3) 0.05], ...
-            'Parent', gcf, 'visible', 'off');
-        end    
+            ax2=axes('Units', 'normalized', 'Position',...
+                [gcapos(1) gcapos(2)-0.05 gcapos(3) 0.05], ...
+                'Parent', gcf, 'visible', 'off');
+        end
+    else
+        ax2=axes('Position',...
+            [gcapos(1) gcapos(2) ...
+            gcapos(3) image_loy*gcapos(4)]);
     end
-%     fprintf('Plotting the ERP trace below the ERP image\n');
+    %     fprintf('Plotting the ERP trace below the ERP image\n');
     if Erpstdflag == YES
         if Showwin
             tmph = plot1trace(ax2,times,erp,limit,[],stdev,times(winlocs),erp_grid,erp_vltg_ticks); % plot ERP +/-stdev
@@ -3053,24 +3064,24 @@ if ~isnan(coherfreq)
     %
     if ~Allampsflag %%%% don't repeat computation if already done for 'allamps'
         
-%         fprintf('Computing and plotting amplitude at %g Hz.\n',coherfreq);
+        %         fprintf('Computing and plotting amplitude at %g Hz.\n',coherfreq);
         
         if ~isnan(signifs) | Cohsigflag==NO % don't compute or plot signif. levels
             [amps,cohers] = phasecoher(urdata,size(times,2),srate,coherfreq,cycles);
             if ~isnan(signifs)
                 ampsig = signifs([1 2]);
-%                 fprintf('Using supplied amplitude significance levels: [%g,%g]\n',...
-%                     ampsig(1),ampsig(2));
+                %                 fprintf('Using supplied amplitude significance levels: [%g,%g]\n',...
+                %                     ampsig(1),ampsig(2));
                 cohsig = signifs(3);
-%                 fprintf('Using supplied coherence significance level: %g\n',cohsig);
+                %                 fprintf('Using supplied coherence significance level: %g\n',cohsig);
             end
         else % compute amps, cohers with significance
-%             fprintf(...
-%                 'Computing and plotting %g coherence significance level at %g Hz...\n',...
-%                 alpha,                          coherfreq);
+            %             fprintf(...
+            %                 'Computing and plotting %g coherence significance level at %g Hz...\n',...
+            %                 alpha,                          coherfreq);
             [amps,cohers,cohsig,ampsig] = ...
                 phasecoher(urdata,size(times,2),srate,coherfreq,cycles,alpha);
-%             fprintf('Coherence significance level: %g\n',cohsig);
+            %             fprintf('Coherence significance level: %g\n',cohsig);
             ampsig = 20*log10(ampsig); % convert to dB
         end
         amps = 20*log10(amps); % convert to dB
@@ -3085,23 +3096,23 @@ if ~isnan(coherfreq)
                 base = find(times >= baselinedb(1) & times<=baselinedb(end)); % use default baseline end point (ms)
                 if length(base)<2
                     base = 1:floor(length(times)/4); % default first quarter-epoch
-%                     fprintf('Using %g to %g ms as amplitude baseline.\n',...
-%                         times(1),times(base(end)));
+                    %                     fprintf('Using %g to %g ms as amplitude baseline.\n',...
+                    %                         times(1),times(base(end)));
                 end
                 [amps,baseamp] = rmbase(amps,length(times),base); % remove dB baseline
-%                 fprintf('Removed baseline amplitude of %d dB for plotting.\n',baseamp);
+                %                 fprintf('Removed baseline amplitude of %d dB for plotting.\n',baseamp);
             end;
         else % if 'basedB' specified in 'limits' (in dB)
-%             fprintf('Removing specified baseline amplitude of %d dB for plotting.\n',...
-%                 baseamp);
+            %             fprintf('Removing specified baseline amplitude of %d dB for plotting.\n',...
+            %                 baseamp);
             amps = amps-baseamp; % remove specified dB baseline
         end
         
-%         fprintf('Data amplitude levels: [%g %g] dB\n',min(amps),max(amps));
+        %         fprintf('Data amplitude levels: [%g %g] dB\n',min(amps),max(amps));
         
         if alpha>0 % if computed significance levels
             ampsig = ampsig - baseamp;
-%             fprintf('Data amplitude significance levels: [%g %g] dB\n',ampsig(1),ampsig(2));
+            %             fprintf('Data amplitude significance levels: [%g %g] dB\n',ampsig(1),ampsig(2));
         end
         
     end % ~Allampsflag
@@ -3174,9 +3185,9 @@ if ~isnan(coherfreq)
         if isnan(minamp), minamp = 0; end   % In case the above iteration went on
         % until fac = Inf and minamp = NaN again.
         
-%         fprintf('Plotting the ERSP amplitude trace below the ERP\n');
-%         fprintf('Min, max plotting amplitudes: [%g, %g] dB\n',minamp,maxamp);
-%         fprintf('     relative to baseamp: %g dB\n',baseamp);
+        %         fprintf('Plotting the ERSP amplitude trace below the ERP\n');
+        %         fprintf('Min, max plotting amplitudes: [%g, %g] dB\n',minamp,maxamp);
+        %         fprintf('     relative to baseamp: %g dB\n',baseamp);
         if Cohsigflag
             ampsiglims = [repmat(ampsig(1)-mean(ampsig),1,length(times))];
             ampsiglims = [ampsiglims;-1*ampsiglims];
@@ -3295,7 +3306,7 @@ if ~isnan(coherfreq)
         if isnan(mincoh)
             mincoh = 0;
         end
-%         fprintf('Plotting the ITC trace below the ERSP\n');
+        %         fprintf('Plotting the ITC trace below the ERSP\n');
         if Cohsigflag % plot coherence significance level
             cohsiglims = [repmat(cohsig,1,length(times));zeros(1,length(times))];
             coh_handle = plot1trace(ax4,times,cohers,[timelimits mincoh maxcoh],cohsiglims,[],[],0);
@@ -3386,7 +3397,17 @@ else
     amps   = [];    % null outputs unless coherfreq specified
     cohers = [];
 end
-axhndls = [ax1 axcb ax2 ax3 ax4];
+
+if keepaxis % MM/MZ edit
+    axhndls = [ax1 axcb ax2 ax3 ax4];
+else
+    if ~(isnan(ax3) || isnan(ax4))
+        axhndls = [ax1 axcb ax2 ax3 ax4];
+    else
+        axhndls = [ax1 axcb ax2];
+    end
+end
+
 if exist('ur_outsort')
     outsort = ur_outsort; % restore outsort clipped values, if any
 end
@@ -3402,20 +3423,20 @@ if (~isempty(topomap)) & strcmpi(NoShow, 'no')
         [gcapos(1)+0.10*gcapos(3) gcapos(2)+0.92*gcapos(4),...
         0.20*gcapos(3) 0.14*gcapos(4)]);
     % h(12) = subplot('Position',[.10 .86 .20 .14]);
-%     fprintf('Plotting a topo map in upper left.\n');
+    %     fprintf('Plotting a topo map in upper left.\n');
     eloc_info.plotrad = [];
     if length(topomap) == 1
         try
             topoplot(topomap,eloc_file,'electrodes','off', ...
                 'style', 'blank', 'emarkersize1chan', 10, 'chaninfo', eloc_info);
         catch
-%             fprintf('topoplot() plotting failed.\n');
+            %             fprintf('topoplot() plotting failed.\n');
         end;
     else
         try
             topoplot(topomap,eloc_file,'electrodes','off', 'chaninfo', eloc_info);
         catch
-%             fprintf('topoplot() plotting failed.\n');
+            %             fprintf('topoplot() plotting failed.\n');
         end;
     end;
     axis('square')
@@ -3434,7 +3455,7 @@ if (~isempty(lospecHz)) && strcmpi(NoShow, 'no')
         0.10*gcapos(4)*(0.8/gcapos(4))^0.5]);
     
     % h(13) = subplot('Position',[.75 .88 .15 .10]);
-%     fprintf('Plotting the data spectrum in upper right.\n');
+    %     fprintf('Plotting the data spectrum in upper right.\n');
     winlength = frames;
     if winlength > 512
         for k=2:5
@@ -3550,7 +3571,7 @@ end
 if ~isempty(signif);% (2,times) array giving upper and lower signif limits
     filltimes = [times times(end:-1:1)];
     if size(signif,1) ~=2 | size(signif,2) ~= length(times)
-%         fprintf('plot1trace(): signif array must be size (2,frames)\n')
+        %         fprintf('plot1trace(): signif array must be size (2,frames)\n')
         return
     end
     fillsignif = [signif(1,:) signif(2,end:-1:1)];
@@ -3676,7 +3697,7 @@ sortdata = sort(data);
 if i==1 | j==1 % if data is a vector
     i = max(i,j); j = 1;
     if i == 1,
-%         fprintf('  prctle() note: input data is a single scalar!\n')
+        %         fprintf('  prctle() note: input data is a single scalar!\n')
         y = data*ones(length(pc),1); % if data is scalar, return it
         return;
     end
@@ -3710,16 +3731,16 @@ if nargin>1
     if NPERM < round(3/alpha)
         NPERM = round(3/alpha);
     end
-%     fprintf('Performing a permuration test using %d permutations to determine ERP significance thresholds... ',NPERM);
+    %     fprintf('Performing a permuration test using %d permutations to determine ERP significance thresholds... ',NPERM);
     permerps = zeros(NPERM,inframes);
     for n=1:NPERM
         signs = sign(randn(1,intrials)'-0.5);
         permerps(n,:) = sum(repmat(signs,1,inframes).*in)./nonnans;
         if ~rem(n,50)
-%             fprintf('%d ',n);
+            %             fprintf('%d ',n);
         end
     end
-%     fprintf('\n');
+    %     fprintf('\n');
     permerps = sort(abs(permerps));
     alpha_bnd = floor(2*alpha*NPERM); % two-sided probability threshold
     outalpha = permerps(end-alpha_bnd,:);
