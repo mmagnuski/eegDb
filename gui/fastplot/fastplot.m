@@ -397,7 +397,7 @@ classdef fastplot < handle
 
                 % set mark limits
                 num_marks = length(obj.marks);
-                obj.marks.num2vertx = arrayfun(@(x) obj.create_vert_y(x, ylim), ...
+                obj.marks.num2vertx = arrayfun(@(x) create_vert_y(x, ylim), ...
                     1:num_marks, 'UniformOutput', false);
             end
         end
@@ -677,4 +677,5 @@ end
 
 function verty = create_vert_y(x, ylim)
     verty = repmat(linspace(ylim(1), ylim(2), x+1), [2, 1]);
-    verty = nowmark(:);
+    verty = verty(:);
+end
