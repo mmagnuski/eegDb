@@ -310,8 +310,8 @@ if ~isempty(h)
 
     % 3. wrap the longest line
     testwrap = textwrap(h, infotext(maxLenInd));
-    % 4. get the length of the first line of wrapped text
-    wrapLen = length(testwrap{1});
+    % 4. get the length of the longest line of wrapped text
+    wrapLen = max(cellfun(@length, testwrap));
 
     % 5. check which original text lines are longer than that
     tooLong = lineLen > wrapLen;
