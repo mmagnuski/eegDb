@@ -9,6 +9,10 @@
 %
 %  ---myadd---
 %  Additonal optional inputs:
+%  'topopts' - allows to define how topos should be plotted
+%              not used yet!
+%  'perfig'  - how many components to plot per figure
+%  'fill'    - ?? what was this for ??
 %  'ICAw' ?
 %  'rsync' ?
 %  'r'    ?
@@ -26,8 +30,8 @@
 %   fields of the EEG datasets will be present and the current function
 %   will have some more button active to tune up the automatic rejection.
 %
-% Author: Arnaud Delorme, CNL / Salk Institute, 2001
-%         Mikołaj Magnuski,                     2014
+%   author:                   Mikołaj Magnuski,                     2014
+% based on: pop_selcomps.m by Arnaud Delorme, CNL / Salk Institute, 2001
 %
 % See also: pop_prop(), eeglab()
 
@@ -36,9 +40,11 @@
 function [EEG, com] = pop_selectcomps_new( EEG, compnum, fig, varargin )
 
 % TODOs:
-% [ ] change name to simpler selcomps( ... )
+% [ ] change name to something simpler like selcomps( ... )
+% [ ] clear up help
+% FUTURE:
+% [ ] work on broadcast? - notify and addlistener for GUIs?
 % [ ] cached topos should have info on plot options
-% [ ] work on broadcast - notify and addlistener for GUIs?
 
 
 % info for hackers (or future self)
@@ -66,6 +72,7 @@ function [EEG, com] = pop_selectcomps_new( EEG, compnum, fig, varargin )
 % TAGS:
 % buttons     -> 'comp10' denotes button corresponding to 10th component
 % axes        -> 
+
 
 % INPUT CHECKS
 % ------------
@@ -96,7 +103,6 @@ if nargin < 2
     compnum = eval( [ '[' result{1} ']' ]);
     
 end
-
 
 
 % DEFAULTS
@@ -333,6 +339,12 @@ end
 
 % check cached topos
 % ------------------
+
+% currently topos are not cached in eegDb struct
+% - this turns out to take too much space
+% they could be kept in EEG though or a separate
+% file - topocache
+
 info.ifcached = false;
 topocache     = [];
 
@@ -400,7 +412,6 @@ else
 
     info.compifremove = [];
 end
-
 
 
 % draw the bottom buttons
