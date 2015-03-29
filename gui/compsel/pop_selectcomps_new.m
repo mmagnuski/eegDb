@@ -286,30 +286,26 @@ end
 
 if ~fig_h_passed
     
-    % CHANGE name
+    % CHANGE figure name
+
+    % compute figure position - currently do not care about
+    % number of comps per row, just make it bigger on the screen
+    scr_sz = get(0, 'ScreenSize');
+    % pos = [pos(1) 20 800/7* params.column 600/5* params.rows];
+    pos = [round(scr_sz(3) * 0.1), round(scr_sz(4) * 0.1), ...
+        round(scr_sz(3) * 0.8), round(scr_sz(4) * 0.8)];
+
     % create figure
     h.fig = figure('name', [ 'Reject components by map - ',...
         'pop_selectcomps_new() (dataset: ', EEG.setname ')'], 'tag', ...
-        currentfigtag, 'numbertitle', 'off', 'color', FIGBACKCOLOR);
-    
-    % delete the classic menu bar:
-    set(h.fig, 'MenuBar', 'none');
-    
-    % get figure position:
-    pos = get(h.fig, 'Position');
+        currentfigtag, 'numbertitle', 'off', 'color', FIGBACKCOLOR, ...
+        'Position', pos, 'MenuBar', 'none');
     
     % CHECK - later this should be checked and compared
     %         against options
     % CHANGE - manipulate the pos(1) and pos(2) to
     %          get better results
 
-    % change the position to match number of rows and columns
-    % it is assumed that each colum should consume
-    % 115 pixels (previously 800/7 that is - 114.2857)
-    % and each row should take 120 pixels
-    pos = [pos(1) 20 800/7* params.column 600/5* params.rows];
-    set(gcf,'Position', pos);
-    
     % incx and incy are used to compute button coordinates
     % (increment in x, increment in y)
     incx = 120; incy = 110;
