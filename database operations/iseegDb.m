@@ -38,7 +38,7 @@ isemptyorstruct = @(x) isempty(x) || isstruct(x);
 
 % check fields content
 check_fields = {ischarorcell, ischarorcell, @isstruct, isnumorstruct,...
-				@isstruct, @isstruct, isemptyorstruct, isemptyorstruct};
+				isemptyorstruct, @isstruct, isemptyorstruct, isemptyorstruct};
 
 for r = rs
 	for f = 1:length(obligatory_fields)
