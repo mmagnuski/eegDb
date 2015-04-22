@@ -1,12 +1,10 @@
-function whatepoching = eegDb_whatepoch(eegDb, testdatainfo)
+function [whatepoching, indatainfo] = eegDb_whatepoch(eegDb)
 
 % EEGDB_WHATEPOCH checks what kind of epoching a given database entry
 % has defined.
 %
 % whatepoching = eegDb_whatepoch(eegDb)
 %
-% `testdatainfo` -  *logical*, tells eegDb_whatepoch whether
-%                   to check eegDb.datainfo.epoch
 % `whatepoching` -  *integer*, signals what type of epoching
 %                   the eegDb entry has:
 %                   0 - no epoching defined
@@ -19,15 +17,20 @@ function whatepoching = eegDb_whatepoch(eegDb, testdatainfo)
 
 % ADD checks for many entries
 
-if ~exist('testdatainfo', 'var')
-    testdatainfo = false;
+if ~exist('indatainfo', 'var')
+    if ~femp(eegDb, 'epoch') && femp(eegDb, 'datainfo')
+        indatainfo = true;
+    else
+        indatainfo = false;
+    end
 end
 
 % change stuff if we need to check datainfo
-if testdatainfo
+if indatainfo
     if femp(eegDb.datainfo, 'epoch')
         eegDb.epoch = eegDb.datainfo.epoch;
     else
+        indatainfo = false;
         whatepoching = 0;
         return
     end

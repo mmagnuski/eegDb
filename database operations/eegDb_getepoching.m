@@ -7,18 +7,10 @@ function [epochstruct, epochtype, dtinf] = eegDb_getepoching(eegDb)
 % `dtinf`       - whether epoching info was found in datainfo
 
 
-dtinf = false;
 epochstruct = struct();
 
 % check if epoching info is in epoch field
-epochtype = eegDb_whatepoch(eegDb);
-
-% if not in epoch field - check datainfo.epoch
-if epochtype == 0
-    % check datainfo
-    epochtype = eegDb_whatepoch(eegDb, true);
-    dtinf = true;
-end
+[epochtype, dtinf] = eegDb_whatepoch(eegDb);
 
 % give back structure of fields describing the epoching
 if epochtype > 0

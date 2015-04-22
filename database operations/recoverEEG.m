@@ -439,56 +439,58 @@ if femp(ICAw(r), 'postfilter')
 end
 
 %% epoching
-if femp(ICAw(r).epoch, 'locked') && ~ICAw(r).epoch.locked
-    
-    % ==============
-    % onesec options
-    options.filename = EEG;
-    options.fill = true;
-    
-    flds = {'filter', 'winlen', 'distance',...
-        'leave', 'eventname'};
-    
-    % checking fields for onesecepoch
-    for f = 1:length(flds)
-        if femp(ICAw(r).epoch, flds{f})
-            options.(flds{f}) = ICAw(r).epoch.(flds{f});
-        end
-    end
-    
-    % if prerej is present then no need to use distance
-    if femp(ICAw(r).reject, 'pre')
-        options.distance = [];
-    end
-    
-    % ===================
-    % call to onesecepoch
-    EEG = onesecepoch(options);
-    clear options
-    
-elseif ~isempty(ICAw(r).epoch.events) && ...
-        ~isempty(ICAw(r).epoch.limits)
-    
-    % ==================
-    % classical epoching
-    epoc = ICAw(r).epoch.events;
-    
-    % checking for code generator of epochs
-    % ADD - function handle for epoching?
-    %       or maybe not necessary - there is an
-    %       option for user-defined function
-    if ischar(epoc) && length(epoc) > cidlen && ...
-            strcmp(epoc(1:cidlen), code_id)
+if femp(ICAw(r), 'epoch')
+    if femp(ICAw(r).epoch, 'locked') && ~ICAw(r).epoch.locked
         
-        epoc = eval(epoc(cidlen+1:end));
-    end
-    
-    EEG = eegDb_fastepoch(EEG, epoc, ICAw(r).epoch.limits);
-    
-    % =======================
-    % checking for segmenting
-    if segment && ~nosegment
-        EEG = segmentEEG(EEG, ICAw(r).epoch.segment);
+        % ==============
+        % onesec options
+        options.filename = EEG;
+        options.fill = true;
+        
+        flds = {'filter', 'winlen', 'distance',...
+            'leave', 'eventname'};
+        
+        % checking fields for onesecepoch
+        for f = 1:length(flds)
+            if femp(ICAw(r).epoch, flds{f})
+                options.(flds{f}) = ICAw(r).epoch.(flds{f});
+            end
+        end
+        
+        % if prerej is present then no need to use distance
+        if femp(ICAw(r).reject, 'pre')
+            options.distance = [];
+        end
+        
+        % ===================
+        % call to onesecepoch
+        EEG = onesecepoch(options);
+        clear options
+        
+    elseif ~isempty(ICAw(r).epoch.events) && ...
+            ~isempty(ICAw(r).epoch.limits)
+        
+        % ==================
+        % classical epoching
+        epoc = ICAw(r).epoch.events;
+        
+        % checking for code generator of epochs
+        % ADD - function handle for epoching?
+        %       or maybe not necessary - there is an
+        %       option for user-defined function
+        if ischar(epoc) && length(epoc) > cidlen && ...
+                strcmp(epoc(1:cidlen), code_id)
+            
+            epoc = eval(epoc(cidlen+1:end));
+        end
+        
+        EEG = eegDb_fastepoch(EEG, epoc, ICAw(r).epoch.limits);
+        
+        % =======================
+        % checking for segmenting
+        if segment && ~nosegment
+            EEG = segmentEEG(EEG, ICAw(r).epoch.segment);
+        end
     end
 end
 
