@@ -644,8 +644,8 @@ classdef fastplot < handle
                 if ~(epoch_lims(1) == 0)
                     pre = 0;
                 end
-                if ~(epoch_lims(end) == obj.window.length) %window.length
-                    post = obj.window.length;
+                if ~(epoch_lims(end) == obj.window.size)
+                    post = obj.window.size;
                 end
                 epoch_lims = [pre, epoch_lims, post];
 
