@@ -618,11 +618,12 @@ classdef fastplot < handle
             % get selected epochs
             epoch_lims = obj.epoch.current_limits;
             epoch_num = obj.epoch.current_nums;
-            selected  = find(obj.marks.selected(1, epoch_num));
+            selected  = obj.marks.selected(:, epoch_num);
+            num_selected = sum(sum(selected));
             
             % hide unnecessary patches
             oldnum = length(obj.h.backpatches);
-            newnum = length(selected);
+            newnum = num_selected;
             plot_diff = newnum - oldnum;
             
             if plot_diff < 0
@@ -631,7 +632,7 @@ classdef fastplot < handle
                     'Visible', 'off'); % maybe set HitTest to 'off' ?
             end
 
-            if ~isempty(selected)
+            if any(any(selected))
                 reuse = min([newnum, oldnum]);
                 drawnew = max([0, plot_diff]);
 
@@ -648,17 +649,39 @@ classdef fastplot < handle
                 end
                 epoch_lims = [pre, epoch_lims, post];
 
-                % init vertices
-                ylm = obj.h.ylim;
-                vert = repmat(ylm([1, 1, 2, 2])', [1, newnum*2]);
-                sel = [selected; selected + 1];
-                x = reshape(epoch_lims(sel(:)), [2, numel(sel)/2]);
-                vert(:,1:2:end) = [x; flipud(x)];
-                vert = mat2cell(vert, 4, ones(newnum, 1) * 2)';
+                % init vertices and colors
+                vert = cell(num_selected, 1);
+                colors = cell(num_selected, 1);
+                n_mrk_ep = sum(selected, 1);
 
-                % init colors
-                colors = mat2cell(obj.marks.colors(ones(newnum, 1), :), ...
-                    ones(newnum, 1), 3);
+                % this is ugly and slow, but works
+                current_mark = 1;
+                for ep = 1:size(selected, 2)
+                    if n_mrk_ep(ep) > 0
+                        mrk_tps = find(selected(:, ep));
+                        this_y = obj.marks.num2vertx{n_mrk_ep(ep)};
+
+                        for mr = 1:n_mrk_ep(ep)
+                            x = epoch_lims(ep:ep+1);
+                            x = [x(:); flipud(x(:))];
+                            y = this_y(((mr-1)*2)+1:mr*2 + 2);
+                            vert{current_mark} = [x, y];
+                            colors{current_mark} = obj.marks.colors(...
+                                mrk_tps(mr), :);
+                            current_mark = current_mark + 1;
+                        end
+                    end
+                end
+
+                % TODO - the code below was nice, multimark should
+                %        go back to something similar
+                %
+                % vert = repmat(ylm([1, 1, 2, 2])', [1, newnum*2]);
+                % sel = [selected; selected + 1];
+                % x = reshape(epoch_lims(sel(:)), [2, numel(sel)/2]);
+                % vert(:,1:2:end) = [x; flipud(x)];
+                % vert = mat2cell(vert, 4, ones(newnum, 1) * 2)';
+
                 % faces are always 1:4 so need to init
 
                 % CHANGE:
@@ -666,8 +689,8 @@ classdef fastplot < handle
                 if reuse > 0
                     ind = 1:reuse;
 
-                    set(obj.h.backpatches(ind), {'Vertices'}, ...
-                        vert(ind), 'Faces', 1:4, 'Visible', 'on');
+                    set(obj.h.backpatches(ind), {'Vertices', 'FaceColor'}, ...
+                        [vert(ind), colors(ind)], 'Faces', 1:4, 'Visible', 'on');
                 end
 
                 % draw new
