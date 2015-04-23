@@ -65,9 +65,6 @@ classdef fastplot < handle
             obj.opt.readfield = {'data'};
             obj.opt.readfrom = 1;
             
-            % get event and epoch info
-            obj.get_epoch(EEG, orig_size);
-            
             % calculate spacing
             obj.opt.chan_sd = std(obj.data, [], 1);
             obj.spacing = 2 * mean(obj.opt.chan_sd);
@@ -78,6 +75,13 @@ classdef fastplot < handle
             % introduce spacing to the data
             obj.data = obj.data - repmat(...
                 chan_pos, [obj.data_size(1), 1]);
+
+            % set y limits
+            obj.h.ylim = [-(obj.data_size(2)+1) * obj.spacing,...
+                obj.spacing];
+
+            % get event and epoch info
+            obj.get_epoch(EEG, orig_size);
 
             % electrode position
             obj.opt.electrode_names = {EEG.chanlocs.labels};
@@ -338,8 +342,6 @@ classdef fastplot < handle
             obj.h.lines = plot(obj.data(obj.window.span, :), 'HitTest', 'off');
             
             % set y limits and y lim mode (for faster replotting)
-            obj.h.ylim = [-(obj.data_size(2)+1) * obj.spacing,...
-                obj.spacing];
             set(obj.h.ax, 'YLim', obj.h.ylim, 'YLimMode', 'manual');
             
             % label electrodes
