@@ -408,7 +408,7 @@ classdef fastplot < handle
 
                 % set mark limits
                 num_marks = length(obj.marks);
-                obj.marks.num2vertx = arrayfun(@(x) create_vert_y(x, ylim), ...
+                obj.marks.num2vertx = arrayfun(@(x) create_vert_y(x, obj.h.ylim), ...
                     1:num_marks, 'UniformOutput', false);
             end
         end
