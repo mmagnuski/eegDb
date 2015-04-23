@@ -116,7 +116,7 @@ classdef fastplot < handle
                 mthd = obj.scrollmethod;
             end
             
-            tic;
+            % tic;
             dat = obj.(obj.opt.readfield{obj.opt.readfrom});
             switch mthd
                 case 'replot'
@@ -136,8 +136,8 @@ classdef fastplot < handle
             obj.plotevents();
             obj.plot_epochlimits();
             obj.plot_marks();
-            timetaken = toc;
-            fprintf('time taken: %f\n', timetaken);
+            % timetaken = toc;
+            % fprintf('time taken: %f\n', timetaken);
         end
         
         
