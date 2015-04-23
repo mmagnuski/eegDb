@@ -6,6 +6,7 @@ function pth = ICAw_path(PTH, varargin)
 % finds pth - the string that is a valid
 % directory on the current computer.
 %
+% FIXHELPINFO
 % varargin not used for now
 
 % TODOs:
