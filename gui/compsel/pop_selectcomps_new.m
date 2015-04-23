@@ -290,7 +290,10 @@ if ~fig_h_passed
 
     % compute figure position - currently do not care about
     % number of comps per row, just make it bigger on the screen
+    unt = get(0, 'Units');
+    set(0, 'Units', 'pixels');
     scr_sz = get(0, 'ScreenSize');
+    set(0, 'Units', unt);
     % pos = [pos(1) 20 800/7* params.column 600/5* params.rows];
     pos = [round(scr_sz(3) * 0.1), round(scr_sz(4) * 0.1), ...
         round(scr_sz(3) * 0.8), round(scr_sz(4) * 0.8)];
