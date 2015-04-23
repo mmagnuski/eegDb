@@ -277,6 +277,38 @@ classdef fastplot < handle
                 1:num_marks, 'UniformOutput', false);
 
         end
+
+        function use_mark(obj, mark)
+            % allows to select given mark type as currently active.
+            % 
+            % Arguments:
+            % mark - integer indicating which mark type to activate or
+            %        string with mark name
+            %
+            % Example:
+            % p = fastplot(EEG);
+            % new_mark.name = 'new mark';
+            % new_mark.color = [0.4, 0.7, 0.2];
+            % p.add_mark(new_mark);
+            % p.use_mark('new mark');
+            %
+            % see also: fastplot, add_mark
+
+            if isnumeric(mark) && length(mark) == 1
+                if mark <= length(obj.marks.names)
+                    obj.marks.current = mark;
+                else
+                    warning(['You asked for mark number %d but only', ...
+                        '%d marks are present.'], mark, length(obj.marks.names));
+                end
+            elseif ischar(mark)
+                markind = find(strcmp(mark, obj.marks.names));
+                if mark
+                    obj.marks.current = markind;
+                else
+                    warning('There is no mark named %s', mark);
+                end
+            end
         end
         
     end
