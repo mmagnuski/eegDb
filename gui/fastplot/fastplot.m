@@ -264,6 +264,15 @@ classdef fastplot < handle
             % add mark to obj.marks
             obj.marks.names{end + 1} = mark.name;
             obj.marks.colors(end + 1, :) = mark.color;
+            obj.marks.selected(end + 1, :) = false(1, ...
+                length(obj.marks.selected(1,:)));
+
+            % update num2vertx
+            num_marks = length(obj.marks.names);
+            obj.marks.num2vertx = arrayfun(@(x) create_vert_y(x, obj.h.ylim), ...
+                1:num_marks, 'UniformOutput', false);
+
+        end
         end
         
     end
