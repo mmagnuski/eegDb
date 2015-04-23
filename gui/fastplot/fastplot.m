@@ -88,7 +88,7 @@ classdef fastplot < handle
             obj.opt.electrode_positions = -chan_pos;
             obj.opt.ylabels = fliplr(obj.opt.electrode_names(5:5:end));
             obj.opt.ypos    = fliplr(obj.opt.electrode_positions(5:5:end));
-            
+
             % window limits and step size
             obj.window.size = 1000;
             obj.window.lims = [1, obj.window.size];
@@ -222,7 +222,7 @@ classdef fastplot < handle
         end
 
         function add_mark(obj, mark)
-            % allows to add mark types to fastplot
+            % allows to add new mark types to fastplot
             % this does not mark epochs but adds new mark types 
             % 
             % Arguments:
@@ -357,10 +357,11 @@ classdef fastplot < handle
         function launchplot(obj)
             % figure setup
             ss = obj.opt.scrsz;
-            obj.h.fig = figure('Position', [10, 50, ...
-                ss(1)-20, ss(2)-200], 'Toolbar', 'none', ...
-                'Menubar', 'none');
-            obj.h.ax = axes('Position', [0.05, 0.05, 0.9, 0.85]);
+            obj.h.fig = figure('Units', 'pixels', ...
+                'Position', [10, 50, ss(1)-20, ss(2)-200], ...
+                'Toolbar', 'none', 'Menubar', 'none');
+            obj.h.ax = axes('Position', [0.05, 0.05, 0.9, 0.85], ...
+                'Parent', obj.h.fig);
 
             obj.h.eventlines = [];
             obj.h.eventlabels = [];
@@ -371,22 +372,23 @@ classdef fastplot < handle
             % ---------
             % CHANGE!
             % use 'ColorOrder' to set color of electrodes
-            obj.h.lines = plot(obj.data(obj.window.span, :), 'HitTest', 'off');
-            
+            obj.h.lines = plot(obj.data(obj.window.span, :), ...
+                'HitTest', 'off', 'Parent', obj.h.ax);
+
             % set y limits and y lim mode (for faster replotting)
             set(obj.h.ax, 'YLim', obj.h.ylim, 'YLimMode', 'manual');
-            
+
             % label electrodes
             set(obj.h.ax, 'YTickMode', 'manual');
             set(obj.h.ax, 'YTickLabelMode', 'manual');
             set(obj.h.ax, 'YTick', obj.opt.ypos);
             set(obj.h.ax, 'YTickLabel', obj.opt.ylabels);
-            
+
             % plot events
             obj.plotevents();
             % plot epoch limits
             obj.plot_epochlimits();
-            
+
             % set keyboard shortcuts
             obj.init_keypress();
             % set click callback
@@ -428,7 +430,8 @@ classdef fastplot < handle
             if length(orig_size) > 2 && orig_size(3) > 1
                 obj.epoch.mode = true;
                 obj.epoch.num = orig_size(3);
-                obj.epoch.limits = orig_size(2):orig_size(2):obj.data_size(1) + obj.opt.stime / 2;
+                obj.epoch.limits = orig_size(2):orig_size(2):...
+                    obj.data_size(1) + obj.opt.stime / 2;
 
                 % set default marks
                 if isempty(obj.marks)
@@ -449,7 +452,7 @@ classdef fastplot < handle
         function plotevents(obj)
             % reuse lines and labels
             numlns = length(obj.h.eventlines);
-            
+
             % get events to plot
             ev = obj.events_in_range();
             numev = length(ev.latency);
