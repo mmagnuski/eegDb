@@ -310,6 +310,33 @@ classdef fastplot < handle
                 end
             end
         end
+
+        function select_mark(obj)
+            % SELECT_MARK brings up fuzzy menu for mark selection
+            %
+            % Usage:
+            % p = fastplot(EEG);
+            % new_mark.name = 'new mark';
+            % new_mark.color = [0.4, 0.7, 0.2];
+            % p.add_mark(new_mark);
+            % p.select_mark();
+            %
+            % see also: fastplot, fuzzy_gui
+
+            % get mark names
+            marknames = obj.marks.names;
+
+            % ask for mark name:
+            marknum = fuzzy_gui(marknames);
+
+            % if user aborts do not go any further
+            if isempty(marknum) || marknum == 0
+                return
+            end
+
+            % update used mark
+            obj.use_mark(marknum);
+        end
         
     end
 
@@ -599,6 +626,9 @@ classdef fastplot < handle
             pattern{3,2} = {@obj.swap, 1};
             pattern{4,1} = {'downarrow'};
             pattern{4,2} = {@obj.swap, 2};
+            pattern{5,1} = {'m'};
+            pattern{5,2} = {@obj.select_mark};
+
             
             % initialize 
             eegplot_readkey_new([], [], [], pattern);
