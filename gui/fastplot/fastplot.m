@@ -278,6 +278,47 @@ classdef fastplot < handle
 
         end
 
+        function gui_add_mark(obj)
+            % ask for mark name:
+            markname = gui_editbox('', {'Type mark name'; 'here:'});
+            marknames = obj.marks.names;
+            markcolors = obj.marks.colors;
+
+            % if user aborts do not go any further
+            if isempty(markname)
+                return
+            end
+
+            % if the name is present in rejs ask for another
+            while any(strcmp(markname, marknames))
+                markname = gui_editbox('', {'This name is already in use.'; 'Please, try another.'});
+                
+                % if user aborts do not go any further
+                if isempty(markname)
+                    return
+                end
+            end
+
+            % ask for mark color
+            badcol = true;
+            while badcol
+                % gui for setting color
+                c = uisetcolor;
+
+                % check color:
+                badcol = any(all(bsxfun(@eq, c, markcolors), 2));
+
+                if badcol
+                    warndlg('This color is already in use, please choose another one.');
+                end
+            end
+
+            % now - use add_mark to add new mark
+            new_mark = struct('name', markname, 'color', c);
+            obj.add_mark(new_mark);
+        end
+
+
         function use_mark(obj, mark)
             % allows to select given mark type as currently active.
             % 
@@ -628,6 +669,8 @@ classdef fastplot < handle
             pattern{4,2} = {@obj.swap, 2};
             pattern{5,1} = {'m'};
             pattern{5,2} = {@obj.select_mark};
+            pattern{6,1} = {'a', 'm'};
+            pattern{6,2} = {@obj.gui_add_mark};
 
             
             % initialize 
