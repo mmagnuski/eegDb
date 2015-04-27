@@ -493,7 +493,6 @@ if femp(ICAw(r), 'epoch')
         end
     end
 end
-end
 
 % CHANGE
 % [ ] if we segment then orig_numep should be adjusted too
