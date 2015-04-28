@@ -8,6 +8,8 @@ classdef fastplot < handle
     %     eventlines  - lines showing event timing
     %     eventlabels - labels showing event type
     %
+    % epoch    -  add info about epoch structure
+    %
     % marks    -  structure containing information about marks
     %             (marks should optimally have different name AND color)
     %             contains following fields:
@@ -94,7 +96,7 @@ classdef fastplot < handle
             obj.window.lims = [1, obj.window.size];
             obj.window.span = obj.window.lims(1):obj.window.lims(2);
             obj.window.step = 1000;
-            
+
             % get screen resolution:
             unts = get(0, 'unit');
             ifpix = strcmp(unts, 'pixel');
@@ -105,9 +107,13 @@ classdef fastplot < handle
             % launch the plot
             obj.launchplot();
         end
-        
-        
-        function refresh(obj, mthd) % should check if sth actually changed
+
+
+        function refresh(obj, mthd)
+            % refresh fastplot window
+
+            % CHANGE should check if sth actually changed
+
             % during re-plotting:
             % always use set 'XData', 'YData'
             obj.window.span = obj.window.lims(1):obj.window.lims(2);
@@ -142,11 +148,17 @@ classdef fastplot < handle
         
         
         function move(obj, value, mlt, unit)
+            % move the current view a number of units.
+            % positive value indicates forward motion
+            % negative value indicates backward motion
+
             % CHANGE - mlt is temporary
             % ADD - mode of window.step?
+
             if ~exist('value', 'var')
                 value = 1;
             end
+
             % do not go further if move is not possible
             if value == 0 || ...
                     ((obj.window.lims(1) == 1) && value < 0) ...
@@ -180,8 +192,14 @@ classdef fastplot < handle
         
         % maybe should be private? :
         function ev = events_in_range(obj, rng)
+            % gives latency of events that are
+            % present within given range. If no range
+            % is given, the range of current fastplot
+            % view is taken.
+            %
             % default - range in samples
             % default - range from winlim
+
             if ~exist('rng', 'var')
                 rng = obj.window.lims;
             end
@@ -200,8 +218,14 @@ classdef fastplot < handle
         end
 
         function ep = epochlimits_in_range(obj, rng)
+            % gives latency of epoch limits that are
+            % present within given range. If no range
+            % is given, the range of current fastplot
+            % view is taken.
+            %
             % default - range in samples
             % default - range from winlim
+
             ep.latency = [];
 
             if isempty(obj.epoch)
@@ -210,7 +234,7 @@ classdef fastplot < handle
             if ~exist('rng', 'var')
                 rng = obj.window.lims;
             end
-            % look for event with latency within given range
+            % look for epochs with latency within given range
             lookfor = obj.epoch.limits >= rng(1) & ...
                 obj.epoch.limits <= rng(2);
             if any(lookfor)
