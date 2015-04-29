@@ -8,7 +8,10 @@ classdef fastplot < handle
     %     eventlines  - lines showing event timing
     %     eventlabels - labels showing event type
     %
-    % epoch    -  add info about epoch structure
+    % epoch     -  structure with information about epochs
+    %      mode    - whether signal has epochs or not (epoch mode)
+    %      num     - how many epochs are present in the data
+    %      limits  - what are the limits of each epoch
     %
     % marks    -  structure containing information about marks
     %             (marks should optimally have different name AND color)
@@ -63,13 +66,13 @@ classdef fastplot < handle
             obj.data_size = fliplr(obj.data_size);
 
             % default scroll method
-            obj.scrollmethod = 'allset';
+            obj.scrollmethod = 'allset'; % how signal refresh is performed
 
             % default options
             obj.opt.num_epoch_per_window = 3;
             obj.opt.readfield = {'data'};
             obj.opt.readfrom = 1;
-            
+
             % calculate spacing
             obj.opt.chan_sd = std(obj.data, [], 1);
             obj.spacing = 2 * mean(obj.opt.chan_sd);
@@ -107,6 +110,7 @@ classdef fastplot < handle
             obj.opt.scrsz = get(0, 'ScreenSize');
             obj.opt.scrsz = obj.opt.scrsz([3, 4]);
             if ~ifpix; set(0, 'unit', unts); end
+
             % launch the plot
             obj.launchplot();
         end
@@ -527,8 +531,8 @@ classdef fastplot < handle
             obj.opt.stime = 1000 / EEG.srate;
             % obj.opt.halfsample = obj.opt.stime / 2;
             if length(orig_size) > 2 && orig_size(3) > 1
-                obj.epoch.mode = true;
-                obj.epoch.num = orig_size(3);
+                obj.epoch.mode       = true;
+                obj.epoch.num        = orig_size(3);
                 obj.epoch.time       = EEG.times;
                 obj.epoch.timelimits = EEG.times([1, end]);
                 obj.epoch.limits     = orig_size(2):orig_size(2):...
