@@ -64,6 +64,9 @@ classdef fastplot < handle
 
             % default scroll method
             obj.scrollmethod = 'allset';
+
+            % default options
+            obj.opt.num_epoch_per_window = 3;
             obj.opt.readfield = {'data'};
             obj.opt.readfrom = 1;
             
@@ -92,10 +95,10 @@ classdef fastplot < handle
             obj.opt.ypos    = fliplr(obj.opt.electrode_positions(5:5:end));
 
             % window limits and step size
-            obj.window.size = 1000;
+            obj.window.size = length(obj.epoch.time) * obj.opt.num_epoch_per_window;
             obj.window.lims = [1, obj.window.size];
             obj.window.span = obj.window.lims(1):obj.window.lims(2);
-            obj.window.step = 1000;
+            obj.window.step = length(obj.epoch.time);
 
             % get screen resolution:
             unts = get(0, 'unit');
@@ -522,7 +525,9 @@ classdef fastplot < handle
             if length(orig_size) > 2 && orig_size(3) > 1
                 obj.epoch.mode = true;
                 obj.epoch.num = orig_size(3);
-                obj.epoch.limits = orig_size(2):orig_size(2):...
+                obj.epoch.time       = EEG.times;
+                obj.epoch.timelimits = EEG.times([1, end]);
+                obj.epoch.limits     = orig_size(2):orig_size(2):...
                     obj.data_size(1) + obj.opt.stime / 2;
 
                 % set default marks
