@@ -472,6 +472,8 @@ classdef fastplot < handle
 
             % set y limits and y lim mode (for faster replotting)
             set(obj.h.ax, 'YLim', obj.h.ylim, 'YLimMode', 'manual');
+            set(obj.h.ax, 'XLim', [1, length(obj.epoch.time) * ...
+                obj.opt.num_epoch_per_window], 'XLimMode', 'manual');
 
             % label electrodes
             set(obj.h.ax, 'YTickMode', 'manual');
