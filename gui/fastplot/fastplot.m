@@ -244,7 +244,9 @@ classdef fastplot < handle
                 % return event latency and type
                 ep.latency = obj.epoch.limits(lookfor);
                 ep.nums = find(lookfor);
-                ep.nums = [ep.nums, ep.nums(end)+1];
+                if ~(ep.nums(end) == obj.epoch.num)
+                    ep.nums = [ep.nums, ep.nums(end)+1];
+                end
             end
         end
 
