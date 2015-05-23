@@ -42,7 +42,7 @@ if ~isreco
 	drawnow;
 
 	% recover
-	h.EEG = recoverEEG(h.ICAw, h.r, 'local', h.recovopts{:});
+	h.EEG = recoverEEG(h.ICAw, h.r, 'local', 'ICAnorem');
     h.rEEG = h.r;
 
     % update winrej handles
