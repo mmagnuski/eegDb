@@ -19,19 +19,21 @@ cll = 'CleanLine\';
 for r = 1:length(ICAw)
     iscl = iscell(ICAw(r).filepath);
     if iscl
-        pt = ICAw(r).filepath{1};
+        ad_cl = any(~cellfun(@isempty, strfind(...
+            ICAw(r).filepath, cll)));
     else
-        pt = ICAw(r).filepath;
+        ad_cl = ~(isempty(strfind(...
+            ICAw(r).filepath, cll)));
     end
     
-    ad_cl = ~(isempty(strfind(pt, cll)));
     
     nowpath = path;
     if ad_cl
-        nowpath = [nowpath, cll]; %#ok<AGROW>
+        nowpath = fullfile(nowpath, cll);
     end
     
     if ~iscl
+        pt = ICAw(r).filepath;
         ICAw(r).filepath = []; %#ok<*SAGROW>
         ICAw(r).filepath{1} = pt;
         ICAw(r).filepath{2} = nowpath;
