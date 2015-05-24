@@ -40,7 +40,8 @@
 function [EEG, com] = pop_selectcomps_new( EEG, compnum, fig, varargin )
 
 % TODOs:
-% [ ] change name to something simpler like selcomps( ... )
+% [ ] change name to something simpler like selcomps or compgui
+% [ ] do not use compnum and fig as positional
 % [ ] clear up help
 % FUTURE:
 % [ ] work on broadcast? - notify and addlistener for GUIs?
