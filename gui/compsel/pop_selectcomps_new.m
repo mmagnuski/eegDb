@@ -374,13 +374,13 @@ end
 % CHANGE       - currently only eegDb-level
 % CONSIDER     - may be better when state is only for those comps
 %                present in comps.all 
+info.comps.colorcycle = [GUIBUTTONCOLOR; eval(COLREJ); ...
+                            eval(COLACC); [1, 0.65, 0]];
+info.comps.stateNames = {'', 'reject', 'select', 'maybe'};
 if info.eegDb_present 
 
     % compstate
     info.comps.state = zeros(1, info.eegDbcompN);
-    info.comps.stateNames = {'', 'reject', 'select', 'maybe'};
-    info.comps.colorcycle = [GUIBUTTONCOLOR; eval(COLREJ); ...
-                            eval(COLACC); [1, 0.65, 0]];
 
     % components marked as removed
     if femp(eegDb(info.r).ICA, 'reject')
@@ -403,6 +403,11 @@ if info.eegDb_present
 else
     % CHANGE!
     % get info from EEG
+    info.comps.colorcycle([3, 4],:) = [];
+    info.comps.stateNames([3, 4]) = [];
+    info.comps.state = zeros(1, info.EGGcompN);
+    info.comps.state(logical(EEG.reject.gcompreject)) = 1;
+
     if femp(EEG.reject, 'gcompreject')
         info.compremove =  EEG.reject.gcompreject;
     else
@@ -561,11 +566,6 @@ else
 end
 info.comps.invisible = zeros(1, info.perfig);
 info.drawfreq = DRAWFREQ;
-
-% colors to info
-if ~info.eegDb_present
-    info.colors.colorcycle(2) = [];
-end
 
 
 % APPDATA
