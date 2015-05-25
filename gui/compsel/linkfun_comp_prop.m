@@ -45,8 +45,14 @@ set(h.status, 'Callback', @(src, ev) snc.chng_comp_status(cmp) );
 set(h.fig, 'DeleteFcn', @(src, ev) snc.clear_h(h.fig) );
 % add callback for ok to close figure
 set(h.ok, 'Callback', @(src, ev) close(h.fig) );
+
 % add callback for enter and escape
-set(h.fig, 'WindowKeyPressFcn', @prop_buttonpress);
+if is_mat_version_older({2008, 'a'})
+    emulate_winkeypress(h.fig, @prop_buttonpress);
+else
+    set(h.fig, 'WindowKeyPressFcn', @prop_buttonpress);
+end
+
 
 % CHANGE - use spec_opt in the future
 % pop_prop2(EEG, cmp, hfig, spec_opt);
