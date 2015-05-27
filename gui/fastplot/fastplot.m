@@ -303,6 +303,7 @@ classdef fastplot < handle
             obj.marks.colors(end + 1, :) = mark.color;
             obj.marks.selected(end + 1, :) = false(1, ...
                 length(obj.marks.selected(1,:)));
+            obj.marks.lastclick(end + 1) = 0;
 
             % update num2vertx
             num_marks = length(obj.marks.names);
@@ -544,6 +545,7 @@ classdef fastplot < handle
                     obj.marks.colors   = [0.85, 0.3, 0.1];
                     obj.marks.current  = 1;
                     obj.marks.selected = false(1, obj.epoch.num);
+                    obj.marks.lastclick = 0;
                 end
 
                 % set mark limits
@@ -738,11 +740,26 @@ classdef fastplot < handle
                     find(x > epoch_lims, 1, 'last'));
 
                 c = obj.marks.current;
-                if obj.marks.selected(c,selected)
-                    obj.marks.selected(c,selected) = false;
+
+                modifiers = get(obj.h.fig, 'currentModifier');
+                if length(modifiers) == 1 && strcmp(modifiers{1}, 'shift') ...
+                    && obj.marks.lastclick(c) > 0 && ~(obj.marks.lastclick(c) ...
+                    == selected)
+                    if obj.marks.lastclick(c) > selected
+                        ind = selected:(obj.marks.lastclick(c) - 1);
+                    else
+                        ind = (obj.marks.lastclick(c) + 1):selected;
+                    end
                 else
-                    obj.marks.selected(c,selected) = true;
+                    ind = selected;
                 end
+
+                % update lastclick
+                obj.marks.lastclick(c) = selected;
+
+                % revert activated windows
+                obj.marks.selected(c, ind) = ...
+                    logical(1 - obj.marks.selected(c, ind));
 
                 % plot the change
                 obj.plot_marks();
