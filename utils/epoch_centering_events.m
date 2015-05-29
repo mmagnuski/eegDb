@@ -23,7 +23,11 @@ for e = 1:epN
 
     if any(zero_event)
         whichCenter(e) = find(zero_event);
-        zero_event_name = EEG.epoch(e).eventtype(zero_event);
+        if iscell(EEG.epoch(e).eventtype)
+            zero_event_name = EEG.epoch(e).eventtype(zero_event);
+        else
+            zero_event_name = {EEG.epoch(e).eventtype};
+        end
 
         for evtp = zero_event_name
             nms = strcmp(evtp{1}, eventNames);
