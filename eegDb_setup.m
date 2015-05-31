@@ -1,36 +1,24 @@
-% EEGDB
+% EEGDB_SETUP
 %
-% adds necessary paths to folders
+% setup eegDb package by adding necessary paths 
+% to matlab search path
 %
 % see also: addpath
+
 function eegDb_setup
 
-pth = fileparts(which('eegDb_setup'));
+% get path to this function
+pth = fileparts(mfilename('fullpath'));
 
-% fld = {'database operations', 'dependencies', 'eeglabsubst', 'gui', ...
-%     'manage marks', 'manage versions', 'path and file utils', ...
-%     'should be in a branch'};
-% 
-% % add folders to path
-% for f = fld
-%     addpath(fullfile(pth, f{1}));
-% end
-
-% do not add .git etc folders:
+% get other folders in this path
 lst = dir(pth);
 dirlst = lst([lst.isdir]);
 
-dl = false(length(dirlst), 1);
-
-for i = 1:length(dirlst)
-    if dirlst(i).name(1) == '.'
-        dl(i) = true;
-    end
-end
+% do not add ".git" etc folders:
+dl = arrayfun(@(x) x.name(1) == '.', dirlst);
 dirlst(dl) = [];
 
 disp('adding paths...');
 for d = 1:length(dirlst)
     addpath(genpath(fullfile(pth, dirlst(d).name)));
-end
 end
