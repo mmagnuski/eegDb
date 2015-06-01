@@ -61,6 +61,7 @@ classdef fastplot < handle
         function obj = fastplot(EEG, varargin)
             % define some of the class properties
             orig_size = size(EEG.data);
+            obj.opt.nbchan = orig_size(1);
             obj.data_size = [orig_size(1), orig_size(2) * orig_size(3)];
             obj.data = reshape(EEG.data, obj.data_size)';
             obj.data_size = fliplr(obj.data_size);
@@ -92,10 +93,17 @@ classdef fastplot < handle
             obj.get_epoch(EEG, orig_size);
 
             % electrode position
-            obj.opt.electrode_names = {EEG.chanlocs.labels};
             obj.opt.electrode_positions = -chan_pos;
-            obj.opt.ylabels = fliplr(obj.opt.electrode_names(5:5:end));
-            obj.opt.ypos    = fliplr(obj.opt.electrode_positions(5:5:end));
+            if obj.opt.nbchan > 20
+                chanind = 5:5:obj.opt.nbchan;
+            elseif obj.opt.nbchan > 10
+                chanind = 2:2:obj.opt.nbchan;
+            else
+                chanind = 1:obj.opt.nbchan;
+            end
+
+            obj.opt.ylabels = fliplr(obj.opt.electrode_names(chanind));
+            obj.opt.ypos    = fliplr(obj.opt.electrode_positions(chanind));
 
             % window limits and step size
             obj.window.size = length(obj.epoch.time) * obj.opt.num_epoch_per_window;
