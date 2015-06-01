@@ -73,5 +73,11 @@ if ~isempty(ch)
         EEG = getappdata(hObj, 'EEG');
         EEG2 = pop_subcomp(EEG, comp, 0);
         fst = fastplot(EEG, EEG2);
+    elseif strcmp(evnt.Key, 's')
+        comp = getappdata(hObj, 'comp');
+        EEG = getappdata(hObj, 'EEG');
+
+        % be sure to have EEG comp num
+        plt = fastplot(EEG, 'comp', comp);
     end
 end
