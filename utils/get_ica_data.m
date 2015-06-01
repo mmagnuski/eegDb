@@ -8,7 +8,7 @@ if ~exist('ind', 'var')
 end
 
 if femp(EEG, 'icaact')
-	data = EEG.icaact;
+	data = EEG.icaact(ind,:,:);
 else
 	dt_size = size(EEG.data);
 	dt_size(1) = length(ind);
