@@ -467,8 +467,18 @@ classdef fastplot < handle
         function launchplot(obj)
             % figure setup
             ss = obj.opt.scrsz;
+            midpoint = round(ss(2)/2);
+            edges_relative2midpoint = [-midpoint + 50, midpoint - 50];
+            if obj.opt.nbchan < 10
+                edges_relative2midpoint = round(edges_relative2midpoint * ...
+                    (obj.opt.nbchan/10));
+            end
+            figure_ylims = midpoint + edges_relative2midpoint;
+
+
             obj.h.fig = figure('Units', 'pixels', ...
-                'Position', [10, 50, ss(1)-20, ss(2)-200], ...
+                'Position', [10, figure_ylims(1), ...
+                ss(1)-20, figure_ylims(2) - figure_ylims(1)], ...
                 'Toolbar', 'none', 'Menubar', 'none');
             obj.h.ax = axes('Position', [0.05, 0.05, 0.9, 0.85], ...
                 'Parent', obj.h.fig);
