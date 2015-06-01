@@ -47,6 +47,7 @@ classdef fastplot < handle
     end
     
     % TODOs:
+    % [ ] - check profiling and then only worry about optimisation
     % [ ] - think about adding time-pointers to events so that extensively
     % comparing events latency with current time window happens only once
     % [ ] - think about making faster version unique - specifically for
@@ -107,14 +108,14 @@ classdef fastplot < handle
             obj.scrollmethod = 'allset'; % how signal refresh is performed
 
             % default options
-            obj.opt.num_epoch_per_window = 3;
-            obj.opt.readfield = {'data'};
+            obj.opt.num_epoch_per_window = 3; % this should be set via options
+            obj.opt.readfield = {'data'}; % later - add support for multiple fields
             obj.opt.readfrom = 1;
 
             % calculate spacing
             obj.opt.chan_sd = std(obj.data, [], 1);
-            obj.arg_parser(varargin);
             obj.spacing = 4.5 * mean(obj.opt.chan_sd);
+            obj.arg_parser(varargin); % arg_parser should be used at the top
 
             chan_pos = (0:obj.data_size(2)-1)*obj.spacing;
 
@@ -527,7 +528,7 @@ classdef fastplot < handle
             
             % plot data
             % ---------
-            % CHANGE!
+            % CHANGE
             % use 'ColorOrder' to set color of electrodes
             obj.h.lines = plot(obj.data(obj.window.span, :), ...
                 'HitTest', 'off', 'Parent', obj.h.ax);
