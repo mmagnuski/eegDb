@@ -59,11 +59,48 @@ classdef fastplot < handle
     methods
         
         function obj = fastplot(EEG, varargin)
+
+            % check varargin for 'comp' or 'chan'
+            isind = false;
+            show_signal = 'chan';
+            ischan = strcmp('chan', varargin);
+            if any(ischan)
+                where = find(ischan);
+                isind = true;
+            end
+
+            if ~isind
+                iscomp = strcmp('comp', varargin);
+                if any(iscomp)
+                    show_signal = 'comp';
+                    where = find(iscomp);
+                    isind = true;
+                end
+            end
+
+            % check comp vs chan and inds
+            % eeg_getdataact
+            if ~isind
+                signal_ind = 1:EEG.nbchan;
+            else
+                signal_ind = varargin{where + 1};
+            end
+
             % define some of the class properties
-            orig_size = size(EEG.data);
+            if strcmp(show_signal, 'comp')
+                obj.opt.electrode_names = arrayfun(@(x) ...
+                    ['IC', num2str(x)], signal_ind, 'Uni', false);
+                obj.data = get_ica_data(EEG, signal_ind);
+            else
+                obj.opt.electrode_names = { ...
+                    EEG.chanlocs(signal_ind).labels};
+                obj.data = EEG.data(signal_ind, :, :);
+            end
+
+            orig_size = size(obj.data);
             obj.opt.nbchan = orig_size(1);
             obj.data_size = [orig_size(1), orig_size(2) * orig_size(3)];
-            obj.data = reshape(EEG.data, obj.data_size)';
+            obj.data = reshape(obj.data, obj.data_size)';
             obj.data_size = fliplr(obj.data_size);
 
             % default scroll method
