@@ -4,6 +4,11 @@ function linkfun_comp_prop(hfig, src, cmp)
 
 
 % TODOs
+% [ ] each fastplot should be labeled / titled so
+%     it is easy to get around when you have many open
+% [ ] keyboard buffer manager currently does not work
+%     well with many windows - we need a separate object
+%     for this, not a function with persistent variables
 % [ ] if such compo is already open - raise figure
 % [ ] remember about non-matching EEG - eegDb comps
 %     when some were selected during recovery
