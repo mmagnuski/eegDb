@@ -1,6 +1,22 @@
 classdef fastplot < handle
     
-    % Properties:
+    % fastplot is a fast and friendly signal plotter.
+    % 
+    % plt = fastplot(EEG);
+    %
+    % input
+    % -----
+    % EEG - eeglab EEG structure, must have following fields:
+    %    .data
+    %    .srate
+    %    .epoch
+    %    .event
+    %    .times
+    %    
+    %
+    % the output is a fastplot object
+    % fastplot properties:
+    % --------------------
     % h        -  structure of handles to:
     %     fig         - fastplot figure
     %     ax          - axis with eeg signal
@@ -28,7 +44,8 @@ classdef fastplot < handle
     % user about the name of currently displayed dataset
 
 
-    % currently - one epoch at time
+    % PROPERTIES - PRIVATE
+    % --------------------
     properties (SetAccess = private, GetAccess = public)
         h      % handles to the graphical objects
         opt    % options (what goes here?)
@@ -42,6 +59,8 @@ classdef fastplot < handle
         window
     end
 
+    % PROPERTIES - PUBLIC
+    % -------------------
     properties (SetAccess = public, GetAccess = public)
         scrollmethod
     end
@@ -371,7 +390,8 @@ classdef fastplot < handle
 
             % if the name is present in rejs ask for another
             while any(strcmp(markname, marknames))
-                markname = gui_editbox('', {'This name is already in use.'; 'Please, try another.'});
+                markname = gui_editbox('', {'This name is already in use.'; ...
+                    'Please, try another.'});
                 
                 % if user aborts do not go any further
                 if isempty(markname)
@@ -389,7 +409,8 @@ classdef fastplot < handle
                 badcol = any(all(bsxfun(@eq, c, markcolors), 2));
 
                 if badcol
-                    warndlg('This color is already in use, please choose another one.');
+                    warndlg(['This color is already in use, ', ...
+                        'please choose another one.']);
                 end
             end
 
@@ -847,6 +868,7 @@ classdef fastplot < handle
             end
         end
 
+
         function plot_marks(obj)
             % get selected epochs
             epoch_lims = obj.epoch.current_limits;
@@ -950,6 +972,8 @@ classdef fastplot < handle
     
 end
 
+
+% additional utility functions
 function verty = create_vert_y(x, ylim)
     verty = repmat(linspace(ylim(1), ylim(2), x+1), [2, 1]);
     verty = verty(:);
