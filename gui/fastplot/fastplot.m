@@ -458,6 +458,21 @@ classdef fastplot < handle
             % update used mark
             obj.use_mark(marknum);
         end
+
+        function mark(obj, mark_type, epoch_ind)
+            % MARK allows to mark specific epochs with given mark type
+
+            % check if mark type is present
+            mark_ind = find(strcmp(mark_type, obj.marks.names));
+
+            if isempty(mark_ind)
+                error('Specified mark type does not exist. Please add it first.');
+            end
+
+            if all(epoch_ind > 0 & epoch_ind < (obj.epoch.num + 1))
+                obj.marks.selected(mark_ind, epoch_ind) = true;
+            end
+        end
         
     end
 
