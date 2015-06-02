@@ -914,9 +914,17 @@ classdef fastplot < handle
                 % draw new
                 if drawnew > 0
                     ind = reuse+1:newnum;
-                    obj.h.backpatches(ind) = patch({'Vertices', 'FaceColor'}, ...
-                        [vert(ind), colors(ind)], 'Faces', 1:4, ...
-                        'EdgeColor', 'none', 'HitTest', 'off');
+                    try
+                        obj.h.backpatches(ind) = patch({'Vertices', 'FaceColor'}, ...
+                            [vert(ind), colors(ind)], 'Faces', 1:4, ...
+                            'EdgeColor', 'none', 'HitTest', 'off');
+                    catch matlabBug %#ok<NASGU>
+                        for i = ind
+                            obj.h.backpatches(i) = patch('Vertices', vert{i}, ...
+                                'FaceColor', colors{i}, 'Faces', 1:4, ...
+                                'EdgeColor', 'none', 'HitTest', 'off');
+                        end
+                    end
                     uistack(obj.h.backpatches(ind), 'bottom');
                 end
             end
