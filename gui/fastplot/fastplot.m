@@ -38,7 +38,9 @@ classdef fastplot < handle
     %     selected    - M by E boolean matrix; informs which epochs are marked
     %                   with which mark types (M - number of marks, E - number
     %                   of epochs)
-    
+    % keys     -  a KeyboardManager instance - it is responsible for keyboard
+    %             interactions with the gui including sequences of key presses
+
     % REMEMBER
     % opt could contain data_names field that could inform the
     % user about the name of currently displayed dataset
@@ -57,6 +59,7 @@ classdef fastplot < handle
         data2
         data_size   % pack into a struct?
         window
+        keys
     end
 
     % PROPERTIES - PUBLIC
@@ -494,7 +497,12 @@ classdef fastplot < handle
                 obj.marks.selected(mark_ind, epoch_ind) = true;
             end
         end
-        
+
+        function eval(obj, string)
+            % EVAL evaluates a string as if it was a series of button presses
+            obj.keys.eval(string);
+        end
+
     end
 
 
@@ -789,6 +797,10 @@ classdef fastplot < handle
 
         
         function init_keypress(obj)
+
+            % get instance of KeyboardManager
+            km = KeyboardManager(obj.h.fig);
+
             % create shortcut patterns:
             pattern{1,1} = {'num', 'leftarrow'};
             pattern{1,2} = {@obj.move, -1};
@@ -803,12 +815,12 @@ classdef fastplot < handle
             pattern{6,1} = {'a', 'm'};
             pattern{6,2} = {@obj.gui_add_mark};
 
-            
             % initialize 
-            eegplot_readkey_new([], [], [], pattern);
+            km.register(pattern);
             
             % add eegplot_readkey to WindowKeyPressFcn
-            set(obj.h.fig, 'WindowKeyPressFcn', @eegplot_readkey_new);
+            set(obj.h.fig, 'WindowKeyPressFcn', @(o, e) km.read(e));
+            obj.keys = km;
         end
 
 
