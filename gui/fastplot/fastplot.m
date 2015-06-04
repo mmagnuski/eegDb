@@ -24,7 +24,7 @@ classdef fastplot < handle
     %     eventlines  - lines showing event timing
     %     eventlabels - labels showing event type
     %
-    % epoch     -  structure with information about epochs
+    % epoch    -  structure with information about epochs
     %      mode    - whether signal has epochs or not (epoch mode)
     %      num     - how many epochs are present in the data
     %      limits  - what are the limits of each epoch
