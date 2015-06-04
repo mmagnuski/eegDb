@@ -1,7 +1,7 @@
-function varargout = ICAw_ep_proc_GUI(varargin)
+function varargout = db_ep_proc_GUI(varargin)
 
 % NOHELPINFO
-% ICAW_EP_PROC_GUI MATLAB code for ICAw_ep_proc_GUI.fig
+% ICAW_EP_PROC_GUI MATLAB code for db_ep_proc_GUI.fig
 %      ICAW_EP_PROC_GUI, by itself, creates a new ICAW_EP_PROC_GUI or raises the existing
 %      singleton*.
 %
@@ -13,16 +13,16 @@ function varargout = ICAw_ep_proc_GUI(varargin)
 %
 %      ICAW_EP_PROC_GUI('Property','Value',...) creates a new ICAW_EP_PROC_GUI or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before ICAw_ep_proc_GUI_OpeningFcn gets called.  An
+%      applied to the GUI before db_ep_proc_GUI_OpeningFcn gets called.  An
 %      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to ICAw_ep_proc_GUI_OpeningFcn via varargin.
+%      stop.  All inputs are passed to db_ep_proc_GUI_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help ICAw_ep_proc_GUI
+% Edit the above text to modify the response to help db_ep_proc_GUI
 
 % Last Modified by GUIDE v2.5 25-Jul-2013 17:29:35
 
@@ -30,8 +30,8 @@ function varargout = ICAw_ep_proc_GUI(varargin)
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @ICAw_ep_proc_GUI_OpeningFcn, ...
-                   'gui_OutputFcn',  @ICAw_ep_proc_GUI_OutputFcn, ...
+                   'gui_OpeningFcn', @db_ep_proc_GUI_OpeningFcn, ...
+                   'gui_OutputFcn',  @db_ep_proc_GUI_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -46,28 +46,28 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before ICAw_ep_proc_GUI is made visible.
-function ICAw_ep_proc_GUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<*INUSL>
+% --- Executes just before db_ep_proc_GUI is made visible.
+function db_ep_proc_GUI_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<*INUSL>
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to ICAw_ep_proc_GUI (see VARARGIN)
+% varargin   command line arguments to db_ep_proc_GUI (see VARARGIN)
 
-% Choose default command line output for ICAw_ep_proc_GUI
-handles.ICAw_r = varargin{1};
+% Choose default command line output for db_ep_proc_GUI
+handles.db_r = varargin{1};
 % handles.txt1 = varargin{2};
 % handles.txt2 = varargin{3};
 
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes ICAw_ep_proc_GUI wait for user response (see UIRESUME)
+% UIWAIT makes db_ep_proc_GUI wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = ICAw_ep_proc_GUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = db_ep_proc_GUI_OutputFcn(hObject, eventdata, handles) 
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB

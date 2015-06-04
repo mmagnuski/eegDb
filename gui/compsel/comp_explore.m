@@ -189,7 +189,7 @@ end
         %            determine the record AND the version fitting
         %
         % look for record number
-        r = ICAw_find_r(ICAw, 'filename', h.EEG.filename);
+        r = db_find_r(ICAw, 'filename', h.EEG.filename);
         if isempty(r)
             error(['Could not find ICAw entry with the same filename as ',...
                 'given in your EEG structure.']);
@@ -1244,7 +1244,7 @@ refresh_comp_explore(h, 'compinfo');
 % but may be considered if we switch back to local
 
 % --- Executes on button press in updateICAw.
-% function updateICAw_Callback(hObject, eventdata, handles)
+% function updatedb_Callback(hObject, eventdata, handles)
 % % hObject    handle to updateICAw (see GCBO)
 % % eventdata  reserved - to be defined in a future version of MATLAB
 % % handles    structure with handles and user data (see GUIDATA)

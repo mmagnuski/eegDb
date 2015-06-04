@@ -1,6 +1,6 @@
-function varargout = ICAw_create_base(varargin)
+function varargout = db_create_base(varargin)
 
-% ICAw_CREATE_BASE - GUI for creating eegDb database
+% db_CREATE_BASE - GUI for creating eegDb database
 % The same can be performed using specific calls
 % to functions like eegDb_buildbase etc.
 % FIXHELPINFO
@@ -285,7 +285,7 @@ function EpochOpt_Callback(hObject, eventdata, h)
 h = guidata(hObject);
 
 % create a temporary eegDb base and pass it to 
-% ICAw_gui_epoch
+% db_gui_epoch
 
 [strPth, flist] = get_path_and_files(h);
 
@@ -302,11 +302,11 @@ if femp(h, 'eegDb')
     
     % update if relevant
     if ~isempty(opt)
-        eegDb_temp = ICAw_copybase(eegDb, opt);
+        eegDb_temp = db_copybase(eegDb, opt);
     end
 end
 
-eegDb_temp = ICAw_gui_epoch(eegDb_temp);
+eegDb_temp = db_gui_epoch(eegDb_temp);
 if isstruct(eegDb_temp)
     h.eegDb = eegDb_temp;
     set(h.OK, 'Enable', 'on');
@@ -339,10 +339,10 @@ if femp(h, 'eegDb')
     eegDb = eegDb_buildbase(strPth, flist);
     
     if ~isempty(opt)
-        eegDb = ICAw_copybase(eegDb, opt);
+        eegDb = db_copybase(eegDb, opt);
     end
     
-    % ICAw = ICAw_updatetonewformat(ICAw);
+    % ICAw = db_updatetonewformat(ICAw);
     h.output = eegDb;
     guidata(hObject, h);
     uiresume(h.figure1);

@@ -1,4 +1,4 @@
-function ICAw_gui_upd_txt(ICAw, r, h)
+function db_gui_upd_txt(ICAw, r, h)
 
 % NOHELPINFO
 
@@ -13,8 +13,8 @@ for f = 1:length(flds)
         cont = num2str(cont);
     end
     
-    ICAw_txt{f} = [ICAw_txt{f}, cont];
+    db_txt{f} = [db_txt{f}, cont];
 end
 
-set(h.text1, 'String', ICAw_txt);
+set(h.text1, 'String', db_txt);
 

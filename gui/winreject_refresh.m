@@ -106,12 +106,12 @@ end
 
 % --- if versions ---
 % check if this record has versions
-f = ICAw_checkfields(handles.ICAw, handles.r, {'versions'});
+f = db_checkfields(handles.ICAw, handles.r, {'versions'});
 
 % no versions whatsoever (no subfields in 'versions'):
 if ~f.fsubf
     % add main version
-    handles.ICAw = ICAw_mainversion(handles.ICAw, handles.r);
+    handles.ICAw = db_mainversion(handles.ICAw, handles.r);
     
 end
 
@@ -119,7 +119,7 @@ guidata(handles.figure1, handles);
 clear f
 
 % --- version names ---
-versions = ICAw_getversions(handles.ICAw, handles.r);
+versions = db_getversions(handles.ICAw, handles.r);
 set(handles.versions_pop, 'String', versions(:,2));
 
 % --- current version ---

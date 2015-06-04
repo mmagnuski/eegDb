@@ -75,7 +75,7 @@ function varargout = cooleegplot(EEG, varargin)
 % =================
 % info for hackers:
 % =================
-% ---> recoverEEG uses ICAw_getrej and places
+% ---> recoverEEG uses db_getrej and places
 %      rejlist (list of rejections) in
 %      EEG.reject.ICAw
 %
@@ -173,10 +173,10 @@ if nargin > 1
     %% check ICAw presence etc.
     if ~isempty(varargin)
         % look for ICAw:
-        ICAw_adr = find(cellfun(@isstruct, varargin));
-        if ~isempty(ICAw_adr)
-            ICAw_present = true;
-            ICAw = varargin{ICAw_adr}; r = 1;
+        db_adr = find(cellfun(@isstruct, varargin));
+        if ~isempty(db_adr)
+            db_present = true;
+            ICAw = varargin{db_adr}; r = 1;
             to_field = {'prob', 'manual', 'mscl', 'reject', 'maybe',...
                 'dontknow'};
             % field name within which the ones below are hidden:
@@ -192,14 +192,14 @@ if nargin > 1
         num_adr = find(cellfun(@isnumeric, varargin));
         
         for n = 1:length(num_adr)
-            if ~ICAw_present || (ICAw_present ...
-                    && num_adr(n) < ICAw_adr)
+            if ~db_present || (db_present ...
+                    && num_adr(n) < db_adr)
                 nm = varargin{num_adr(n)};
                 wlen = nm(1);
                 if length(nm) > 1
                     nelec = nm(2);
                 end
-            elseif ICAw_present && num_adr(n) > ICAw_adr
+            elseif db_present && num_adr(n) > db_adr
                 r = varargin{num_adr(n)};
             end
         end
@@ -238,7 +238,7 @@ if length(elec) ~= EEG.nbchan
 end
 
 % if badchan not provided
-if isempty(badchan) && ICAw_present
+if isempty(badchan) && db_present
     if femp(ICAw(r), 'chan') && femp(ICAw(r).chan, 'bad')
         badchan = ICAw(r).chan.bad;
     end
@@ -306,7 +306,7 @@ end
 
 
 % button name
-if ICAw_present
+if db_present
     butlabel = ['UPDATE ICAw(', num2str(r), ')'];
 end
 
@@ -360,7 +360,7 @@ if ~nowait
             tmpsz = size(TMPREJ);
             
             % check for segments
-            if ICAw_present && isfield(ICAw(r).epoch, 'segment') && ...
+            if db_present && isfield(ICAw(r).epoch, 'segment') && ...
                     isnumeric(ICAw(r).epoch.segment)
                 nseg = floor(ICAw(r).epoch.winlen/ICAw(r).epoch.segment);
                 seg_pres = true;
@@ -384,7 +384,7 @@ if ~nowait
                     
                     EEG.reject.(chckflds{f}) = zerovec';
                     
-                    if ICAw_present
+                    if db_present
                         % reshaping to segment rules
                         if seg_pres
                             rejected = reshape(zerovec,...
@@ -416,7 +416,7 @@ if ~nowait
     end
     
     % returning output
-    if ICAw_present && nargout > 0
+    if db_present && nargout > 0
         if update
             varargout{1} = ICAw;
             if nargout > 1, varargout{2} = EEG; end;

@@ -1,4 +1,4 @@
-function [f] = ICAw_gui_choose_chan(chan_names, chan_sel, varargin)
+function [f] = db_gui_choose_chan(chan_names, chan_sel, varargin)
 
 % NOHELPINFO
 

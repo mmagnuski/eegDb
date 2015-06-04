@@ -91,7 +91,7 @@ end
 %
 % currently it works this way:
 % h.ICAw - self-explanatory
-% h.ICAw_start - initial ICAw structure passed
+% h.db_start - initial ICAw structure passed
 %                back to the user if he aborts
 % h.EEG        - last recovered EEG 
 % h.EEGr       - registry of last recovered EEG
@@ -117,7 +117,7 @@ end
 
 % put database in handles (GUI data)
 handles.ICAw = varargin{1};
-handles.ICAw_start = handles.ICAw;
+handles.db_start = handles.ICAw;
 
 % set registry number to start with
 if length(varargin) > 1
@@ -196,7 +196,7 @@ else
     
     % just to be sure - update version
     currf = handles.ICAw(handles.r).versions.current;
-    handles.ICAw = ICAw_updateversion(handles.ICAw, handles.r, currf);
+    handles.ICAw = db_updateversion(handles.ICAw, handles.r, currf);
     
     % CHANGE - this is a mess
     %        - whether r is recovered should be checked in a sepatate
@@ -207,7 +207,7 @@ else
     
     % first - recover data if not present
     if isempty(handles.EEG) || handles.r ~= handles.rEEG || ...
-            ~ICAw_recov_compare(handles.EEG.etc.recov, handles.ICAw(handles.r)) ...
+            ~db_recov_compare(handles.EEG.etc.recov, handles.ICAw(handles.r)) ...
             || ~isequal(handles.recovopts, handles.last_recovered_opts)
         
         % save recovery options:
@@ -223,7 +223,7 @@ else
         rEEG = handles.rEEG;
         
         % update prerej field
-        f = ICAw_checkfields(handles.EEG, 1,...
+        f = db_checkfields(handles.EEG, 1,...
             {'onesecepoch'}, 'subfields', true);
         if f.fsubf(1)
             isprerej = find(strcmp('prerej', f.subfields{1}));
@@ -297,12 +297,12 @@ else
             false, handles.cooleegopts{:});
     end
     
-    % CHECK ICAw_newrejtype - and think about
+    % CHECK db_newrejtype - and think about
     %       whether it is of final form or only
     %       a temporary solution (kind of slow...)
     %
     % get additional rejections set in eegplot2
-    handles.ICAw = ICAw_newrejtype(handles.ICAw,...
+    handles.ICAw = db_newrejtype(handles.ICAw,...
         []);
     
     % Update handles structure
@@ -318,7 +318,7 @@ else
         
         % CHANGE FIXME
         % update rejections
-        [handles.ICAw, handles.EEG] = ICAw_rejTMP(handles.ICAw,...
+        [handles.ICAw, handles.EEG] = db_rejTMP(handles.ICAw,...
             rEEG, handles.EEG, TMPREJ);
         
         % Update handles structure
@@ -381,7 +381,7 @@ function badel_butt_Callback(hObject, eventdata, handles)
 chanlab = {handles.ICAw(handles.r).datainfo.chanlocs.labels};
 badchan = handles.ICAw(handles.r).chan.bad;
 
-f_cha = ICAw_gui_choose_chan(chanlab, badchan);
+f_cha = db_gui_choose_chan(chanlab, badchan);
 
 if ishandle(f_cha)
     selchan = get(f_cha, 'UserData');
@@ -463,7 +463,7 @@ if isequal(get(hObject, 'waitstatus'), 'waiting')
     assignin('base', 'ans', handles.ICAw);
     
     % main output is unchanged
-    handles.ICAw = handles.ICAw_start;
+    handles.ICAw = handles.db_start;
     handles.CloseReq = true;
     
     % Update handles structure
@@ -541,7 +541,7 @@ for c = 1:length(cansel)
     handles.EEG = recoverEEG(handles.ICAw, r, handles.recovopts{:});
     
     % add version info to EEG
-    handles.EEG = ICAw_ver2EEG(handles.ICAw, handles.r, handles.EEG);
+    handles.EEG = db_ver2EEG(handles.ICAw, handles.r, handles.EEG);
 end
 
 if ~isempty(cansel)
@@ -590,7 +590,7 @@ if isempty(cansel)
 end
 
 % what kind of selections?
-rej = ICAw_getrej(handles.ICAw, handles.r, 'nonempt');
+rej = db_getrej(handles.ICAw, handles.r, 'nonempt');
 seltypes = (rej.name)';
 
 
@@ -632,7 +632,7 @@ sel = gui_chooselist(seltypes, 'text', ...
 
 if remopt && isequal(sel, length(seltypes))
     % apply rejections
-    handles.ICAw = ICAw_applyrej(handles.ICAw, cansel,...
+    handles.ICAw = db_applyrej(handles.ICAw, cansel,...
         'clear', true);
     
     % update versions
@@ -641,7 +641,7 @@ if remopt && isequal(sel, length(seltypes))
         origcurrent_f = handles.ICAw(c).versions.current;
         
         % update current
-        handles.ICAw = ICAw_updateversion(handles.ICAw, ...
+        handles.ICAw = db_updateversion(handles.ICAw, ...
             c, origcurrent_f);
     end
     
@@ -658,7 +658,7 @@ seltypes = rej.name(sel);
 if ~isempty(seltypes)
     
     % apply rejections
-    handles.ICAw = ICAw_applyrej(handles.ICAw, cansel,...
+    handles.ICAw = db_applyrej(handles.ICAw, cansel,...
         'byname', seltypes);
     
     % ADD - we need a function for mass update versions
@@ -668,7 +668,7 @@ if ~isempty(seltypes)
         origcurrent_f = handles.ICAw(c).versions.current;
         
         % update current
-        handles.ICAw = ICAw_updateversion(handles.ICAw, ...
+        handles.ICAw = db_updateversion(handles.ICAw, ...
             c, origcurrent_f);
     end
     
@@ -725,12 +725,12 @@ for c = 1:length(cansel)
     s = cansel(c);
     
     % get versions:
-    vers = ICAw_getversions(handles.ICAw, s);
+    vers = db_getversions(handles.ICAw, s);
     origcurrent_f = handles.ICAw(s).versions.current;
     %origcurrent_n = handles.ICAw(s).versions.(origcurrent_f).version_name;
     
     % update current
-    handles.ICAw = ICAw_updateversion(handles.ICAw, ...
+    handles.ICAw = db_updateversion(handles.ICAw, ...
         s, origcurrent_f);
     
     % update text display
@@ -752,7 +752,7 @@ for c = 1:length(cansel)
         drawnow
         
         % recover the other
-        handles.ICAw = ICAw_bringversion(handles.ICAw, s, strv);
+        handles.ICAw = db_bringversion(handles.ICAw, s, strv);
         
         if isempty(handles.ICAw(s).ICA.icaweights)
             EEG = recoverEEG(handles.ICAw, s, 'local');
@@ -765,10 +765,10 @@ for c = 1:length(cansel)
                 'off', 'verbose', 'on', 'chanind', allchan);
             
             % apply weights
-            handles.ICAw = ICAw_addw(handles.ICAw, s, EEG);
+            handles.ICAw = db_addw(handles.ICAw, s, EEG);
             
             % update current version
-            handles.ICAw = ICAw_updateversion(handles.ICAw, ...
+            handles.ICAw = db_updateversion(handles.ICAw, ...
                 s, vers{v,1});
             
             % Update handles structure
@@ -809,7 +809,7 @@ vn = gui_editbox('', {'Type version name'; 'here:'});
 if ~isempty(vn)
     opt = handles.ICAw(handles.r);
     opt.version_name = vn;
-    handles.ICAw = ICAw_addversion(handles.ICAw, handles.r, opt);
+    handles.ICAw = db_addversion(handles.ICAw, handles.r, opt);
     
     % update handles
     guidata(hObject, handles);
@@ -835,11 +835,11 @@ currf = handles.ICAw(handles.r).versions.current;
 curr = handles.ICAw(handles.r).versions.(currf).version_name;
 if ~strcmp(strv, curr)
     % update current
-    handles.ICAw = ICAw_updateversion(handles.ICAw, ...
+    handles.ICAw = db_updateversion(handles.ICAw, ...
         handles.r, currf);
     
     % recover the other
-    handles.ICAw = ICAw_bringversion(handles.ICAw, handles.r, strv);
+    handles.ICAw = db_bringversion(handles.ICAw, handles.r, strv);
     
     % refresh etc.
     guidata(hObject, handles);
@@ -1119,11 +1119,11 @@ function handles = test_profile(handles, opt)
 switch opt
     case 'load'
         % testing whether there already is a profile in the workspace
-        is_base_profile = evalin('base', ['exist(''ICAw_winrej_current_profile''',...
+        is_base_profile = evalin('base', ['exist(''db_winrej_current_profile''',...
             ', ''var'');']);
         
         if is_base_profile
-            base_profile = evalin('base', 'ICAw_winrej_current_profile;');
+            base_profile = evalin('base', 'db_winrej_current_profile;');
         end
         
         if is_base_profile
@@ -1157,7 +1157,7 @@ switch opt
         end
         
         % save profile to workspace
-        assignin('base', 'ICAw_winrej_current_profile',...
+        assignin('base', 'db_winrej_current_profile',...
             profile);
 end
 
@@ -1170,7 +1170,7 @@ function clearica_Callback(hObject, eventdata, handles)
 h = guidata(hObject);
 
 % check if multiple versions:
-f = ICAw_checkfields(h.ICAw(h.r).versions, 1, {}, 'ignore', ...
+f = db_checkfields(h.ICAw(h.r).versions, 1, {}, 'ignore', ...
     {'current'});
 nver = length(f.fields);
 drawnow;
@@ -1188,7 +1188,7 @@ if nver < 2
 end
 
 % clear ICA weights:
-h.ICAw = ICAw_clearica(h.ICAw, h.r);
+h.ICAw = db_clearica(h.ICAw, h.r);
 guidata(h.figure1, h);
 
 % refresh GUI:
