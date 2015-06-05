@@ -1,4 +1,4 @@
-function ICAw = ICAw_dipfit(ICAw, varargin)
+function ICAw = db_dipfit(ICAw, varargin)
 
 % NOHELPINFO
 
@@ -149,6 +149,6 @@ for r = rs
     
     % save temporary file:
     if ~isempty(save_path)
-        save([save_path, 'ICAw_dipfit.mat'], 'ICAw');
+        save([save_path, 'db_dipfit.mat'], 'ICAw');
     end
 end

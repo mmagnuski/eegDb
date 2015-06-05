@@ -1,4 +1,4 @@
-function ICAw = ICAw_applyrej(ICAw, rs, varargin)
+function ICAw = db_applyrej(ICAw, rs, varargin)
 
 % NOHELPINFO
 % function used to apply rejections to ICAw database
@@ -42,7 +42,7 @@ for r = rs
     ind = [];
     
     % checking fields
-    % fldch = ICAw_checkfields(ICAw, r, flds,...
+    % fldch = db_checkfields(ICAw, r, flds,...
     %     'subfields', true, 'subignore', ignore);
     
     if checksel
@@ -74,7 +74,7 @@ for r = rs
             end
             
             % fill 'removed' field :)
-            ICAw = ICAw_addrej(ICAw, r, ind);
+            ICAw = db_addrej(ICAw, r, ind);
         end
         
     end

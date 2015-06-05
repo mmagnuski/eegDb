@@ -1,4 +1,4 @@
-function ICAw = ICAw_sorter(ICAw)
+function ICAw = db_sorter(ICAw)
 
 % NOHELPINFO
 % sort fields of ICAw:

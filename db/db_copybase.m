@@ -1,19 +1,19 @@
-function ICAw = ICAw_copybase(ICAw, opt, varargin)
+function ICAw = db_copybase(ICAw, opt, varargin)
 
-% ICAw_copybase() allows to copy (with optional changes)
-% whole ICAw database. ICAw_copybase() can also be used
+% db_copybase() allows to copy (with optional changes)
+% whole ICAw database. db_copybase() can also be used
 % to add fields with an identical value for all database
 % records.
 % 
 % Usage 1: copying database with changes
-%     ICAw2 = ICAw_copybase(ICAw, opt)
+%     ICAw2 = db_copybase(ICAw, opt)
 % where:
 % ICAw  - ICAw database
 % opt   - a structure informing about requested changes
 %         to the original ICAw. (see example 1)
 %
 % Usage 2: copying fields between databases
-%     ICAw = ICAw_copybase(ICAw, opt, ICAw2)
+%     ICAw = db_copybase(ICAw, opt, ICAw2)
 % where:
 % ICAw  - structure to copy fields to
 % opt   - defines which fields to copy
@@ -34,7 +34,7 @@ function ICAw = ICAw_copybase(ICAw, opt, varargin)
 %        be done by:
 %            opt.epoch_events = 'kaboom';
 %            opt.epoch_limits = [-1 2];
-%            ICAw = ICAw_copybase(ICAw, opt);
+%            ICAw = db_copybase(ICAw, opt);
 %    Example 2:
 %        if one wants to change ICAw by copying some
 %        fields from another database ('ica_remove' 
@@ -43,7 +43,7 @@ function ICAw = ICAw_copybase(ICAw, opt, varargin)
 %                opt.ica_remove = [];
 %                opt.badchan = [];
 %                opt.filter = [2 45];
-%                ICAw = ICAw_copybase(ICAw, opt, ICAw2);
+%                ICAw = db_copybase(ICAw, opt, ICAw2);
 
 
 
@@ -63,7 +63,7 @@ for f = 1:length(fld)
             ICAw(r).(fld{f}) = opt.(fld{f});
         else
             % look for the same filename in other database
-            [~, ans_adr] = ICAw_checkbase(ICAw2, ICAw(r), 'silent');
+            [~, ans_adr] = db_checkbase(ICAw2, ICAw(r), 'silent');
             if ~isempty(ans_adr) && length(ans_adr{1}) == 1
                 ICAw(r).(fld{f}) = ICAw2(ans_adr{1}).(fld{f});
             end
@@ -73,4 +73,4 @@ for f = 1:length(fld)
 end
 
 % sorting fields
-ICAw = ICAw_sorter(ICAw);
+ICAw = db_sorter(ICAw);

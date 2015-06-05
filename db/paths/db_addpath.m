@@ -1,6 +1,6 @@
-function ICAw = ICAw_addpath(ICAw, path)
+function ICAw = db_addpath(ICAw, path)
 
-% ICAw = ICAw_addpath(ICAw, path)
+% ICAw = db_addpath(ICAw, path)
 % add path to ICAw database filepath
 % this does not delete the previous
 % path set up in ICAw database but
@@ -8,7 +8,7 @@ function ICAw = ICAw_addpath(ICAw, path)
 % array of paths
 % The correct path on a given computer
 % can be found by using:
-% correct_path = ICAw_path(ICAw(r).filepath);
+% correct_path = db_path(ICAw(r).filepath);
 
 % TODOs:
 % [ ] 'ignore cleanline' when all files have been

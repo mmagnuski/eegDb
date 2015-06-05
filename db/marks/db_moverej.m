@@ -1,6 +1,6 @@
-function ICAw = ICAw_moverej(ICAw, r, epoch_info, perc, varargin)
+function ICAw = db_moverej(ICAw, r, epoch_info, perc, varargin)
 
-% ICAw = ICAw_moverej(ICAw, epoch_info, perc, varargin)
+% ICAw = db_moverej(ICAw, epoch_info, perc, varargin)
 %
 % Moves rejections from onesecepoch to any other
 % event-based epoching.
@@ -28,7 +28,7 @@ end
 % eeg_path('add');
 
 for r = rs
-    pth = ICAw_path(ICAw(r).filepath);
+    pth = db_path(ICAw(r).filepath);
     
     EEG = load([pth, ICAw(r).filename], '-mat');
     EEG = EEG.EEG;

@@ -1,4 +1,4 @@
-function info = ICAw_get(ICAw, rs, prop)
+function info = db_get(ICAw, rs, prop)
 
 % NOHELPINFO
 % Helper function for getting info about properties 

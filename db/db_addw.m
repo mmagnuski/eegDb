@@ -1,4 +1,4 @@
-function ICAw = ICAw_addw(ICAw, r, EEG)
+function ICAw = db_addw(ICAw, r, EEG)
 
 % ICAW_ADDW adds ICA weights and other ICA-related variables from
 % EEG to given entry of ICAw database.

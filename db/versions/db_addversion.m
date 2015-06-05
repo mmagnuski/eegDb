@@ -1,9 +1,9 @@
-function ICAw = ICAw_addversion(ICAw, rr, opt)
+function ICAw = db_addversion(ICAw, rr, opt)
 
 % NOHELPINFO
 
 % version name must be given
-f = ICAw_checkfields(opt, 1, {'version_name'});
+f = db_checkfields(opt, 1, {'version_name'});
 if ~f.fnonempt
     return
 end
@@ -12,14 +12,14 @@ end
 for r = rr
     
     % check if this record has versions
-    f = ICAw_checkfields(ICAw, r, {'versions'});
+    f = db_checkfields(ICAw, r, {'versions'});
     
     % no versions whatsoever:
     if ~f.fsubf
-        ICAw = ICAw_mainversion(ICAw, r);
+        ICAw = db_mainversion(ICAw, r);
     end
     
-    ver = ICAw_getversions(ICAw, r);
+    ver = db_getversions(ICAw, r);
     
     % ignoring main:
     vnames = ver(:,2);
@@ -63,7 +63,7 @@ for r = rr
     end
     
     %% add version:
-    f = ICAw_checkfields(opt, 1, [],...
+    f = db_checkfields(opt, 1, [],...
     'ignore', {'subjectcode', 'tasktype', 'filename', 'filepath',...
     'datainfo', 'session', 'versions'});
 

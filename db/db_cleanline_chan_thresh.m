@@ -1,4 +1,4 @@
-function ICAw = ICAw_cleanline_chan_thresh(ICAw, thresh)
+function ICAw = db_cleanline_chan_thresh(ICAw, thresh)
 
 % NOHELPINFO
 

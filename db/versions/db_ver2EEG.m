@@ -1,6 +1,6 @@
-function EEG = ICAw_ver2EEG(ICAw, r, EEG)
+function EEG = db_ver2EEG(ICAw, r, EEG)
 
-% EEG = ICAw_ver2EEG(ICAw, r, EEG)
+% EEG = db_ver2EEG(ICAw, r, EEG)
 % transports current version to EEG.etc.recov
 % this is for the interface to know later whether
 % currently recovered EEG corresponds to currently
@@ -14,7 +14,7 @@ cvf = ICAw(r).versions.current;
 cv = ICAw(r).versions.(cvf);
 
 % move fields to EEG.etc.recov
-f = ICAw_checkfields(cv, 1, [], 'ignore', {'version_name',...
+f = db_checkfields(cv, 1, [], 'ignore', {'version_name',...
     'version_description'});
 fld = f.fields(f.fnonempt);
 

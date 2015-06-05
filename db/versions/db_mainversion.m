@@ -1,4 +1,4 @@
-function ICAw = ICAw_mainversion(ICAw, rr)
+function ICAw = db_mainversion(ICAw, rr)
 
 % NOHELPINFO
 
@@ -6,7 +6,7 @@ function ICAw = ICAw_mainversion(ICAw, rr)
 % else - give back(?)
 
 for r = rr
-f = ICAw_checkfields(ICAw, r, [],...
+f = db_checkfields(ICAw, r, [],...
     'ignore', {'subjectcode', 'tasktype', 'filename', 'filepath',...
     'datainfo', 'session', 'versions'});
 fld = f.fields(f.fnonempt);

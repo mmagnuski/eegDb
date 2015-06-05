@@ -1,6 +1,6 @@
-function pth = ICAw_path(PTH, varargin)
+function pth = db_path(PTH, varargin)
 
-% pth = ICAw_path(PTH);
+% pth = db_path(PTH);
 % 
 % goes through path strings in PTH and
 % finds pth - the string that is a valid
@@ -24,15 +24,15 @@ function pth = ICAw_path(PTH, varargin)
 %     (filepath field)
 % [X] if user passed 'r' index - produce
 %     results adequate to:
-%     pth = ICAw_path(ICAw(r).filepath);
+%     pth = db_path(ICAw(r).filepath);
 %     or:
-%     pth = ICAw_path(ICAw(r).filepath,...
+%     pth = db_path(ICAw(r).filepath,...
 %         'withfiles', ICAw(r).filename);
 % [X] what if the user did not pass 'r'
 %     and the structure is longer than
 %     one?
 %     --> return cell where each cell
-%         contains result of ICAw_path
+%         contains result of db_path
 %         on the given r.
 %
 
@@ -70,7 +70,7 @@ if isstruct(PTH)
         pth = cell(1, rlen);
         step = 1;
         for rnow = r
-            pth{step} = ICAw_path(PTH(rnow), varargin{:});
+            pth{step} = db_path(PTH(rnow), varargin{:});
             step = step + 1;
         end
         

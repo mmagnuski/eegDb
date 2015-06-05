@@ -1,4 +1,4 @@
-function  ICAw = ICAw_apply_icarem(ICAw, rec)
+function  ICAw = db_apply_icarem(ICAw, rec)
 
 % Applies remove and ifremove info from ICA_desc
 % to ICAw, cool stuff!

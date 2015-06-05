@@ -1,6 +1,6 @@
-function ICAw = ICAw_clearica(ICAw, r)
+function ICAw = db_clearica(ICAw, r)
 
-% ICAw = ICAw_clearica(ICAw, r)
+% ICAw = db_clearica(ICAw, r)
 %
 % removes ica info from a given record
 % (both in the active 'front' and the

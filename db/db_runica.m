@@ -1,4 +1,4 @@
-function ICAw = ICAw_runica(ICAw, rs)
+function ICAw = db_runica(ICAw, rs)
 
 % NOHLEPINFO
 
@@ -21,7 +21,7 @@ for r = rs
             'off', 'verbose', 'on', 'chanind', allchan);
         
         % apply weights
-        ICAw = ICAw_addw(ICAw, r, EEG);
+        ICAw = db_addw(ICAw, r, EEG);
         
     end    
 end

@@ -1,4 +1,4 @@
-function rejt = ICAw_scanmarks(ICAw)
+function rejt = db_scanmarks(ICAw)
 
 % NOHELPINFO
 

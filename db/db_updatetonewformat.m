@@ -1,21 +1,21 @@
-function ICAw = ICAw_updatetonewformat(ICAw)
+function ICAw = db_updatetonewformat(ICAw)
 
 % ICAW_UPDATETONEWFORMAT updates a given ICAw database to
 % most current format.
 %
-% ICAw = ICAw_updatetonewformat(ICAw)
+% ICAw = db_updatetonewformat(ICAw)
 %
 % ICAw - structure; eegDb database
 %
-% see also: ICAw_buildbase
+% see also: db_buildbase
 
 % Copyright 2014 Mikołaj Magnuski (mmagnuski@swps.edu.pl)
 
 % TODOs:
-% [ ] - add a new function ICAw_checkbase that checks 
+% [ ] - add a new function db_checkbase that checks 
 %       if base is correct, ensures marks.value is logical 
 %       and same length etc. 
-%       currently ICAw_checkbase is doing something else
+%       currently db_checkbase is doing something else
 %       -that function should be renamed to searchbase
 %       for example
 
@@ -27,7 +27,7 @@ flds = {'icaweights', 'icasphere', 'icawinv', 'icachansind',...
     'ica_remove', 'ica_ifremove', 'ICA_desc'};
 asflds = {'icaweights', 'icasphere', 'icawinv', 'icachansind',...
     'reject', 'maybe', 'desc'};
-ICAw = ICAw_pushfields(ICAw, flds, 'ICA', asflds);
+ICAw = db_pushfields(ICAw, flds, 'ICA', asflds);
 
 % check ICA.remove and ICA.ifremove
 fldfrm = {'remove', 'ifremove'};
@@ -53,7 +53,7 @@ end
 % ---------------------------
 flds = {'badchan', 'badchanlab'};
 asflds = {'bad', 'badlab'};
-ICAw = ICAw_pushfields(ICAw, flds, 'chan', asflds);
+ICAw = db_pushfields(ICAw, flds, 'chan', asflds);
 
 % ensure field:
 for r = 1:length(ICAw)
@@ -66,7 +66,7 @@ end
 % ---------------------------
 flds = {'prerej', 'postrej', 'removed'};
 asflds = {'pre', 'post', 'all'};
-ICAw = ICAw_pushfields(ICAw, flds, 'reject', asflds);
+ICAw = db_pushfields(ICAw, flds, 'reject', asflds);
 
 % ensure fields:
 for r = 1:length(ICAw)
@@ -81,7 +81,7 @@ end
 
 % REFIELD usecleanline to cleanline
 % ---------------------------------
-ICAw = ICAw_refield(ICAw, 'usecleanline', 'cleanline');
+ICAw = db_refield(ICAw, 'usecleanline', 'cleanline');
 
 
 
@@ -155,7 +155,7 @@ if any(hasFields)
 for r = 1:length(ICAw)
     if isfield(ICAw, 'onesecepoch') && islogical(ICAw(r).onesecepoch)
         ICAw(r).onesecepoch = [];
-        ep = ICAw_checkfields(ICAw, 1, {'epoch_events',...
+        ep = db_checkfields(ICAw, 1, {'epoch_events',...
             'epoch_limits'});
         if sum(ep.fnonempt) == 0
             for f = 1:length(flds)
@@ -230,7 +230,7 @@ end
 if hasFields(1)
     % force merge, because ICAw.epoch could not be 
     % trully present if ICAw.onesecepoch is
-    ICAw = ICAw_mergefields(ICAw, flds{1}, 'epoch', true);
+    ICAw = db_mergefields(ICAw, flds{1}, 'epoch', true);
     
     flds = flds(2:end);
     hasFields = hasFields(2:end);
@@ -262,4 +262,4 @@ end
 
 % SORT fileds as the last step
 % ----------------------------
-ICAw = ICAw_sorter(ICAw);
+ICAw = db_sorter(ICAw);

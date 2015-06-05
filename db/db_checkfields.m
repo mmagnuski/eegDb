@@ -1,4 +1,4 @@
-function fldch = ICAw_checkfields(ICAw, r, flds, varargin)
+function fldch = db_checkfields(ICAw, r, flds, varargin)
 
 % NOHELPINFO
 %

@@ -1,4 +1,4 @@
-function ICAw = ICAw_pushfields(ICAw, flds, fieldto, asflds)
+function ICAw = db_pushfields(ICAw, flds, fieldto, asflds)
 
 % NOHELPINFO
 

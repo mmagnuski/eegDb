@@ -1,4 +1,4 @@
-function EEG = ICAw_rejICAw2EEG(ICAw, r, EEG, prerej)
+function EEG = db_rejICAw2EEG(ICAw, r, EEG, prerej)
 
 % NOHELPINFO
 
@@ -8,7 +8,7 @@ ICAw_present = true;
 
 
 % check for segments
-if ICAw_present && isfield(ICAw, 'segment') && ...
+if db_present && isfield(ICAw, 'segment') && ...
         isnumeric(ICAw(r).segment) && ~isempty(ICAw(r).segment)
     nseg = floor(ICAw(r).winlen/ICAw(r).segment); %#ok<NASGU>
     seg_pres = true;

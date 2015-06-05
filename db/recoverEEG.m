@@ -42,7 +42,7 @@ function EEG = recoverEEG(ICAw, r, varargin)
 % to get back EEG of the second file in the database:
 % >> EEG = recoverEEG(ICAw, 2);
 % 
-% see also: ICAw_buildbase, winreject
+% see also: db_buildbase, winreject
 
 % =================
 % info for hackers:
@@ -66,7 +66,7 @@ function EEG = recoverEEG(ICAw, r, varargin)
 % 2014.03.25 --> moved interpolation before epoching
 %                added postfilter between interpolation
 %                and epoching
-% 2014.06.22 --> changed path checking loop to ICAw_path 
+% 2014.06.22 --> changed path checking loop to db_path 
 %                function call
 
 % TODOs:
@@ -162,7 +162,7 @@ end
 if loaded
     EEG = evalin('base', 'EEG;'); %#ok<*UNRCH>
     CURRENTSET = evalin('base', 'length(ALLEEG)+1');
-    [answer, ans_adr] = ICAw_checkbase(ICAw,...
+    [answer, ans_adr] = db_checkbase(ICAw,...
         EEG, 'filename', 'silent');
     if ~answer(1)
         disp(['The loaded file is not present in ',...
@@ -227,7 +227,7 @@ if iscell(ICAw(r).filepath)
 %     else
 %         ICAw(r).filepath = ICAw(r).filepath{1};
 %     end
-    pth = ICAw_path(ICAw(r).filepath);
+    pth = db_path(ICAw(r).filepath);
 else
     pth = ICAw(r).filepath;
 end
@@ -382,7 +382,7 @@ if ~noICA && femp(ICAw(r), 'ICA') && ...
     EEG.icachansind = ICAw(r).ICA.icachansind;
     
     % add dipfit info:
-    fld = ICAw_checkfields(ICAw, r, {'dipfit'});
+    fld = db_checkfields(ICAw, r, {'dipfit'});
     if fld.fnonempt(1)
         EEG.dipfit = ICAw(r).dipfit;
     end
@@ -550,17 +550,17 @@ end
 %% highlight rejections
 % highlight automatical rejections (and user
 % rejections if present)
-% EEG = ICAw_rejICAw2EEG(ICAw, r, EEG, prerej);
+% EEG = db_rejICAw2EEG(ICAw, r, EEG, prerej);
 % CHANGE, CONSIDER:
-% sometimes ICAw_getrej gives empty rejection
+% sometimes db_getrej gives empty rejection
 % type for a given registry - should this be
 % allowed, should it be corrected for if
 % there are filled rejectons?
-EEG.reject.ICAw = ICAw_getrej(ICAw, r);
+EEG.reject.ICAw = db_getrej(ICAw, r);
 
 % CONSIDER:
 % for now we assume correction, but should
-% be rather done in ICAw_getrej or something...
+% be rather done in db_getrej or something...
 
 % ln = cellfun(@length, EEG.reject.ICAw.value);
 % maxlen = max(ln);
@@ -580,7 +580,7 @@ if ~(prerej || isempty(ICAw(r).reject.all))
 end
 
 % stamp the EEG with recovery version info
-EEG = ICAw_stampEEG(ICAw, r, EEG);
+EEG = db_stampEEG(ICAw, r, EEG);
 
 % just to be on the safe side: checkset
 EEG = eeg_checkset(EEG);

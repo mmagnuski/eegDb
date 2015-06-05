@@ -1,8 +1,8 @@
-function ICAw = ICAw_updateversion(ICAw, r, verf)
+function ICAw = db_updateversion(ICAw, r, verf)
 
-% ICAw = ICAw_updateversion(ICAw, r, verf)
+% ICAw = db_updateversion(ICAw, r, verf)
 %
-% ICAw_updateversion updates given version of 
+% db_updateversion updates given version of 
 % ICAw(r) record with its current main
 % content (contents of ICAw(r) nonempty fields)
 % 
@@ -11,16 +11,16 @@ function ICAw = ICAw_updateversion(ICAw, r, verf)
 
 
 %% check version field:
-f = ICAw_checkfields(ICAw(r).versions, 1, {verf});
+f = db_checkfields(ICAw(r).versions, 1, {verf});
 if ~f.fpres
     % field not present - it must be a name!
-    versions = ICAw_getversions(ICAw, r);
+    versions = db_getversions(ICAw, r);
     nmv = strcmp(verf, versions(:,2));
     verf = versions{nmv,1};
 end
 
 %% update version:
-f = ICAw_checkfields(ICAw, r, [],...
+f = db_checkfields(ICAw, r, [],...
     'ignore', {'subjectcode', 'tasktype', 'filename', 'filepath',...
     'datainfo', 'session', 'versions'});
 

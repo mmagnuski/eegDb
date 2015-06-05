@@ -1,4 +1,4 @@
-function [ICAw, EEG] = ICAw_rejTMP(ICAw, r, EEG, TMPREJ)
+function [ICAw, EEG] = db_rejTMP(ICAw, r, EEG, TMPREJ)
 
 % NOHELPINFO
 
@@ -8,7 +8,7 @@ ICAw_present = true;
 
 % check for segments
 % THIS is kept but segmenting is not officially supported
-if ICAw_present && isfield(ICAw(r).epoch, 'segment') && ...
+if db_present && isfield(ICAw(r).epoch, 'segment') && ...
         isnumeric(ICAw(r).epoch.segment) && ~isempty(ICAw(r).epoch.segment)
     
     
@@ -36,7 +36,7 @@ end
 % end
 
 % get rejtypes:
-rejt = ICAw_getrej(ICAw, r);
+rejt = db_getrej(ICAw, r);
 
 tmpsz = size(TMPREJ);
 % remfields = {'autorem', 'userrem'};
@@ -62,7 +62,7 @@ for f = 1:size(rejCol, 1)
 
     clear foundadr newrej
     
-    if ICAw_present
+    if db_present
         % reshaping to segment rules
         if seg_pres
             rejected = reshape(zerovec,...
@@ -111,7 +111,7 @@ for f = 1:size(rejCol, 1)
 end
 
 % update EEG:
-EEG.reject.ICAw = ICAw_getrej(ICAw, r);
+EEG.reject.ICAw = db_getrej(ICAw, r);
 
 % CHANGE - this should also be changed
 % EEG.reject.ICAw is used but there are no 

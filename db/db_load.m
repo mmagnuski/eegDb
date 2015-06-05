@@ -1,10 +1,10 @@
-function ICAw = ICAw_load(filepath, filename)
+function ICAw = db_load(filepath, filename)
 
-% ICAw_load loads a ICAw database
+% db_load loads a ICAw database
 
 % FIXHELPINFO
 
-pth = ICAw_path(filepath);
+pth = db_path(filepath);
 loaded = load(fullfile(pth, filename));
 fld = fields(loaded);
 

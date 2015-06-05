@@ -1,6 +1,6 @@
-function ICAw = ICAw_runCleanLine(ICAw, addopt)
+function ICAw = db_runCleanLine(ICAw, addopt)
 
-% ICAw = ICAw_runCleanLine(ICAw)
+% ICAw = db_runCleanLine(ICAw)
 %
 % runs CleanLine for records where field 
 % cleanline is set to true. 
@@ -49,7 +49,7 @@ opt.sigtype = 'Channels';
 
 % change default options if user passes these
 if exist('addopt', 'var')
-    opt = ICAw_copybase(opt, addopt);
+    opt = db_copybase(opt, addopt);
 end
 
 % loop through files for cleanline
@@ -58,7 +58,7 @@ for C = 1:length(cleanr)
     fprintf('cleaning record %d\n', r);
     
     % load set
-    pth = ICAw_path(ICAw(r).filepath);
+    pth = db_path(ICAw(r).filepath);
     EEG = pop_loadset('filename', ICAw(r).filename, ...
         'filepath', pth);
     
@@ -85,7 +85,7 @@ for C = 1:length(cleanr)
     %% check options
     thisopt = opt;
     if isstruct(ICAw(r).cleanline)
-        thisopt = ICAw_copybase(thisopt, ICAw(r).cleanline);
+        thisopt = db_copybase(thisopt, ICAw(r).cleanline);
     end
     
     % create allchan

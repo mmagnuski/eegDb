@@ -4,7 +4,7 @@ function fldch = simplify_fldch(fldch)
 %        fldch without subfields !!
 % function that simplifies fldch
 % ie. leaves only information on things that exist
-% works on output from ICAw_checkfields
+% works on output from db_checkfields
 
 subf = false;
 if isfield(fldch, 'subfields')
@@ -13,7 +13,7 @@ end
 
 % CHANGE
 % take only fields that have subfields
-% that is used by ICAw_applyrej, but may
+% that is used by db_applyrej, but may
 % not be usefulmore general
 fldch.fields = fldch.fields(fldch.fsubf);
 % this may be more generally applicable:

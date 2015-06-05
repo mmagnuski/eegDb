@@ -1,6 +1,6 @@
-function log = ICAw_testfiles(ICAw)
+function log = db_testfiles(ICAw)
 
-% log = ICAw_testfiles(ICAw)
+% log = db_testfiles(ICAw)
 %
 % tests for file presence in all ICAw records
 % (checks whether .set file referenced by 
@@ -13,7 +13,7 @@ log = false(1, len);
 
 for r = 1:len
     % take correct path:
-    pth = ICAw_path(ICAw(r).filepath);
+    pth = db_path(ICAw(r).filepath);
     
     % check directory:
     fls = dir([pth, ICAw(r).filename]);

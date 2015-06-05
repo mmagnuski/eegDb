@@ -17,7 +17,7 @@ for r = rs(:)
 	EEG = recoverEEG(db, r, 'ICAnorem', 'prerej', 'local'); 
 
 	% then we save:
-	pth = ICAw_path(db(r).filepath);
+	pth = db_path(db(r).filepath);
 	newpath = fullfile(pth, 'tmp');
 	if ~isdir(newpath)
 		mkdir(newpath);

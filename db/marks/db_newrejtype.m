@@ -1,4 +1,4 @@
-function ICAw = ICAw_newrejtype(ICAw, newtypes)
+function ICAw = db_newrejtype(ICAw, newtypes)
 
 % NOHELPINFO
 
@@ -19,7 +19,7 @@ end
 %          for consistency checks one time
 %          (at the beginning)
 %          - use persistent option?
-rejt = ICAw_scanmarks(ICAw);
+rejt = db_scanmarks(ICAw);
 
 % take only userrem types:
 

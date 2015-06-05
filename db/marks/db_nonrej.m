@@ -1,4 +1,4 @@
-function nonrejid = ICAw_nonrej(ICAw, r, varargin)
+function nonrejid = db_nonrej(ICAw, r, varargin)
 
 % NOHELPINFO
 

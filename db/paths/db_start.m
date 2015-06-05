@@ -1,4 +1,4 @@
-function ICAw_start(PTH, varargin)
+function db_start(PTH, varargin)
 
 % function for starting your work with ICAw
 % FIXHELPINFO
@@ -24,7 +24,7 @@ end
 disp('adding paths...');
 
 % look for correct path
-PTH = ICAw_path(PTH);
+PTH = db_path(PTH);
 
 % go to the path
 cd(PTH);
@@ -97,7 +97,7 @@ for p = 1:length(profile_names)
         flds = fields(ld);
         prof = ld.(flds{1});
         clear flds ld
-        assignin('base', 'ICAw_winrej_current_profile', prof);
+        assignin('base', 'db_winrej_current_profile', prof);
         disp('Found and loaded profile.');
         return
     end

@@ -1,4 +1,4 @@
-function iseq = ICAw_recov_compare(recov, rec)
+function iseq = db_recov_compare(recov, rec)
 
 % NOHELPINFO
 

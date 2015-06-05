@@ -1,4 +1,4 @@
-function ICAw = ICAw_add_badch(ICAw, r, badch)
+function ICAw = db_add_badch(ICAw, r, badch)
 
 % adds badchannels to ICAw
 % assumes that if ICAw is not given

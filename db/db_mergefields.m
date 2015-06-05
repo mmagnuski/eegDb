@@ -1,6 +1,6 @@
-function ICAw = ICAw_mergefields(ICAw, fieldfrom, fieldto, force)
+function ICAw = db_mergefields(ICAw, fieldfrom, fieldto, force)
 
-% ICAw = ICAw_mergefields(ICAw, fieldfrom, fieldto, force)
+% ICAw = db_mergefields(ICAw, fieldfrom, fieldto, force)
 % 
 % FIXHELPINFO - add examples
 

@@ -1,4 +1,4 @@
-function iseq = ICAw_vers_compare(ver01, ver02)
+function iseq = db_vers_compare(ver01, ver02)
 
 % NOHELPINFO
 
@@ -7,14 +7,14 @@ ign = {'subjectcode', 'tasktype', 'filename', 'filepath',...
     'datainfo', 'session', 'versions', 'version_name', ...
     'version_description', 'marks', 'dipfit', 'notes'};
 
-f1 = ICAw_checkfields(ver01, 1, [],...
+f1 = db_checkfields(ver01, 1, [],...
     'ignore', ign);
 f1.fields(~f1.fnonempt) = [];
 fields1 = fields(ver01);
 ver01 = rmfield(ver01, setdiff(fields1, f1.fields));
 
 
-f2 = ICAw_checkfields(ver02, 1, [],...
+f2 = db_checkfields(ver02, 1, [],...
     'ignore', ign);
 f2.fields(~f2.fnonempt) = [];
 fields2 = fields(ver02);

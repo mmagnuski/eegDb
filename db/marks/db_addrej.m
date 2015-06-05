@@ -1,15 +1,15 @@
-function ICAw = ICAw_addrej(ICAw, r, rej)
+function ICAw = db_addrej(ICAw, r, rej)
 
-% ICAw = ICAw_addrej(ICAw, r, rej)
+% ICAw = db_addrej(ICAw, r, rej)
 % function that adds rejection info to ICAw database
 % this is different from changing 'userrem' or 'autorem'
-% fields - the rejections added by ICAw_addrej are final
+% fields - the rejections added by db_addrej are final
 % (or accepted in other words)
 %
 % FIXHELPINFO
 
 % TODOs:
-% [ ] compare with ICAw_add_remep
+% [ ] compare with db_add_remep
 % [ ] add 'collapse' option?
 % [ ] what to do with userrem & autorem if we collapse?
 % [ ] governing adding and overwriting:
@@ -18,7 +18,7 @@ function ICAw = ICAw_addrej(ICAw, r, rej)
 %           if nargin > 3
 %               opts = {'overwrite'
 
-f = ICAw_checkfields(ICAw(r).reject, 1, {'pre',...
+f = db_checkfields(ICAw(r).reject, 1, {'pre',...
     'post', 'all'});
 rej = unique(rej);
 

@@ -1,4 +1,4 @@
-function ICAw = ICAw_bringversion(ICAw, r, verf)
+function ICAw = db_bringversion(ICAw, r, verf)
 
 % NOHELPINFO
 
@@ -10,21 +10,21 @@ function ICAw = ICAw_bringversion(ICAw, r, verf)
 %     king
 
 %% check version field:
-f = ICAw_checkfields(ICAw(r).versions, 1, {verf});
+f = db_checkfields(ICAw(r).versions, 1, {verf});
 if ~f.fpres
     % field not present - it must be a name!
-    versions = ICAw_getversions(ICAw, r);
+    versions = db_getversions(ICAw, r);
     nmv = strcmp(verf, versions(:,2));
     verf = versions{nmv,1};
 end
 
 if ~isempty(verf)
-    f = ICAw_checkfields(ICAw(r).versions.(verf), 1, [],...
+    f = db_checkfields(ICAw(r).versions.(verf), 1, [],...
         'ignore', {'subjectcode', 'tasktype', 'filename', 'filepath',...
         'datainfo', 'session', 'versions', 'version_name', ...
         'version_description'});
     
-    f2 = ICAw_checkfields(ICAw, r, [],...
+    f2 = db_checkfields(ICAw, r, [],...
         'ignore', {'subjectcode', 'tasktype', 'filename', 'filepath',...
         'datainfo', 'session', 'versions'});
 

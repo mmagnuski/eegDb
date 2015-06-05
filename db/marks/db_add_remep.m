@@ -1,14 +1,14 @@
-function ICAw = ICAw_add_remep(ICAw, r, ep_rem)
+function ICAw = db_add_remep(ICAw, r, ep_rem)
 
-% ICAw_add_remep() function allows for adding
+% db_add_remep() function allows for adding
 % additional removals to the ICAw structure database
 % 
-% ICAw = ICAw_add_remep(ICAw, r, rem_ep)
+% ICAw = db_add_remep(ICAw, r, rem_ep)
 % Where ICAw is the ICAw structure, r is
 % the record index to update and rem_ep is
 % a 1 by N vector with epoch indices to remove
 
-% ! WARNING ! ICAw_add_remep does not consider pre and post
+% ! WARNING ! db_add_remep does not consider pre and post
 
 % CONSIDER - one high-level function for marks management
 %          - multiple low-level functions used by it

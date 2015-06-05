@@ -1,4 +1,4 @@
-function ICAw = ICAw_copyrec(ICAw, num)
+function ICAw = db_copyrec(ICAw, num)
 
 % NOHELPINFO
 

@@ -1,6 +1,6 @@
-function ICAw = ICAw_refield(ICAw, fieldfrom, fieldto)
+function ICAw = db_refield(ICAw, fieldfrom, fieldto)
 
-% ICAw = ICAw_refield(ICAw, fieldfrom, fieldto)
+% ICAw = db_refield(ICAw, fieldfrom, fieldto)
 % 
 % this function renames fields in ICAw structure.
 % fieldfrom fileds are renamed to fieldto fields
@@ -9,7 +9,7 @@ function ICAw = ICAw_refield(ICAw, fieldfrom, fieldto)
 % Currently it simply works by moving the contents of
 % `fieldfrom` to `fieldto` and then deleting `fieldfrom`.
 %
-% You can perform ICAw_refield on any field - so re-
+% You can perform db_refield on any field - so re-
 % naming 'core' fields of ICAw (like 'reject') will 
 % cause ICAw to break.
 
