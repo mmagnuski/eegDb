@@ -2,9 +2,9 @@
 % howto_help_with_cluster_cleaning
 % it plots first N components in standard eeglab GUI
 % and then reads in those marked for rejection into
-% ICAw database.
+% db database.
 
-% assumes the variable ICAw is present in the workspace
+% assumes the variable db is present in the workspace
 % CHANGE - check for this or change this into a function
 
 % bad chanlocs: 2, 4
@@ -18,7 +18,7 @@ for r = rs
     
     % =============
     % load dataset:
-    EEG = recoverEEG(ICAw, r, 'ICAnorem', 'local');
+    EEG = recoverEEG(db, r, 'ICAnorem', 'local');
     
     
     % ==================
@@ -41,5 +41,5 @@ for r = rs
     % ==============
     % get rejections
     comptorej = EEG.reject.gcompreject;
-    ICAw(r).ICA.remove = comptorej;
+    db(r).ICA.remove = comptorej;
 end

@@ -1,15 +1,15 @@
-function ICAw = db_cleantopo(ICAw)
+function db = db_cleantopo(db)
 
 % ICAW_CLEANTOPO removes cached topoplot images
-% from ICAw base thus significantly reducing size
+% from db base thus significantly reducing size
 % of the database.
 %
-% ICAw = db_cleantopo(ICAw)
+% db = db_cleantopo(db)
 %
 % see also: topo_cache, rmfield, db_copybase
 
-for r = 1:length(ICAw)
-    if femp(ICAw(r).ICA, 'topo')
-        ICAw(r).ICA = rmfield(ICAw(r).ICA, 'topo');
+for r = 1:length(db)
+    if femp(db(r).ICA, 'topo')
+        db(r).ICA = rmfield(db(r).ICA, 'topo');
     end
 end

@@ -14,7 +14,7 @@ function mapping = eegDb_get_ica_ind(dt1, dt2, corr_thres)
 % see also: corr
 % FIXHELPINFO
 
-% c = corr(EEG.icawinv, ICAw(12).ICA.icawinv);
+% c = corr(EEG.icawinv, db(12).ICA.icawinv);
 
 if ~exist('corr_thres', 'var')
     corr_thres = 0.9;

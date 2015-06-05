@@ -1,4 +1,4 @@
-function info = db_get(ICAw, rs, prop)
+function info = db_get(db, rs, prop)
 
 % NOHELPINFO
 % Helper function for getting info about properties 
@@ -19,27 +19,27 @@ vec = zeros(5, numR);
 % CHECK which is faster? cellfun?
 
 % FILTER
-vec = simple_testfield(ICAw(rs), 'filter', vec, 1);
+vec = simple_testfield(db(rs), 'filter', vec, 1);
 
 % CLEANLINE
 istrue = @(x) isequal(x, true);
-vec = simple_testfield(ICAw(rs), 'cleanline', vec, 2, istrue);
+vec = simple_testfield(db(rs), 'cleanline', vec, 2, istrue);
 
 % EPOCHING
 % just checking if the field is empty may not be enough...
-vec = simple_testfield(ICAw(rs), 'epoch', vec, 3);
+vec = simple_testfield(db(rs), 'epoch', vec, 3);
 
 % ICA
 
 
-function vec = simple_testfield(ICAw, fname, vec, n, varargin)
-    f = ~cellfun(@isempty, {ICAw.(fname)});
-    d = ~cellfun(@(x) femp(x, fname), {ICAw.datainfo});
+function vec = simple_testfield(db, fname, vec, n, varargin)
+    f = ~cellfun(@isempty, {db.(fname)});
+    d = ~cellfun(@(x) femp(x, fname), {db.datainfo});
 
     if ~isempty(varargin)
         for v = 1:length(varargin)
-            f(f) = cellfun(varargin{v}, {ICAw(f).(fname)});
-            d(d) = cellfun(@(x) feval(varargin{v}, x.(fname)), {ICAw(f).datainfo});
+            f(f) = cellfun(varargin{v}, {db(f).(fname)});
+            d(d) = cellfun(@(x) feval(varargin{v}, x.(fname)), {db(f).datainfo});
         end
     end
 

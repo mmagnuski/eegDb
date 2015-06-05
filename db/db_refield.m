@@ -1,8 +1,8 @@
-function ICAw = db_refield(ICAw, fieldfrom, fieldto)
+function db = db_refield(db, fieldfrom, fieldto)
 
-% ICAw = db_refield(ICAw, fieldfrom, fieldto)
+% db = db_refield(db, fieldfrom, fieldto)
 % 
-% this function renames fields in ICAw structure.
+% this function renames fields in db structure.
 % fieldfrom fileds are renamed to fieldto fields
 % respectively.
 % 
@@ -10,20 +10,20 @@ function ICAw = db_refield(ICAw, fieldfrom, fieldto)
 % `fieldfrom` to `fieldto` and then deleting `fieldfrom`.
 %
 % You can perform db_refield on any field - so re-
-% naming 'core' fields of ICAw (like 'reject') will 
-% cause ICAw to break.
+% naming 'core' fields of db (like 'reject') will 
+% cause db to break.
 
 % FIXHELPINFO - add examples, correct structure
 
 
-if ~isfield(ICAw, fieldfrom)
-    warning('no field %s present in ICAw base', fieldfrom);
+if ~isfield(db, fieldfrom)
+    warning('no field %s present in db base', fieldfrom);
     return
 end
 
 % otherwise - field is present
-for rec = 1:length(ICAw)
-    ICAw(rec).(fieldto) = ICAw(rec).(fieldfrom);
+for rec = 1:length(db)
+    db(rec).(fieldto) = db(rec).(fieldfrom);
 end
 
 % now - removing old field:

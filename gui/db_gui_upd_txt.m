@@ -1,4 +1,4 @@
-function db_gui_upd_txt(ICAw, r, h)
+function db_gui_upd_txt(db, r, h)
 
 % NOHELPINFO
 
@@ -8,7 +8,7 @@ ICAw_txt = {'filename: '; 'badchans: '; 'rejected comps: ';...
 flds = {'filename', 'badchan', 'ica_remove', 'notes'};
 
 for f = 1:length(flds)
-    cont = ICAw(r).(flds{f});
+    cont = db(r).(flds{f});
     if isnumeric(cont)
         cont = num2str(cont);
     end

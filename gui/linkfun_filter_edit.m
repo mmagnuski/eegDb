@@ -30,9 +30,9 @@ if ~isempty(d.selected)
 	end
 end
 
-if femp( d.ICAw(r), 'filter' ) && ...
-	isnumeric(d.ICAw(r).filter)
-	filt = d.ICAw(r).filter;
+if femp( d.db(r), 'filter' ) && ...
+	isnumeric(d.db(r).filter)
+	filt = d.db(r).filter;
 end
 
 if ~isempty(filt)
@@ -138,10 +138,10 @@ function checkopt(h, e, hwin, hobj)
 
 	% set filtering
 	if isempty(d.selected)
-		d.ICAw(d.r).filter = filt;
+		d.db(d.r).filter = filt;
 	else
 		for r = 1:length(d.selected)
-			d.ICAw(d.selected(r)).filter = filt;
+			d.db(d.selected(r)).filter = filt;
 		end
 	end
 

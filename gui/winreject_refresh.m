@@ -9,7 +9,7 @@ function winreject_refresh(handles)
 
 
 % --- title_text ---
-set(handles.title_text, 'String', {'ICAw data cleaner'; ...
+set(handles.title_text, 'String', {'db data cleaner'; ...
     ['record number: ', num2str(handles.r)]});
 
 
@@ -25,7 +25,7 @@ set(handles.title_text, 'String', {'ICAw data cleaner'; ...
 maxlines = 8;
 
 % get text from eegDb structure, already wrapped
-infotext = eegDb_struct2text(handles.ICAw(handles.r), handles.info_text);
+infotext = eegDb_struct2text(handles.db(handles.r), handles.info_text);
 
 % check wrapped size:
 all_lines = length(infotext);
@@ -79,9 +79,9 @@ set(handles.info_text, 'String', infotext);
 
 % --- CL_checkbox ---
 useclean = false;
-if femp(handles.ICAw(handles.r), 'cleanline') && ...
-        (isstruct(handles.ICAw(handles.r).cleanline) ...
-        || handles.ICAw(handles.r).cleanline)
+if femp(handles.db(handles.r), 'cleanline') && ...
+        (isstruct(handles.db(handles.r).cleanline) ...
+        || handles.db(handles.r).cleanline)
     useclean = true;
 end
 
@@ -93,7 +93,7 @@ else
 end
 
 % --- notes_win ---
-set(handles.notes_win, 'String', handles.ICAw(handles.r).notes);
+set(handles.notes_win, 'String', handles.db(handles.r).notes);
 
 % --- addit_text ---
 if isempty(handles.rEEG) || handles.r ~= handles.rEEG
@@ -106,12 +106,12 @@ end
 
 % --- if versions ---
 % check if this record has versions
-f = db_checkfields(handles.ICAw, handles.r, {'versions'});
+f = db_checkfields(handles.db, handles.r, {'versions'});
 
 % no versions whatsoever (no subfields in 'versions'):
 if ~f.fsubf
     % add main version
-    handles.ICAw = db_mainversion(handles.ICAw, handles.r);
+    handles.db = db_mainversion(handles.db, handles.r);
     
 end
 
@@ -119,10 +119,10 @@ guidata(handles.figure1, handles);
 clear f
 
 % --- version names ---
-versions = db_getversions(handles.ICAw, handles.r);
+versions = db_getversions(handles.db, handles.r);
 set(handles.versions_pop, 'String', versions(:,2));
 
 % --- current version ---
-curr = handles.ICAw(handles.r).versions.current;
+curr = handles.db(handles.r).versions.current;
 curr = find(strcmp(curr, versions(:,1)));
 set(handles.versions_pop, 'Value', curr);

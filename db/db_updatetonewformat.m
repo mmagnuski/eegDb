@@ -1,11 +1,11 @@
-function ICAw = db_updatetonewformat(ICAw)
+function db = db_updatetonewformat(db)
 
-% ICAW_UPDATETONEWFORMAT updates a given ICAw database to
+% ICAW_UPDATETONEWFORMAT updates a given db database to
 % most current format.
 %
-% ICAw = db_updatetonewformat(ICAw)
+% db = db_updatetonewformat(db)
 %
-% ICAw - structure; eegDb database
+% db - structure; eegDb database
 %
 % see also: db_buildbase
 
@@ -32,17 +32,17 @@ ICAw = db_pushfields(ICAw, flds, 'ICA', asflds);
 % check ICA.remove and ICA.ifremove
 fldfrm = {'remove', 'ifremove'};
 fldto  = {'reject', 'maybe'};
-for r = 1:length(ICAw)
+for r = 1:length(db)
     rm = false(1, 2);
     for f = 1:2
-        if isfield(ICAw(r).ICA, fldfrm{f})
+        if isfield(db(r).ICA, fldfrm{f})
             rm(f) = true;
-            ICAw(r).ICA.(fldto{f}) = ICAw(r).ICA.(fldfrm{f});
+            db(r).ICA.(fldto{f}) = db(r).ICA.(fldfrm{f});
         end
     end
 
     if any(rm)
-        ICAw(r).ICA = rmfield(ICAw(r).ICA, fldfrm(rm));
+        db(r).ICA = rmfield(db(r).ICA, fldfrm(rm));
     end
 end
 
@@ -56,9 +56,9 @@ asflds = {'bad', 'badlab'};
 ICAw = db_pushfields(ICAw, flds, 'chan', asflds);
 
 % ensure field:
-for r = 1:length(ICAw)
-        if ~isfield(ICAw(r).chan, 'bad')
-            ICAw(r).chan.bad = [];
+for r = 1:length(db)
+        if ~isfield(db(r).chan, 'bad')
+            db(r).chan.bad = [];
         end
 end
 
@@ -69,10 +69,10 @@ asflds = {'pre', 'post', 'all'};
 ICAw = db_pushfields(ICAw, flds, 'reject', asflds);
 
 % ensure fields:
-for r = 1:length(ICAw)
+for r = 1:length(db)
     for f = 1:length(asflds)
-        if ~isfield(ICAw(r).reject, asflds{f})
-            ICAw(r).reject.(asflds{f}) = [];
+        if ~isfield(db(r).reject, asflds{f})
+            db(r).reject.(asflds{f}) = [];
         end
     end
 end
@@ -94,25 +94,25 @@ flds = {'userrem', 'autorem'};
 inflds = {{'color', 'name'}, {'color', 'name'}};
 
 % now we use marks:
-hasFields = cellfun(@(x) isfield(ICAw, x), flds);
+hasFields = cellfun(@(x) isfield(db, x), flds);
 
 if any(hasFields)
-for r = 1:length(ICAw)
+for r = 1:length(db)
 
     % enum fields
-    if ~femp(ICAw(r), 'marks')
+    if ~femp(db(r), 'marks')
         ff = 0;
-    elseif isstruct(ICAw(r).marks)
+    elseif isstruct(db(r).marks)
         % not likely
-        ff = length(ICAw(r).marks);
+        ff = length(db(r).marks);
     end
 
     % check if given is present
     for i = 1:length(flds)
-        if femp(ICAw(r), flds{i})
+        if femp(db(r), flds{i})
 
             % check subfields:
-            subf = fields(ICAw(r).(flds{i}));
+            subf = fields(db(r).(flds{i}));
             subf = setdiff(subf, inflds{i});
 
             for f = 1:length(subf)
@@ -122,12 +122,12 @@ for r = 1:length(ICAw)
 
                 % move from current field (for example userrem.userreject)
                 % to relevant marks       (for example   marks.reject    )
-                ICAw(r).marks(ff).name = ICAw(r).(flds{i}).name.(subf{f});
-                ICAw(r).marks(ff).color = ICAw(r).(flds{i}).color.(subf{f});
-                ICAw(r).marks(ff).value = ICAw(r).(flds{i}).(subf{f});
-                ICAw(r).marks(ff).desc = [];
-                ICAw(r).marks(ff).auto = [];
-                ICAw(r).marks(ff).more = [];
+                db(r).marks(ff).name = db(r).(flds{i}).name.(subf{f});
+                db(r).marks(ff).color = db(r).(flds{i}).color.(subf{f});
+                db(r).marks(ff).value = db(r).(flds{i}).(subf{f});
+                db(r).marks(ff).desc = [];
+                db(r).marks(ff).auto = [];
+                db(r).marks(ff).more = [];
 
             end
         end
@@ -143,25 +143,25 @@ end
 % RECODE EPOCHING
 % ---------------
 
-% ICAw.winlen --> ICAw.onesecepoch.winlen
+% db.winlen --> db.onesecepoch.winlen
 %
-% move old ICAw.winlen ICAw.distance to ICAw.onesecepoch.winlen etc.
-% these are later moved to ICAw.epoch.winlen etc.
+% move old db.winlen db.distance to db.onesecepoch.winlen etc.
+% these are later moved to db.epoch.winlen etc.
 % (this may be done in one single step but this way it is easier)
 flds = {'winlen', 'distance'};
-hasFields = isfield(ICAw, flds);
+hasFields = isfield(db, flds);
 
 if any(hasFields)
-for r = 1:length(ICAw)
-    if isfield(ICAw, 'onesecepoch') && islogical(ICAw(r).onesecepoch)
-        ICAw(r).onesecepoch = [];
-        ep = db_checkfields(ICAw, 1, {'epoch_events',...
+for r = 1:length(db)
+    if isfield(db, 'onesecepoch') && islogical(db(r).onesecepoch)
+        db(r).onesecepoch = [];
+        ep = db_checkfields(db, 1, {'epoch_events',...
             'epoch_limits'});
         if sum(ep.fnonempt) == 0
             for f = 1:length(flds)
-                if isfield(ICAw(r), flds{f})
-                    ICAw(r).onesecepoch.(flds{f}) = ...
-                        ICAw(r).(flds{f});
+                if isfield(db(r), flds{f})
+                    db(r).onesecepoch.(flds{f}) = ...
+                        db(r).(flds{f});
                 end
             end
         end
@@ -174,35 +174,35 @@ ICAw = rmfield(ICAw, flds(hasFields));
 end
 
 
-% ICAw.onesecepoch.winlen (etc.) --> ICAw.epoch.winlen
+% db.onesecepoch.winlen (etc.) --> db.epoch.winlen
 flds = {'onesecepoch', 'epoch_events', 'epoch_limits', 'segment'};
 toFlds = {'', 'events', 'limits', 'segment'};
 
 % now we use marks:
-hasFields = isfield(ICAw, flds);
+hasFields = isfield(db, flds);
 
 if any(hasFields)
-for r = 1:length(ICAw)
+for r = 1:length(db)
 
     % check onesec 
     % -------------
     copyEp = true;
-    if femp(ICAw(r), flds{1}) 
+    if femp(db(r), flds{1}) 
         % only cases where it is logical
         % then - after this loop we merge
         % onesecepoch with epoch so other
         % cases are taken care of
-        if islogical(ICAw(r).(flds{1}))
-            if ICAw(r).(flds{1})
+        if islogical(db(r).(flds{1}))
+            if db(r).(flds{1})
 
                 % set locked to false
-                ICAw(r).epoch.locked = false;
+                db(r).epoch.locked = false;
 
                 % clear onesecepoch
-                ICAw(r).onesecepoch = [];
+                db(r).onesecepoch = [];
 
                 % apply default onesec options:
-                ICAw(r).epoch.winlen = 1;
+                db(r).epoch.winlen = 1;
 
 
                 % do not copy epoching even if present
@@ -217,8 +217,8 @@ for r = 1:length(ICAw)
         for f = 2:length(flds)
 
             % simply copy the contents if present
-            if femp(ICAw(r), flds{f})
-                ICAw(r).epoch.(toFlds{f}) = ICAw(r).(flds{f});
+            if femp(db(r), flds{f})
+                db(r).epoch.(toFlds{f}) = db(r).(flds{f});
             end
 
         end
@@ -228,9 +228,9 @@ end
 
 % merge onesecepoch and epoch if onesec present
 if hasFields(1)
-    % force merge, because ICAw.epoch could not be 
-    % trully present if ICAw.onesecepoch is
-    ICAw = db_mergefields(ICAw, flds{1}, 'epoch', true);
+    % force merge, because db.epoch could not be 
+    % trully present if db.onesecepoch is
+    db = db_mergefields(db, flds{1}, 'epoch', true);
     
     flds = flds(2:end);
     hasFields = hasFields(2:end);
@@ -246,14 +246,14 @@ ICAw = rmfield(ICAw, flds(hasFields));
 flds = {'chansind', 'tasktype', 'subjectcode', 'session', 'prefun'};
 
 for f = 1:length(flds)
-    if isfield(ICAw, flds{f})
+    if isfield(db, flds{f})
         
         % look for nonempty fields
-        em = ~cellfun(@isempty, {ICAw.(flds{f})});
+        em = ~cellfun(@isempty, {db.(flds{f})});
         
         % if no nonempty - delete field
         if ~any(em)
-            ICAw = rmfield(ICAw, flds{f});
+            db = rmfield(db, flds{f});
         end
     end
 end

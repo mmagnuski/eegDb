@@ -42,22 +42,22 @@ end
 
 
 % CHANGE - a dirty workaround (rejections were not shown)
-% if ICAw is present:
-if isfield(EEG.reject, 'ICAw')
-    templen = length(EEG.reject.ICAw.name);
+% if db is present:
+if isfield(EEG.reject, 'db')
+    templen = length(EEG.reject.db.name);
     track = 0;
     for f = 1:templen
-        if ~isempty(EEG.reject.ICAw.value{f})
+        if ~isempty(EEG.reject.db.value{f})
             
-            rejperf = sum(EEG.reject.ICAw.value{f});
+            rejperf = sum(EEG.reject.db.value{f});
             
             if rejperf > 0
                 track = track + 1;
                 fname = sprintf('tempfield%d', track);
                 
                 chckflds{len + track} = fname;
-                numep{len + track} = find(EEG.reject.ICAw.value{f});
-                EEG.reject.([fname, 'col']) = EEG.reject.ICAw.color{f};
+                numep{len + track} = find(EEG.reject.db.value{f});
+                EEG.reject.([fname, 'col']) = EEG.reject.db.color{f};
                 
                 allrej = allrej + rejperf;
             end

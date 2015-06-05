@@ -1,6 +1,6 @@
-function ICAw = db_clearica(ICAw, r)
+function db = db_clearica(db, r)
 
-% ICAw = db_clearica(ICAw, r)
+% db = db_clearica(db, r)
 %
 % removes ica info from a given record
 % (both in the active 'front' and the
@@ -15,20 +15,20 @@ ICAfields = {'icachansind', 'icasphere',...
     'ifremove', 'desc'};
 
 for f = 1:length(ICAfields)
-    ICAw(r).ICA.(ICAfields{f}) = [];
+    db(r).ICA.(ICAfields{f}) = [];
 end
 
 
 % also - remove from the version:
-if femp(ICAw(r), 'versions') && femp(ICAw(r), 'current')
+if femp(db(r), 'versions') && femp(db(r), 'current')
 	% get current version
-	c_ver = ICAw(r).versions.current;
+	c_ver = db(r).versions.current;
 
 	% remove fields form current version
 	for f = 1:length(ICAfields)
-	    if femp(ICAw(r).versions.(c_ver).ICA, ICAfields{f})
+	    if femp(db(r).versions.(c_ver).ICA, ICAfields{f})
 	        % die, field!
-	        ICAw(r).versions.(c_ver).ICA.(ICAfields{f}) = [];
+	        db(r).versions.(c_ver).ICA.(ICAfields{f}) = [];
 	    end
 	end
 end

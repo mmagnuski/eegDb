@@ -1,8 +1,8 @@
-function ICAw = db_add_badch(ICAw, r, badch)
+function db = db_add_badch(db, r, badch)
 
-% adds badchannels to ICAw
-% assumes that if ICAw is not given
-% there exists an 'ICAw' structure
+% adds badchannels to db
+% assumes that if db is not given
+% there exists an 'db' structure
 % in the base workspace
 % if badchans are not given as numericals
 % assumes that they are space delimited
@@ -22,13 +22,13 @@ if ~isnumeric(badch) && ischar(badch)
 end
 
 if ~isempty(badch)
-    if ~isempty(ICAw)
-        ICAw(r).chan.bad = sort(unique([ICAw(r).chan.bad, badch]));
+    if ~isempty(db)
+        db(r).chan.bad = sort(unique([db(r).chan.bad, badch]));
     else
         % CHANGE - !!this is dangerous:
         % evalin base workspace:
-        evalin('base', ['ICAw(', num2str(r), ').badchan = ',...
-            'sort(unique([ICAw(', num2str(r), ').badchan, ',...
+        evalin('base', ['db(', num2str(r), ').badchan = ',...
+            'sort(unique([db(', num2str(r), ').badchan, ',...
             num2str(badch'), ']));']);
     end
 end

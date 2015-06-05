@@ -57,10 +57,10 @@ h.under_epoch = [h.pre_text, h.pre_box, h.post_text, ...
 
 % requires at least one input argument
 if isempty(varargin)
-    error('This function requires ICAw database as input');
+    error('This function requires db database as input');
 end
 
-h.ICAw = varargin{1};
+h.db = varargin{1};
 
 if length(varargin) < 2
     h.r = 1;
@@ -78,17 +78,17 @@ r_check = h.r(randperm(length(h.r), 1));
 %          function...
 % find correct dir:
 corr_dir = [];
-if iscell(h.ICAw(r_check).filepath)
-    for dr = 1:length(h.ICAw(r_check).filepath)
-        if isdir(h.ICAw(r_check).filepath{dr})
-            corr_dir = h.ICAw(r_check).filepath{dr};
+if iscell(h.db(r_check).filepath)
+    for dr = 1:length(h.db(r_check).filepath)
+        if isdir(h.db(r_check).filepath{dr})
+            corr_dir = h.db(r_check).filepath{dr};
         end
     end
 else
-    corr_dir = h.ICAw(r_check).filepath;
+    corr_dir = h.db(r_check).filepath;
 end
 
-ld = load([corr_dir, h.ICAw(r_check).filename], '-mat');
+ld = load([corr_dir, h.db(r_check).filename], '-mat');
 EEG = ld.EEG;
 
 % when segmenting is used no events are
@@ -123,7 +123,7 @@ set(h.pop_winsel, 'String', {'Nothing'});
 % Update h structure
 guidata(hObject, h);
 
-% get active settings from ICAw:
+% get active settings from db:
 prev_settings(h, r_check);
 
 % UIWAIT makes db_gui_epoch wait for user response (see UIRESUME)
@@ -148,12 +148,12 @@ function prev_settings(h, r)
 
 % ====================
 % check epoch options:
-if femp(h.ICAw(r), 'epoch') && femp(h.ICAw(r).epoch, 'events')
-    if iscell(h.ICAw(r).epoch.events)
+if femp(h.db(r), 'epoch') && femp(h.db(r).epoch, 'events')
+    if iscell(h.db(r).epoch.events)
         
         % CHECK - set list with event types!
-        update_event_list(h, h.ICAw(r).epoch.events);
-    elseif isnumeric(h.ICAw(r).epoch.events)
+        update_event_list(h, h.db(r).epoch.events);
+    elseif isnumeric(h.db(r).epoch.events)
         % what to do in such case?
         % toggle button for types/indices ?
         set(h.typeind_toggle, 'Value', 0);
@@ -161,8 +161,8 @@ if femp(h.ICAw(r), 'epoch') && femp(h.ICAw(r).epoch, 'events')
         % update button etc.
         typeind_toggle_Callback(h.typeind_toggle, [], h);
         % update list to numeric values of epoch_events:
-        set(h.event_list, 'Value', h.ICAw(r).epoch.events);
-        set(h.event_list, 'ListBoxTop', h.ICAw(r).epoch.events(1));
+        set(h.event_list, 'Value', h.db(r).epoch.events);
+        set(h.event_list, 'ListBoxTop', h.db(r).epoch.events(1));
     end
     
     set(h.check_epoch, 'Value', 1);
@@ -170,9 +170,9 @@ if femp(h.ICAw(r), 'epoch') && femp(h.ICAw(r).epoch, 'events')
     
 end
 
-if femp(h.ICAw(r), 'epoch_limits')
-    set(h.pre_box, 'String', num2str(-1 * h.ICAw(r).epoch.limits(1)));
-    set(h.post_box, 'String', num2str(h.ICAw(r).epoch.limits(2)));
+if femp(h.db(r), 'epoch_limits')
+    set(h.pre_box, 'String', num2str(-1 * h.db(r).epoch.limits(1)));
+    set(h.post_box, 'String', num2str(h.db(r).epoch.limits(2)));
     
     set(h.check_epoch, 'Value', 1);
     check_epoch_Callback([], [], h);
@@ -180,24 +180,24 @@ end
 
 % =====================
 % check onesec options:
-if femp(h.ICAw(r), 'epoch') && femp(h.ICAw(r).epoch, 'locked') && ~ICAw(r).epoch.locked
+if femp(h.db(r), 'epoch') && femp(h.db(r).epoch, 'locked') && ~db(r).epoch.locked
         
         % ADD - else default options?
         % check 'winlen':
-        if femp(h.ICAw(r).epoch, 'winlen')
-            val = h.ICAw(r).epoch.winlen;
+        if femp(h.db(r).epoch, 'winlen')
+            val = h.db(r).epoch.winlen;
             val = num2str(val);
             set(h.winlen_box, 'String', val);
         end
         
         % check 'eventname':
-        if femp(h.ICAw(r).epoch, 'eventname')
-            val = h.ICAw(r).epoch.eventname;
+        if femp(h.db(r).epoch, 'eventname')
+            val = h.db(r).epoch.eventname;
             set(h.eventname_box, 'String', val);
         end
         
         % check 'distance':
-        if femp(h.ICAw(r).epoch, 'distance')
+        if femp(h.db(r).epoch, 'distance')
             % ADD
         end
 end
@@ -657,7 +657,7 @@ end
 
 % --- Executes on button press in OK_button.
 function OK_button_Callback(hObject, eventdata, h)
-% if user presses OK - return ICAw structure
+% if user presses OK - return db structure
 opts = [];
 h = guidata(h.figure1);
 
@@ -697,8 +697,8 @@ else
     opts.epoch.limits = [];
     opts.epoch.events = [];
 end
-h.ICAw = db_copybase(h.ICAw, opts);
-h.output = h.ICAw;
+h.db = db_copybase(h.db, opts);
+h.output = h.db;
 guidata(h.figure1, h);
 uiresume(h.figure1);
 

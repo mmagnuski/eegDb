@@ -1,6 +1,6 @@
-function ICAw = db_load(filepath, filename)
+function db = db_load(filepath, filename)
 
-% db_load loads a ICAw database
+% db_load loads a db database
 
 % FIXHELPINFO
 
@@ -9,6 +9,6 @@ loaded = load(fullfile(pth, filename));
 fld = fields(loaded);
 
 % ADD in future - search through fields
-% for ICAw and other info about the data
+% for db and other info about the data
 ICAw = loaded.(fld{1});
 

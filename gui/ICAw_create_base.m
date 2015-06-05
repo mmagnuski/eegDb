@@ -62,15 +62,15 @@ function varargout = eegDb_create_base_OutputFcn(a, b, handles)  %#ok<INUSL>
 if nargout > 0
     varargout{1} = handles.output;
 else
-    % save ICAw with such a name that it 
-    % does not overwrite any user ICAw in the 
+    % save db with such a name that it 
+    % does not overwrite any user db in the 
     % base workspace
     anybase = evalin('base', 'who');
     
-    name = 'ICAw';
+    name = 'db';
     
     if sum(strcmp(name, anybase)) > 0
-        % ICAw is present, add postfix
+        % db is present, add postfix
         num = 1; WouldOverwrite = true;
         
         while WouldOverwrite
@@ -319,7 +319,7 @@ function OK_Callback(hObject, ~, h)
 h = guidata(hObject);
 
 if femp(h, 'eegDb')
-    % ICAw = h.ICAw;
+    % db = h.db;
     opt = [];
     if femp(h, 'PassFilt')
         opt.filter(1,:) = h.PassFilt;
@@ -342,7 +342,7 @@ if femp(h, 'eegDb')
         eegDb = db_copybase(eegDb, opt);
     end
     
-    % ICAw = db_updatetonewformat(ICAw);
+    % db = db_updatetonewformat(db);
     h.output = eegDb;
     guidata(hObject, h);
     uiresume(h.figure1);

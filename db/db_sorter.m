@@ -1,7 +1,7 @@
-function ICAw = db_sorter(ICAw)
+function db = db_sorter(db)
 
 % NOHELPINFO
-% sort fields of ICAw:
+% sort fields of db:
 
 % CHANGE - once eegDb field structure is settled upon
 %          this function should be changed to reflect
@@ -13,8 +13,8 @@ fldord = {'filename'; 'filepath'; 'datainfo';...
     'addrem_rel'; 'addrem_win'; 'notes';...
     'versions'; 'warnings'};
 
-additf = setdiff(fieldnames(ICAw), fldord);
-[~, ind] = intersect(fldord, fieldnames(ICAw));
+additf = setdiff(fieldnames(db), fldord);
+[~, ind] = intersect(fldord, fieldnames(db));
 fldord = fldord(sort(ind));
 flds = [fldord; additf];
 ICAw = orderfields(ICAw, flds);

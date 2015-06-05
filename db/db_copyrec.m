@@ -1,11 +1,11 @@
-function ICAw = db_copyrec(ICAw, num)
+function db = db_copyrec(db, num)
 
 % NOHELPINFO
 
-len = length(ICAw);
+len = length(db);
 newf = len + 1;
-fld = fields(ICAw);
+fld = fields(db);
 
 for f = 1:length(fld)
-    ICAw(newf).(fld{f}) = ICAw(num).(fld{f});
+    db(newf).(fld{f}) = db(num).(fld{f});
 end

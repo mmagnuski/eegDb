@@ -1,19 +1,19 @@
 function varargout = winreject(varargin)
 
-% WINREJECT - GUI that allows for basic operations on ICAw.`
+% WINREJECT - GUI that allows for basic operations on db.`
 %             Adding notes, marking epochs in different ways
 %             as well as listing bad channels is easy with
 %             winreject GUI. It is also possible to create
-%             multiple versions of a given ICAw record and
+%             multiple versions of a given db record and
 %             perform ICA for each of these versions (to
 %             compare later)
 %
 %  use as:
-%      ICAw = WINREJECT(ICAw);
+%      db = WINREJECT(db);
 %  or:
-%      ICAw = WINREJECT(ICAw, r)
+%      db = WINREJECT(db, r)
 %                where r is a positive integer
-%                to start exploring ICAw structure from r register
+%                to start exploring db structure from r register
 %
 % CHANGE - see also should be updated
 % See also: GUIDE, GUIDATA, GUIHANDLES
@@ -90,8 +90,8 @@ end
 % [ ] change handles to h and test
 %
 % currently it works this way:
-% h.ICAw - self-explanatory
-% h.db_start - initial ICAw structure passed
+% h.db - self-explanatory
+% h.db_start - initial db structure passed
 %                back to the user if he aborts
 % h.EEG        - last recovered EEG 
 % h.EEGr       - registry of last recovered EEG
@@ -116,8 +116,8 @@ if ~funacc
 end
 
 % put database in handles (GUI data)
-handles.ICAw = varargin{1};
-handles.db_start = handles.ICAw;
+handles.db = varargin{1};
+handles.db_start = handles.db;
 
 % set registry number to start with
 if length(varargin) > 1
@@ -151,7 +151,7 @@ set(handles.slider, 'SliderStep', [1 3]);
 % CHANGE - now we check recov by nonempty prerej
 %          but this is not optimal
 handles.recov = ~cellfun(@(x) isempty(x.pre),...
-    {handles.ICAw.reject});
+    {handles.db.reject});
 
 % KEYPRESS
 % --------
@@ -177,9 +177,9 @@ function varargout = winreject_OutputFcn(hObject, eventdata, handles)
 
 % if no output defined - generate ans in workspace
 if nargout == 0 && ~handles.CloseReq
-    assignin('base', 'ans', handles.ICAw);
+    assignin('base', 'ans', handles.db);
 elseif nargout > 0
-    varargout{1} = handles.ICAw;
+    varargout{1} = handles.db;
 end
 delete(handles.figure1);
 
@@ -195,8 +195,8 @@ if handles.figure2
 else
     
     % just to be sure - update version
-    currf = handles.ICAw(handles.r).versions.current;
-    handles.ICAw = db_updateversion(handles.ICAw, handles.r, currf);
+    currf = handles.db(handles.r).versions.current;
+    handles.db = db_updateversion(handles.db, handles.r, currf);
     
     % CHANGE - this is a mess
     %        - whether r is recovered should be checked in a sepatate
@@ -207,7 +207,7 @@ else
     
     % first - recover data if not present
     if isempty(handles.EEG) || handles.r ~= handles.rEEG || ...
-            ~db_recov_compare(handles.EEG.etc.recov, handles.ICAw(handles.r)) ...
+            ~db_recov_compare(handles.EEG.etc.recov, handles.db(handles.r)) ...
             || ~isequal(handles.recovopts, handles.last_recovered_opts)
         
         % save recovery options:
@@ -218,7 +218,7 @@ else
         drawnow;
         
         % RECOVER EEG data
-        handles.EEG = recoverEEG(handles.ICAw, handles.r, 'local', handles.recovopts{:});
+        handles.EEG = recoverEEG(handles.db, handles.r, 'local', handles.recovopts{:});
         handles.rEEG = handles.r;
         rEEG = handles.rEEG;
         
@@ -241,7 +241,7 @@ else
         % operations (apply rejections, multisel, etc.)
         if f.fsubf(1) && ~isempty(isprerej) ...
                 && f.subfnonempt{1}(isprerej)
-            handles.ICAw(handles.r).reject.pre = handles...
+            handles.db(handles.r).reject.pre = handles...
                 .EEG.onesecepoch.prerej;
             handles.recov(handles.r) = true;
         end
@@ -269,12 +269,12 @@ else
     % display badelectrodes according to options
     badchadr = find(strcmp('badchan', handles.cooleegopts));
     if ~isempty(badchadr)
-        handles.cooleegopts{badchadr + 1} = handles.ICAw(handles.r)...
+        handles.cooleegopts{badchadr + 1} = handles.db(handles.r)...
             .chan.bad;
     else
-        if ~isempty(handles.ICAw(handles.r).chan.bad)
+        if ~isempty(handles.db(handles.r).chan.bad)
             handles.cooleegopts = [handles.cooleegopts, 'badchan', ...
-                handles.ICAw(handles.r).chan.bad];
+                handles.db(handles.r).chan.bad];
         else
             handles.cooleegopts = [handles.cooleegopts, 'badchan'];
             handles.cooleegopts{end + 1} = [];
@@ -284,15 +284,15 @@ else
     
     %     if ~femp(handles, 'recovopts') || (femp(handles, 'recovopts')...
     %             && sum(strcmp('interp', handles.recovopts)) == 0)
-    %     goodel(handles.ICAw(handles.r).badchan) = [];
+    %     goodel(handles.db(handles.r).badchan) = [];
     %     end
     
     % get rejections from cooleegplot
     if isempty(handles.cooleegopts)
-        TMPREJ = cooleegplot(handles.EEG, handles.ICAw, ...
+        TMPREJ = cooleegplot(handles.EEG, handles.db, ...
             handles.r, 'update', false);
     else
-        TMPREJ = cooleegplot(handles.EEG, handles.ICAw, ...
+        TMPREJ = cooleegplot(handles.EEG, handles.db, ...
             handles.r, 'update', ...
             false, handles.cooleegopts{:});
     end
@@ -302,7 +302,7 @@ else
     %       a temporary solution (kind of slow...)
     %
     % get additional rejections set in eegplot2
-    handles.ICAw = db_newrejtype(handles.ICAw,...
+    handles.db = db_newrejtype(handles.db,...
         []);
     
     % Update handles structure
@@ -318,7 +318,7 @@ else
         
         % CHANGE FIXME
         % update rejections
-        [handles.ICAw, handles.EEG] = db_rejTMP(handles.ICAw,...
+        [handles.db, handles.EEG] = db_rejTMP(handles.db,...
             rEEG, handles.EEG, TMPREJ);
         
         % Update handles structure
@@ -353,7 +353,7 @@ uiresume(handles.figure1);
 function CL_checkbox_Callback(hObject, eventdata, handles)
 
 % Hint: get(hObject,'Value') returns toggle state of CL_checkbox
-handles.ICAw(handles.r).cleanline = logical(get(hObject, 'Value'));
+handles.db(handles.r).cleanline = logical(get(hObject, 'Value'));
 
 % Update handles structure
 guidata(hObject, handles);
@@ -361,7 +361,7 @@ guidata(hObject, handles);
 
 function notes_win_Callback(hObject, eventdata, handles)
 
-handles.ICAw(handles.r).notes = get(hObject, 'String');
+handles.db(handles.r).notes = get(hObject, 'String');
 
 % Update handles structure
 guidata(hObject, handles);
@@ -378,15 +378,15 @@ end
 % --- Executes on button press in badel_butt.
 function badel_butt_Callback(hObject, eventdata, handles)
 
-chanlab = {handles.ICAw(handles.r).datainfo.chanlocs.labels};
-badchan = handles.ICAw(handles.r).chan.bad;
+chanlab = {handles.db(handles.r).datainfo.chanlocs.labels};
+badchan = handles.db(handles.r).chan.bad;
 
 f_cha = db_gui_choose_chan(chanlab, badchan);
 
 if ishandle(f_cha)
     selchan = get(f_cha, 'UserData');
-    handles.ICAw(handles.r).chan.bad = selchan{1};
-    handles.ICAw(handles.r).chan.badlab = selchan{2};
+    handles.db(handles.r).chan.bad = selchan{1};
+    handles.db(handles.r).chan.badlab = selchan{2};
     
     close(f_cha);
     
@@ -409,7 +409,7 @@ function col_butt_Callback(hObject, eventdata, handles)
 % --- Executes on button press in next_butt.
 function next_butt_Callback(hObject, eventdata, handles)
 
-if handles.r < length(handles.ICAw)
+if handles.r < length(handles.db)
     handles.r = handles.r + 1;
     
     % Update handles structure
@@ -460,10 +460,10 @@ if isequal(get(hObject, 'waitstatus'), 'waiting')
     % The GUI is still in UIWAIT,
     % output is unmodified, modified output
     % is generated base in workspace as ans
-    assignin('base', 'ans', handles.ICAw);
+    assignin('base', 'ans', handles.db);
     
     % main output is unchanged
-    handles.ICAw = handles.db_start;
+    handles.db = handles.db_start;
     handles.CloseReq = true;
     
     % Update handles structure
@@ -519,13 +519,13 @@ for c = 1:length(cansel)
     % but clear pre. May be problematic if
     % pre is empty after distance was applied
     % use .distUsed or internal.distUsed ??
-    if femp(handles.ICAw(r).epoch, 'locked') && ...
-        ~handles.ICAw(r).epoch.locked && ...
-        femp(handles.ICAw(r).epoch, 'distance')
+    if femp(handles.db(r).epoch, 'locked') && ...
+        ~handles.db(r).epoch.locked && ...
+        femp(handles.db(r).epoch, 'distance')
         
         % CHANGE ??
         % clear distance option
-        handles.ICAw(r).epoch.distance = [];
+        handles.db(r).epoch.distance = [];
         % Update handles structure
         guidata(hObject, handles);
     end
@@ -538,10 +538,10 @@ for c = 1:length(cansel)
     
     % nonlocal call to recoverEEG
     % ADD - in some cases 'interp' may be wanted (?)
-    handles.EEG = recoverEEG(handles.ICAw, r, handles.recovopts{:});
+    handles.EEG = recoverEEG(handles.db, r, handles.recovopts{:});
     
     % add version info to EEG
-    handles.EEG = db_ver2EEG(handles.ICAw, handles.r, handles.EEG);
+    handles.EEG = db_ver2EEG(handles.db, handles.r, handles.EEG);
 end
 
 if ~isempty(cansel)
@@ -590,7 +590,7 @@ if isempty(cansel)
 end
 
 % what kind of selections?
-rej = db_getrej(handles.ICAw, handles.r, 'nonempt');
+rej = db_getrej(handles.db, handles.r, 'nonempt');
 seltypes = (rej.name)';
 
 
@@ -598,7 +598,7 @@ seltypes = (rej.name)';
 % if some have applied rejections 
 % - allow for removal
 remopt =false;
-remhas = ~cellfun(@(x) isempty(x.all), {handles.ICAw(cansel).reject});
+remhas = ~cellfun(@(x) isempty(x.all), {handles.db(cansel).reject});
 remhas = sum(remhas) > 0;
 if remhas
     remopt = true;
@@ -632,16 +632,16 @@ sel = gui_chooselist(seltypes, 'text', ...
 
 if remopt && isequal(sel, length(seltypes))
     % apply rejections
-    handles.ICAw = db_applyrej(handles.ICAw, cansel,...
+    handles.db = db_applyrej(handles.db, cansel,...
         'clear', true);
     
     % update versions
     for c = cansel(:)'
         % current version
-        origcurrent_f = handles.ICAw(c).versions.current;
+        origcurrent_f = handles.db(c).versions.current;
         
         % update current
-        handles.ICAw = db_updateversion(handles.ICAw, ...
+        handles.db = db_updateversion(handles.db, ...
             c, origcurrent_f);
     end
     
@@ -658,17 +658,17 @@ seltypes = rej.name(sel);
 if ~isempty(seltypes)
     
     % apply rejections
-    handles.ICAw = db_applyrej(handles.ICAw, cansel,...
+    handles.db = db_applyrej(handles.db, cansel,...
         'byname', seltypes);
     
     % ADD - we need a function for mass update versions
     % update versions
     for c = cansel(:)'
         % current version
-        origcurrent_f = handles.ICAw(c).versions.current;
+        origcurrent_f = handles.db(c).versions.current;
         
         % update current
-        handles.ICAw = db_updateversion(handles.ICAw, ...
+        handles.db = db_updateversion(handles.db, ...
             c, origcurrent_f);
     end
     
@@ -725,12 +725,12 @@ for c = 1:length(cansel)
     s = cansel(c);
     
     % get versions:
-    vers = db_getversions(handles.ICAw, s);
-    origcurrent_f = handles.ICAw(s).versions.current;
-    %origcurrent_n = handles.ICAw(s).versions.(origcurrent_f).version_name;
+    vers = db_getversions(handles.db, s);
+    origcurrent_f = handles.db(s).versions.current;
+    %origcurrent_n = handles.db(s).versions.(origcurrent_f).version_name;
     
     % update current
-    handles.ICAw = db_updateversion(handles.ICAw, ...
+    handles.db = db_updateversion(handles.db, ...
         s, origcurrent_f);
     
     % update text display
@@ -752,23 +752,23 @@ for c = 1:length(cansel)
         drawnow
         
         % recover the other
-        handles.ICAw = db_bringversion(handles.ICAw, s, strv);
+        handles.db = db_bringversion(handles.db, s, strv);
         
-        if isempty(handles.ICAw(s).ICA.icaweights)
-            EEG = recoverEEG(handles.ICAw, s, 'local');
+        if isempty(handles.db(s).ICA.icaweights)
+            EEG = recoverEEG(handles.db, s, 'local');
             % good channels:
             allchan = 1:size(EEG.data,1);
-            allchan(handles.ICAw(s).chan.bad) = [];
+            allchan(handles.db(s).chan.bad) = [];
             
             %ICA
             EEG = pop_runica(EEG, 'extended', 1, 'interupt',...
                 'off', 'verbose', 'on', 'chanind', allchan);
             
             % apply weights
-            handles.ICAw = db_addw(handles.ICAw, s, EEG);
+            handles.db = db_addw(handles.db, s, EEG);
             
             % update current version
-            handles.ICAw = db_updateversion(handles.ICAw, ...
+            handles.db = db_updateversion(handles.db, ...
                 s, vers{v,1});
             
             % Update handles structure
@@ -807,9 +807,9 @@ function movevers_Callback(hObject, eventdata, handles)
 
 vn = gui_editbox('', {'Type version name'; 'here:'});
 if ~isempty(vn)
-    opt = handles.ICAw(handles.r);
+    opt = handles.db(handles.r);
     opt.version_name = vn;
-    handles.ICAw = db_addversion(handles.ICAw, handles.r, opt);
+    handles.db = db_addversion(handles.db, handles.r, opt);
     
     % update handles
     guidata(hObject, handles);
@@ -831,15 +831,15 @@ strv = get(hObject,'String');
 strv = strv{get(hObject,'Value')};
 
 % if current selection is not == current, update current version
-currf = handles.ICAw(handles.r).versions.current;
-curr = handles.ICAw(handles.r).versions.(currf).version_name;
+currf = handles.db(handles.r).versions.current;
+curr = handles.db(handles.r).versions.(currf).version_name;
 if ~strcmp(strv, curr)
     % update current
-    handles.ICAw = db_updateversion(handles.ICAw, ...
+    handles.db = db_updateversion(handles.db, ...
         handles.r, currf);
     
     % recover the other
-    handles.ICAw = db_bringversion(handles.ICAw, handles.r, strv);
+    handles.db = db_bringversion(handles.db, handles.r, strv);
     
     % refresh etc.
     guidata(hObject, handles);
@@ -879,13 +879,13 @@ if ~handles.structpath && ~femp(handles, 'savepath')
 end
 
 if femp(handles, 'savepath')
-    ICAw = handles.ICAw; %#ok<NASGU>
+    db = handles.db; %#ok<NASGU>
     
     time = gettime('full');
     time1 = regexprep(time, ':', '.');
     time2 = regexp(time, '[0-9]{2}:[0-9]{2}:[0-9]{2}',...
         'match', 'once');
-    save(fullfile(handles.savepath, ['ICAw ', time1, '.mat']), 'ICAw');
+    save(fullfile(handles.savepath, ['db ', time1, '.mat']), 'db');
     set(handles.savingstruct, 'String', ['Saved (', time2 , ')'] );
 end
 
@@ -1170,7 +1170,7 @@ function clearica_Callback(hObject, eventdata, handles)
 h = guidata(hObject);
 
 % check if multiple versions:
-f = db_checkfields(h.ICAw(h.r).versions, 1, {}, 'ignore', ...
+f = db_checkfields(h.db(h.r).versions, 1, {}, 'ignore', ...
     {'current'});
 nver = length(f.fields);
 drawnow;
@@ -1188,7 +1188,7 @@ if nver < 2
 end
 
 % clear ICA weights:
-h.ICAw = db_clearica(h.ICAw, h.r);
+h.db = db_clearica(h.db, h.r);
 guidata(h.figure1, h);
 
 % refresh GUI:

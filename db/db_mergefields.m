@@ -1,6 +1,6 @@
-function ICAw = db_mergefields(ICAw, fieldfrom, fieldto, force)
+function db = db_mergefields(db, fieldfrom, fieldto, force)
 
-% ICAw = db_mergefields(ICAw, fieldfrom, fieldto, force)
+% db = db_mergefields(db, fieldfrom, fieldto, force)
 % 
 % FIXHELPINFO - add examples
 
@@ -9,33 +9,33 @@ if ~exist('force', 'var')
 end
 
 % if there is no field to take from
-if ~isfield(ICAw, fieldfrom)
+if ~isfield(db, fieldfrom)
 	% nothing to merge
 	return
 end
 
 % if there is no field to place to
-if ~isfield(ICAw, fieldto)
+if ~isfield(db, fieldto)
 	% just copy
 	force = true;
 end
 
 
-for r = 1:length(ICAw)
+for r = 1:length(db)
 
-	if isstruct(ICAw(r).(fieldfrom))
+	if isstruct(db(r).(fieldfrom))
 		% get subfields:
-		subf = fields(ICAw(r).(fieldfrom));
+		subf = fields(db(r).(fieldfrom));
 
 		for f = 1:length(subf)
 
 			if force
 				% copy subfields from fieldfrom with possible overwrites
-				ICAw(r).(fieldto).(subf{f}) = ICAw(r).(fieldfrom).(subf{f});
+				db(r).(fieldto).(subf{f}) = db(r).(fieldfrom).(subf{f});
 			else
 				% copy subfields from fieldfrom only if not present in fieldto
-				ICAw(r).(fieldto) = merger_movefield(...
-					ICAw(r).(fieldfrom), ICAw(r).(fieldto), subf{f});
+				db(r).(fieldto) = merger_movefield(...
+					db(r).(fieldfrom), db(r).(fieldto), subf{f});
 
 			end
 		end

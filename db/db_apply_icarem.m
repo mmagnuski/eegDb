@@ -1,22 +1,22 @@
-function  ICAw = db_apply_icarem(ICAw, rec)
+function  db = db_apply_icarem(db, rec)
 
 % Applies remove and ifremove info from ICA_desc
-% to ICAw, cool stuff!
+% to db, cool stuff!
 % 
 % FIXHELPINFO
 
 % if r's not given - assume all records:
 if ~exist('rec', 'var')
-    rec = 1:length(ICAw);
+    rec = 1:length(db);
 end
 
 % just simply apply reject from ICA_desc
 
 % apply for all r:
 for r = 1:length(rec)
-    if femp(ICAw(rec(r)).ICA, 'desc') % ADD additional checks
-        ICAw(rec(r)).ICA.remove = find([ICAw(rec(r)).ICA.desc.reject]);
-        ICAw(rec(r)).ICA.ifremove = find([ICAw(rec(r)).ICA.desc.ifreject]);
+    if femp(db(rec(r)).ICA, 'desc') % ADD additional checks
+        db(rec(r)).ICA.remove = find([db(rec(r)).ICA.desc.reject]);
+        db(rec(r)).ICA.ifremove = find([db(rec(r)).ICA.desc.ifreject]);
     end
 end
 %

@@ -1,10 +1,10 @@
-function ICAw = db_runCleanLine(ICAw, addopt)
+function db = db_runCleanLine(db, addopt)
 
-% ICAw = db_runCleanLine(ICAw)
+% db = db_runCleanLine(db)
 %
 % runs CleanLine for records where field 
 % cleanline is set to true. 
-% Updates ICAw structure.
+% Updates db structure.
 % FIXHELPINFO - add info about creation of
 %               \CleanLine\ folder etc.
 
@@ -15,13 +15,13 @@ function ICAw = db_runCleanLine(ICAw, addopt)
 % [ ] check for datainfo.cleanline - if true do not run (?)
 % [ ] change file operations - use fullfile
 
-cleanr = false(length(ICAw), 1);
+cleanr = false(length(db), 1);
 
-% scan ICAw for files to clean:
-for r = 1:length(ICAw)
-    if femp(ICAw(r), 'cleanline') && ...
-            (~islogical(ICAw(r).cleanline) || ...
-            ICAw(r).cleanline)
+% scan db for files to clean:
+for r = 1:length(db)
+    if femp(db(r), 'cleanline') && ...
+            (~islogical(db(r).cleanline) || ...
+            db(r).cleanline)
         cleanr(r) = true;
     end
 end
@@ -58,34 +58,34 @@ for C = 1:length(cleanr)
     fprintf('cleaning record %d\n', r);
     
     % load set
-    pth = db_path(ICAw(r).filepath);
-    EEG = pop_loadset('filename', ICAw(r).filename, ...
+    pth = db_path(db(r).filepath);
+    EEG = pop_loadset('filename', db(r).filename, ...
         'filepath', pth);
     
     % add orig info (info about orig file)
-    ICAw(r).datainfo.origfilename = ICAw(r).filename;
-    ICAw(r).datainfo.origfilepath = ICAw(r).filepath;
+    db(r).datainfo.origfilename = db(r).filename;
+    db(r).datainfo.origfilepath = db(r).filepath;
     
     %% check filtering and filter if necess
-    if femp(ICAw(r), 'filter')
+    if femp(db(r), 'filter')
         
         % setting up filter:
-        filt = [ICAw(r).filter(1),...
-            ICAw(r).filter(2)];
+        filt = [db(r).filter(1),...
+            db(r).filter(2)];
         
         % filtering
         EEG = pop_eegfiltnew(EEG, filt(1), filt(2));
         clear filt
         
         % move filter to datainfo
-        ICAw(r).datainfo.filter = ICAw(r).filter;
-        ICAw(r).filter = [];
+        db(r).datainfo.filter = db(r).filter;
+        db(r).filter = [];
     end
     
     %% check options
     thisopt = opt;
-    if isstruct(ICAw(r).cleanline)
-        thisopt = db_copybase(thisopt, ICAw(r).cleanline);
+    if isstruct(db(r).cleanline)
+        thisopt = db_copybase(thisopt, db(r).cleanline);
     end
     
     % create allchan
@@ -100,30 +100,30 @@ for C = 1:length(cleanr)
     EEG = pop_cleanline(EEG, thisopt{:});
     
     %% update database record
-    % update ICAw.datainfo
-    ICAw(r).datainfo.cleanline = true;
+    % update db.datainfo
+    db(r).datainfo.cleanline = true;
     
     % cleanline done, no need to perform again
-    ICAw(r).cleanline = false;
+    db(r).cleanline = false;
     
-    %% update ICAw filepath
+    %% update db filepath
     fsep = filesep;
     
     % update filepath
     if pth(end) == fsep
-        ICAw(r).filepath = [pth, 'CleanLine', fsep];
+        db(r).filepath = [pth, 'CleanLine', fsep];
     else
-        ICAw(r).filepath = [pth, fsep, 'CleanLine', fsep];
+        db(r).filepath = [pth, fsep, 'CleanLine', fsep];
     end
     
     %% save file
     % check if folder exists
-    if ~isdir(ICAw(r).filepath)
-        mkdir(ICAw(r).filepath);
+    if ~isdir(db(r).filepath)
+        mkdir(db(r).filepath);
     end
     
     % save set to disc
-    pop_saveset(EEG, 'filename', ICAw(r).filename, ...
-        'filepath', ICAw(r).filepath);
+    pop_saveset(EEG, 'filename', db(r).filename, ...
+        'filepath', db(r).filepath);
      
 end

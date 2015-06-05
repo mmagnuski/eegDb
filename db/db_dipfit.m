@@ -1,4 +1,4 @@
-function ICAw = db_dipfit(ICAw, varargin)
+function db = db_dipfit(db, varargin)
 
 % NOHELPINFO
 
@@ -15,7 +15,7 @@ function ICAw = db_dipfit(ICAw, varargin)
 % dipoles are rejected
 rv_thrsh = 100;
 
-% path to save temporary ICAw's to
+% path to save temporary db's to
 % (the last one being final)
 save_path = [];
 %save_path = 'D:\Dropbox\CURRENT PROJECTS\Beta 2013-2014\Baseline\';
@@ -23,7 +23,7 @@ save_path = [];
 % whether to remove dipoles that are located
 % outside the skull/brain
 out = 'off';
-rs = 1:length(ICAw);
+rs = 1:length(db);
 norpl = false;
 
 %% test varargin
@@ -84,7 +84,7 @@ end
 for r = rs
     %% preliminary checks
     % check if ICA weights present
-    ICApres = ~isempty(ICAw(r).ICA.icaweights);
+    ICApres = ~isempty(db(r).ICA.icaweights);
     
     % if no ICA weights then check next file
     if ~ICApres
@@ -93,19 +93,19 @@ for r = rs
     clear ICApres
     
     % if dipfit info already present:
-    if norpl && femp(ICAw(r), 'dipfit')
+    if norpl && femp(db(r), 'dipfit')
         continue
     end
     
     % add prepath if not present
-    %     if ~strcmp(prepath, ICAw(r).filepath(1:length(prepath)))
-    %         sepind = strfind(ICAw(r).filepath, '\');
-    %         ICAw(r).filepath = [prepath, ICAw(r).filepath(sepind(1):end)];
+    %     if ~strcmp(prepath, db(r).filepath(1:length(prepath)))
+    %         sepind = strfind(db(r).filepath, '\');
+    %         db(r).filepath = [prepath, db(r).filepath(sepind(1):end)];
     %     end
     
     %% recover and check
     % recover EEG
-    EEG = recoverEEG(ICAw, r, 'ICAnorem', 'local');
+    EEG = recoverEEG(db, r, 'ICAnorem', 'local');
     
     % check channels
     allchn = 1:length(EEG.chanlocs);
@@ -127,7 +127,7 @@ for r = rs
     clear elstep el elind
     
     % remove these channels and badchannels:
-    allchn(union(ICAw(r).chan.bad, remind)) = [];
+    allchn(union(db(r).chan.bad, remind)) = [];
     goodchan = allchn;
     clear allchn remind
     
@@ -144,11 +144,11 @@ for r = rs
         {'normlen' 'on'});
     
     % we are interested only in EEG.dipfit
-    ICAw(r).dipfit = EEG.dipfit;
+    db(r).dipfit = EEG.dipfit;
     clear EEG
     
     % save temporary file:
     if ~isempty(save_path)
-        save([save_path, 'db_dipfit.mat'], 'ICAw');
+        save([save_path, 'db_dipfit.mat'], 'db');
     end
 end

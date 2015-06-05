@@ -5,7 +5,7 @@ function varargout = cooleegplot(EEG, varargin)
 % It eases up calls to eegplot and adds some fancy
 % features like color palettes for electrode signal.
 % cooleegplot() is designed especially for usage
-% with ICAw plugin.
+% with db plugin.
 %
 % Examples:
 % try watching your signal this way:
@@ -77,27 +77,27 @@ function varargout = cooleegplot(EEG, varargin)
 % =================
 % ---> recoverEEG uses db_getrej and places
 %      rejlist (list of rejections) in
-%      EEG.reject.ICAw
+%      EEG.reject.db
 %
 % --> left arguments in varargin are checked this way:
 %       - if it is a structure then it is assumed it
-%         is ICAw structure
+%         is db structure
 %       - if it is numerical it is assumed to be 'r' if
-%         len == 1 and ICAw location in varargin is one before;
+%         len == 1 and db location in varargin is one before;
 %       - it is assumed to be ['wlen'] or ['wlen', 'elec']
-%         if no ICAw is present or ICAw adress is after
+%         if no db is present or db adress is after
 %
 % --> varargout are set this way:
 %       - h if 'nowait'
-%       - EEG if ICAw is not passed
-%       - ICAw if ICAw was passed (second arg - EEG)
+%       - EEG if db is not passed
+%       - db if db was passed (second arg - EEG)
 
 
 % TODOS:
 % [ ] !! CHANGE the way post-window rejection adding
 %        works - it seems not to work now!
 %        possibly winreject adds it differently...
-% [ ] update EEG by changing ICAw field (what?)
+% [ ] update EEG by changing db field (what?)
 % [ ] returned EEG has less electrodes if
 %     'elec' was defined, origEEG can be
 %     created at the beginning and all
@@ -105,7 +105,7 @@ function varargout = cooleegplot(EEG, varargin)
 %     to solve this issue
 % [ ] rewrite the HELPINFO to be easier to
 %     maintain and read
-% [ ] check updating ICAw - change the current mess
+% [ ] check updating db - change the current mess
 % [ ] multiple rejections in eegplot2
 % [X] handle default EEG rejections...
 % [ ] work a little bit with button commands
@@ -170,21 +170,21 @@ if nargin > 1
         end
     end
     
-    %% check ICAw presence etc.
+    %% check db presence etc.
     if ~isempty(varargin)
-        % look for ICAw:
+        % look for db:
         db_adr = find(cellfun(@isstruct, varargin));
         if ~isempty(db_adr)
             db_present = true;
-            ICAw = varargin{db_adr}; r = 1;
+            db = varargin{db_adr}; r = 1;
             to_field = {'prob', 'manual', 'mscl', 'reject', 'maybe',...
                 'dontknow'};
             % field name within which the ones below are hidden:
             to_ftype = [1, 1, 1, 2, 2, 2];
             ftype = {'autorem', 'userrem'};
             
-            com = ['fprintf(''Updated relevant EEG and ICAw fileds\n',...
-                'First returned argument is the ICAw database\n'')'];
+            com = ['fprintf(''Updated relevant EEG and db fileds\n',...
+                'First returned argument is the db database\n'')'];
             
         end
         
@@ -213,11 +213,11 @@ rejmat = eeg_rejmat(EEG);
 
 labels = {'happy bunny'};
 labcol = {[0.85 1 0]};
-% get rejection types (from ICAw field)
-if isfield(EEG.reject, 'ICAw') && ~isempty(EEG.reject.ICAw)...
-        && isfield(EEG.reject.ICAw, 'name')
-    labels = EEG.reject.ICAw.name;
-    labcol = EEG.reject.ICAw.color;
+% get rejection types (from db field)
+if isfield(EEG.reject, 'db') && ~isempty(EEG.reject.db)...
+        && isfield(EEG.reject.db, 'name')
+    labels = EEG.reject.db.name;
+    labcol = EEG.reject.db.color;
 end
 
 % formatting color
@@ -239,8 +239,8 @@ end
 
 % if badchan not provided
 if isempty(badchan) && db_present
-    if femp(ICAw(r), 'chan') && femp(ICAw(r).chan, 'bad')
-        badchan = ICAw(r).chan.bad;
+    if femp(db(r), 'chan') && femp(db(r).chan, 'bad')
+        badchan = db(r).chan.bad;
     end
 end
 
@@ -307,7 +307,7 @@ end
 
 % button name
 if db_present
-    butlabel = ['UPDATE ICAw(', num2str(r), ')'];
+    butlabel = ['UPDATE db(', num2str(r), ')'];
 end
 
 % if no eegplot2
@@ -342,7 +342,7 @@ end
 if ~nowait
     uiwait(h);
     
-    % update ICAw autorem
+    % update db autorem
     % search by colors
     
     % !!!!!!!!!!!!!
@@ -360,9 +360,9 @@ if ~nowait
             tmpsz = size(TMPREJ);
             
             % check for segments
-            if db_present && isfield(ICAw(r).epoch, 'segment') && ...
-                    isnumeric(ICAw(r).epoch.segment)
-                nseg = floor(ICAw(r).epoch.winlen/ICAw(r).epoch.segment);
+            if db_present && isfield(db(r).epoch, 'segment') && ...
+                    isnumeric(db(r).epoch.segment)
+                nseg = floor(db(r).epoch.winlen/db(r).epoch.segment);
                 seg_pres = true;
             else
                 seg_pres = false;
@@ -398,11 +398,11 @@ if ~nowait
                         % method - autorem is for automatic remo-
                         % val userrem is for removal done by the
                         % user
-                        ICAw(r).(ftype{to_ftype(f)}).(to_field{f}) =...
+                        db(r).(ftype{to_ftype(f)}).(to_field{f}) =...
                             rejected;
                         
                         % this may be unnecessary:
-                        ICAw(r).(ftype{to_ftype(f)}).color.(to_field{f}) =...
+                        db(r).(ftype{to_ftype(f)}).color.(to_field{f}) =...
                             rejcol;
                         clear rejected rejcol
                     end
@@ -418,7 +418,7 @@ if ~nowait
     % returning output
     if db_present && nargout > 0
         if update
-            varargout{1} = ICAw;
+            varargout{1} = db;
             if nargout > 1, varargout{2} = EEG; end;
         else
             varargout{1} = TMPREJ;

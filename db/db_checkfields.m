@@ -1,8 +1,8 @@
-function fldch = db_checkfields(ICAw, r, flds, varargin)
+function fldch = db_checkfields(db, r, flds, varargin)
 
 % NOHELPINFO
 %
-% function used to check fields of ICAw (or any other structure)
+% function used to check fields of db (or any other structure)
 
 % CHANGE - establish copyright and license info (everywhere)
 % written by Miko³aj Magnuski, imponderabilion@gmail.com
@@ -15,7 +15,7 @@ simplify = false;
 
 % get fields
 if isempty(flds)
-    fldch.fields = fields(ICAw(r));
+    fldch.fields = fields(db(r));
     fldch.fields = fldch.fields(:);
 else
     fldch.fields = flds(:);
@@ -55,7 +55,7 @@ fldch.fpres = false(length(fldch.fields),1);
 fldch.fnonempt = false(length(fldch.fields),1);
 fldch.fsubf = false(length(fldch.fields),1);
 
-if isempty(ICAw) || isempty(ICAw(r))
+if isempty(db) || isempty(db(r))
     return
 end
 
@@ -64,21 +64,21 @@ end
 for f = 1:length(fldch.fields)
     
     % field present
-    if isfield(ICAw(r), fldch.fields{f})
+    if isfield(db(r), fldch.fields{f})
         fldch.fpres(f) = true;
     else
         continue
     end
     
     % field non-empty
-    if ~isempty(ICAw(r).(fldch.fields{f}))
+    if ~isempty(db(r).(fldch.fields{f}))
         fldch.fnonempt(f) = true;
     else
         continue
     end
     
     % has subfields?
-    if isstruct(ICAw(r).(fldch.fields{f}))
+    if isstruct(db(r).(fldch.fields{f}))
         fldch.fsubf(f) = true;
     else
         continue
@@ -86,7 +86,7 @@ for f = 1:length(fldch.fields)
     
     if subf && fldch.fsubf(f)
         % subfields
-        fldch.subfields{f,1} = fields(ICAw(r).(fldch.fields{f}));
+        fldch.subfields{f,1} = fields(db(r).(fldch.fields{f}));
         fldch.subfields{f,1} = fldch.subfields{f}(:);
         
         % if we need to ignore fields:
@@ -108,7 +108,7 @@ for f = 1:length(fldch.fields)
         
         % if subfields empty
         for sf = 1:length(fldch.subfields{f})
-            if ~isempty(ICAw(r).(fldch.fields{f}).(fldch.subfields{f}{sf}))
+            if ~isempty(db(r).(fldch.fields{f}).(fldch.subfields{f}{sf}))
                 fldch.subfnonempt{f,1}(sf,1) = true;
             end
         end

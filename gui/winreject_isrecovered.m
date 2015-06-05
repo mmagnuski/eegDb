@@ -24,4 +24,4 @@ end
 
 % this is copied from winreject (and is quite messy):
 isreco = ~(isempty(h.EEG) || h.r ~= h.rEEG || ...
-	~db_recov_compare(h.EEG.etc.recov, h.ICAw(h.r)));
+	~db_recov_compare(h.EEG.etc.recov, h.db(h.r)));
