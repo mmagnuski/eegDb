@@ -1,4 +1,4 @@
-function EEG = eegDb_fastepoch(EEG, ev, lim)
+function EEG = db_fastepoch(EEG, ev, lim)
 
 % faster epoching
 % does not use various key options

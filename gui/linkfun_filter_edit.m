@@ -8,7 +8,7 @@ function linkfun_filter_edit(hObj)
 % [x] enter and escape accept and cancel
 
 % get filtering data from main eegDb window
-% CONSIDER - eegDb_gui_get and eegDb_gui_set ?
+% CONSIDER - db_gui_get and db_gui_set ?
 %            shortcuts to get fields from guidata
 %            taking care about multiple selections etc.
 d = guidata(hObj);

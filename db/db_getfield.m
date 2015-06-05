@@ -1,4 +1,4 @@
-function val = eegDb_getfield(eegDb, fld)
+function val = db_getfield(eegDb, fld)
 
 % gives field value for string description of field
 % even in a nested case ('epoch.winlen')

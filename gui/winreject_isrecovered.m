@@ -13,7 +13,7 @@ function isreco = winreject_isrecovered(hObj)
 %       at the current record. Currently looks only at
 %       the current record.
 
-% get handles from eegDb_gui
+% get handles from db_gui
 if ishandle(hObj)
 	h = guidata(hObj);
 elseif isstruct(hObj)

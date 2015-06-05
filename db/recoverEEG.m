@@ -284,7 +284,7 @@ end
 %% recover file:
 if ~loaded
     % CHANGE if there are problems to try-catch
-    EEG = eegDb_fastread(pth, db(r).filename);
+    EEG = db_fastread(pth, db(r).filename);
     
     % EEG = pop_loadset('filename', db(r).filename, ...
     %     'filepath', pth);
@@ -484,7 +484,7 @@ if femp(db(r), 'epoch')
             epoc = eval(epoc(cidlen+1:end));
         end
         
-        EEG = eegDb_fastepoch(EEG, epoc, db(r).epoch.limits);
+        EEG = db_fastepoch(EEG, epoc, db(r).epoch.limits);
         
         % =======================
         % checking for segmenting

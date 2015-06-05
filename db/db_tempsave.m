@@ -1,4 +1,4 @@
-function eegDb_tempsave(db, rs)
+function db_tempsave(db, rs)
 
 % save the current version of given records 
 % of the db database and modify the database

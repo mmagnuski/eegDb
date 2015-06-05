@@ -1,9 +1,9 @@
-function [whatepoching, indatainfo] = eegDb_whatepoch(eegDb)
+function [whatepoching, indatainfo] = db_whatepoch(eegDb)
 
 % EEGDB_WHATEPOCH checks what kind of epoching a given database entry
 % has defined.
 %
-% whatepoching = eegDb_whatepoch(eegDb)
+% whatepoching = db_whatepoch(eegDb)
 %
 % `whatepoching` -  *integer*, signals what type of epoching
 %                   the eegDb entry has:
@@ -13,7 +13,7 @@ function [whatepoching, indatainfo] = eegDb_whatepoch(eegDb)
 %                   3 - (possibly in the future) when epochs are segmented
 %                       (event-locked epochs cut into consec. windows)
 %
-% see also: eegDb_buildbase
+% see also: db_buildbase
 
 % ADD checks for many entries
 

@@ -2,7 +2,7 @@ function varargout = db_create_base(varargin)
 
 % db_CREATE_BASE - GUI for creating eegDb database
 % The same can be performed using specific calls
-% to functions like eegDb_buildbase etc.
+% to functions like db_buildbase etc.
 % FIXHELPINFO
 
 % Last Modified by GUIDE v2.5 24-May-2014 17:54:02
@@ -11,8 +11,8 @@ function varargout = db_create_base(varargin)
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @eegDb_create_base_OpeningFcn, ...
-                   'gui_OutputFcn',  @eegDb_create_base_OutputFcn, ...
+                   'gui_OpeningFcn', @db_create_base_OpeningFcn, ...
+                   'gui_OutputFcn',  @db_create_base_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -31,11 +31,11 @@ end
 %     that can narrow GUI usage
 % [ ] add choose by rule
 
-% --- Executes just before eegDb_create_base is made visible.
-function eegDb_create_base_OpeningFcn(hObject, ~, handles, varargin)
+% --- Executes just before db_create_base is made visible.
+function db_create_base_OpeningFcn(hObject, ~, handles, varargin)
 % This function has no output args, see OutputFcn.
 
-% Choose default command line output for eegDb_create_base
+% Choose default command line output for db_create_base
 handles.output = [];
 handles.path = [];
 handles.GoodToGo = false;
@@ -50,12 +50,12 @@ handles.cancel = false;
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes eegDb_create_base wait for user response (see UIRESUME)
+% UIWAIT makes db_create_base wait for user response (see UIRESUME)
 uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = eegDb_create_base_OutputFcn(a, b, handles)  %#ok<INUSL>
+function varargout = db_create_base_OutputFcn(a, b, handles)  %#ok<INUSL>
 % varargout  cell array for returning output args (see VARARGOUT);
 
 % Get default command line output from handles structure
@@ -302,13 +302,13 @@ if femp(h, 'eegDb')
     
     % update if relevant
     if ~isempty(opt)
-        eegDb_temp = db_copybase(eegDb, opt);
+        db_temp = db_copybase(eegDb, opt);
     end
 end
 
 eegDb_temp = db_gui_epoch(eegDb_temp);
-if isstruct(eegDb_temp)
-    h.eegDb = eegDb_temp;
+if isstruct(db_temp)
+    h.eegDb = db_temp;
     set(h.OK, 'Enable', 'on');
     guidata(h.figure1, h);
 end
@@ -336,7 +336,7 @@ if femp(h, 'eegDb')
     end
     
     [strPth, flist] = get_path_and_files(h);
-    eegDb = eegDb_buildbase(strPth, flist);
+    eegDb = db_buildbase(strPth, flist);
     
     if ~isempty(opt)
         eegDb = db_copybase(eegDb, opt);

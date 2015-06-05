@@ -1,11 +1,11 @@
-function infotext = eegDb_struct2text(eegDb, h)
+function infotext = db_struct2text(eegDb, h)
 
 % EEGDB_STRUCT2TEXT returns a string representation of eegDb contents
 %
-% infotext = eegDb_struct2text(eegDb)
+% infotext = db_struct2text(eegDb)
 %
 % EXAMPLE:
-% >> eegDb_struct2text(eegDb(2));
+% >> db_struct2text(eegDb(2));
 %    
 % filename:  crazy_study_01.set
 % filter:    [ 1  x ] (highpass)
@@ -28,7 +28,7 @@ function infotext = eegDb_struct2text(eegDb, h)
 %            5 muscle components
 %              (4 rejected)
 %    
-% see also: eegDb_buildbase
+% see also: db_buildbase
 
 % TODOs:
 % [ ] - add text-wrapping with respect to h uicontrol
@@ -68,7 +68,7 @@ currentRow = 1;
 %style.copy = [1]; %#ok<NBRAK>
 
 for i = currentRow
-    infotext{i} = [infotext{i}, eegDb_getfield(eegDb, getfld{i})];
+    infotext{i} = [infotext{i}, db_getfield(eegDb, getfld{i})];
 end
 
 % filter:
@@ -84,7 +84,7 @@ end
 % -------
 currentRow = 3;
 addtx{1} = 'no epoching defined';
-[ep, eptp] = eegDb_getepoching(eegDb);
+[ep, eptp] = db_getepoching(eegDb);
 
 if eptp == 1
     addtx{1} = 'cut into consecutive windows';

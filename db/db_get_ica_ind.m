@@ -1,9 +1,9 @@
-function mapping = eegDb_get_ica_ind(dt1, dt2, corr_thres)
+function mapping = db_get_ica_ind(dt1, dt2, corr_thres)
 
 % correlates icawinv from two dataset to find the 
 % correspondence.
 %
-% mapping = eegDb_compare_ICA(dt1, dt2, corr_thres)
+% mapping = db_compare_ICA(dt1, dt2, corr_thres)
 % 
 % Returns a mapping vector where
 % mapping(n) = i means the n'th component from

@@ -1,9 +1,9 @@
-function eegDb = eegDb_buildbase(PTH, varargin)
+function eegDb = db_buildbase(PTH, varargin)
 
-% eegDb_buildbase allows to create an eegDb structure
+% db_buildbase allows to create an eegDb structure
 % from files in a given folder
 %
-% eegDb = eegDb_buildbase(filepath)
+% eegDb = db_buildbase(filepath)
 %
 % FIXHELPINFO
 % CHANGE - PRIORITY

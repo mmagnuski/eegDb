@@ -25,7 +25,7 @@ set(handles.title_text, 'String', {'db data cleaner'; ...
 maxlines = 8;
 
 % get text from eegDb structure, already wrapped
-infotext = eegDb_struct2text(handles.db(handles.r), handles.info_text);
+infotext = db_struct2text(handles.db(handles.r), handles.info_text);
 
 % check wrapped size:
 all_lines = length(infotext);

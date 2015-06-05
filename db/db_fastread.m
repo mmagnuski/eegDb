@@ -1,4 +1,4 @@
-function EEG = eegDb_fastread(pth, fnm)
+function EEG = db_fastread(pth, fnm)
 
 % fast version of pop_loadset for .set + .fdt files
 % does not read option files, does not use eeg_checkset
