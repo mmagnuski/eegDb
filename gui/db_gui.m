@@ -1,27 +1,27 @@
-function varargout = winreject(varargin)
+function varargout = db_gui(varargin)
 
-% WINREJECT - GUI that allows for basic operations on db.`
+% DB_GUI - GUI that allows for basic operations on db.`
 %             Adding notes, marking epochs in different ways
 %             as well as listing bad channels is easy with
-%             winreject GUI. It is also possible to create
+%             db_gui GUI. It is also possible to create
 %             multiple versions of a given db record and
 %             perform ICA for each of these versions (to
 %             compare later)
 %
 %  use as:
-%      db = WINREJECT(db);
+%      db = DB_GUI(db);
 %  or:
-%      db = WINREJECT(db, r)
+%      db = DB_GUI(db, r)
 %                where r is a positive integer
 %                to start exploring db structure from r register
 %
 % CHANGE - see also should be updated
-% See also: GUIDE, GUIDATA, GUIHANDLES
+% See also: db_buildbase, db_create_base
 
 % TODOs:
 % [ ] resolve removed marks but no recover bug
 % [ ] delete current version from versions field
-%     when saving or closing winreject? This would
+%     when saving or closing db_gui? This would
 %     save some memory... (!)
 % [ ] universal mechanism for mark types:
 %         - [X] adding user-defined types
@@ -35,14 +35,14 @@ function varargout = winreject(varargin)
 %     does work for ICA but not yet for other options 
 % [ ] ...
 
-% Last Modified by GUIDE v2.5 27-Aug-2014 16:41:04
+% Last Modified by GUIDE v2.5 05-Jun-2015 17:20:21
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
     'gui_Singleton',  gui_Singleton, ...
-    'gui_OpeningFcn', @winreject_OpeningFcn, ...
-    'gui_OutputFcn',  @winreject_OutputFcn, ...
+    'gui_OpeningFcn', @db_gui_OpeningFcn, ...
+    'gui_OutputFcn',  @db_gui_OutputFcn, ...
     'gui_LayoutFcn',  [] , ...
     'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -57,15 +57,15 @@ end
 % End initialization code - DO NOT EDIT
 
 
-% --- Executes just before winreject is made visible.
-function winreject_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<*INUSL>
+% --- Executes just before db_gui is made visible.
+function db_gui_OpeningFcn(hObject, eventdata, handles, varargin) %#ok<*INUSL>
 % This function has no output args, see OutputFcn.
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% varargin   command line arguments to winreject (see VARARGIN)
+% varargin   command line arguments to db_gui (see VARARGIN)
 
-% Choose default command line output for winreject
+% Choose default command line output for db_gui
 handles.output = hObject;
 handles.UniOrig = get(0, 'Units');
 
@@ -168,12 +168,12 @@ handles = test_profile(handles, 'load');
 % Refresh GUI:
 winreject_refresh(handles);
 
-% UIWAIT makes winreject wait for user response (see UIRESUME)
+% UIWAIT makes db_gui wait for user response (see UIRESUME)
 uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = winreject_OutputFcn(hObject, eventdata, handles)
+function varargout = db_gui_OutputFcn(hObject, eventdata, handles)
 
 % if no output defined - generate ans in workspace
 if nargout == 0 && ~handles.CloseReq

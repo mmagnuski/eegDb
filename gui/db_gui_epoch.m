@@ -1,11 +1,11 @@
 function varargout = db_gui_epoch(varargin)
 
 % NOHELPINFO
-% ICAW_GUI_EPOCH
+% DB_GUI_EPOCH
 %
 % See also: GUIDE, GUIDATA, GUIh
 
-% Last Modified by GUIDE v2.5 25-May-2014 00:35:07
+% Last Modified by GUIDE v2.5 05-Jun-2015 17:28:52
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -180,7 +180,8 @@ end
 
 % =====================
 % check onesec options:
-if femp(h.db(r), 'epoch') && femp(h.db(r).epoch, 'locked') && ~db(r).epoch.locked
+if femp(h.db(r), 'epoch') && femp(h.db(r).epoch, 'locked') && ...
+        ~h.db(r).epoch.locked
         
         % ADD - else default options?
         % check 'winlen':
