@@ -23,8 +23,8 @@ end
 h = guidata(hObj);
 
 % check if icaweights present:
-icapres = femp(h.ICAw(h.r), 'ICA') && ...
-	femp(h.ICAw(h.r).ICA, 'icaweights');
+icapres = femp(h.db(h.r), 'ICA') && ...
+	femp(h.db(h.r).ICA, 'icaweights');
 
 if ~icapres
 	warndlg('No ICA weights found. You need to perform ICA first.',...
@@ -42,7 +42,7 @@ if ~isreco
 	drawnow;
 
 	% recover
-	h.EEG = recoverEEG(h.ICAw, h.r, 'local', 'ICAnorem');
+	h.EEG = recoverEEG(h.db, h.r, 'local', 'ICAnorem');
     h.rEEG = h.r;
 
     % update winrej handles
@@ -50,7 +50,7 @@ if ~isreco
 end
 
 % open compo view window
-newh.eegDb_gui = h.figure1;
-compnum = 1:size(h.ICAw(h.r).ICA.icaweights, 1);
-pop_selectcomps_new( h.EEG, compnum, 'eegDb', h.ICAw, ...
+newh.db_gui = h.figure1;
+compnum = 1:size(h.db(h.r).ICA.icaweights, 1);
+pop_selectcomps_new( h.EEG, compnum, 'eegDb', h.db, ...
 					'r', h.r, 'h', newh, 'perfig', 10);

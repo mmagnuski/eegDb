@@ -1,31 +1,31 @@
-function [ICAw, EEG] = db_rejTMP(ICAw, r, EEG, TMPREJ)
+function [db, EEG] = db_rejTMP(db, r, EEG, TMPREJ)
 
 % NOHELPINFO
 
 % taking care of rejections
-% in and out from ICAw/EEG
+% in and out from db/EEG
 ICAw_present = true;
 
 % check for segments
 % THIS is kept but segmenting is not officially supported
-if db_present && isfield(ICAw(r).epoch, 'segment') && ...
-        isnumeric(ICAw(r).epoch.segment) && ~isempty(ICAw(r).epoch.segment)
+if db_present && isfield(db(r).epoch, 'segment') && ...
+        isnumeric(db(r).epoch.segment) && ~isempty(db(r).epoch.segment)
     
     
-    if (~isfield(ICAw(r).epoch, 'winlen') ||...
-            isempty(ICAw(r).epoch.winlen)) && ...
-            isfield(ICAw(r).epoch, 'locked')
+    if (~isfield(db(r).epoch, 'winlen') ||...
+            isempty(db(r).epoch.winlen)) && ...
+            isfield(db(r).epoch, 'locked')
         winlen = 1;
     end
     
     
-    nseg = floor(winlen/ICAw(r).epoch.segment);
+    nseg = floor(winlen/db(r).epoch.segment);
     seg_pres = true;
 else
     seg_pres = false;
 end
 
-% CHANGE: this is used when EEG --> ICAw
+% CHANGE: this is used when EEG --> db
 % % reshaping to segment rules
 % if seg_pres
 %     rejected = reshape(zerovec,...
@@ -36,14 +36,14 @@ end
 % end
 
 % get rejtypes:
-rejt = db_getrej(ICAw, r);
+rejt = db_getrej(db, r);
 
 tmpsz = size(TMPREJ);
 % remfields = {'autorem', 'userrem'};
 % known_auto = {'prob', 'mscl', 'freq'};
 % goes_to    = {'rejjp', 'rejfreq', 'rejfreq'};
 
-rejCol = cell2mat({ICAw(r).marks.color}');
+rejCol = cell2mat({db(r).marks.color}');
 
 
 % checking rejection methods
@@ -79,19 +79,19 @@ for f = 1:size(rejCol, 1)
         % method - autorem is for automatic remo-
         % val userrem is for removal done by the
         % user
-        if isempty(ICAw(r).marks(f).value)
-            ICAw(r).marks(f).value = false(EEG.etc.orig_numep, 1);
+        if isempty(db(r).marks(f).value)
+            db(r).marks(f).value = false(EEG.etc.orig_numep, 1);
             orig_numep = EEG.etc.orig_numep;
         else
-            orig_numep = length(ICAw(r).marks(f).value);
+            orig_numep = length(db(r).marks(f).value);
         end
         
         adr = 1:orig_numep;
         
         % CHANGE - some commented out code - probably not needed
-        % if femp(ICAw(r), 'prerej') || ~(length(adr) == ...
+        % if femp(db(r), 'prerej') || ~(length(adr) == ...
         %         size(EEG.data, 3))
-        %     adr(ICAw(r).prerej) = [];
+        %     adr(db(r).prerej) = [];
         % end
         
         % CHANGE
@@ -99,28 +99,28 @@ for f = 1:size(rejCol, 1)
         % not work / have much sens / etc.
         % it seems to be used to work for adding selections 
         % even when some epochs have been rejected
-        if femp(ICAw(r).reject, 'post') || ~(length(adr) == ...
+        if femp(db(r).reject, 'post') || ~(length(adr) == ...
                 size(EEG.data, 3))
-            adr(ICAw(r).reject.post) = [];
+            adr(db(r).reject.post) = [];
         end
         
-        ICAw(r).marks(f).value(adr) = rejected;
+        db(r).marks(f).value(adr) = rejected;
         
         clear rejected
     end
 end
 
 % update EEG:
-EEG.reject.ICAw = db_getrej(ICAw, r);
+EEG.reject.db = db_getrej(db, r);
 
 % CHANGE - this should also be changed
-% EEG.reject.ICAw is used but there are no 
+% EEG.reject.db is used but there are no 
 % precise rules for this and it is untracked
 %
 % cut out postrej (prerej are not in
 % removed):
-for v = 1:length(EEG.reject.ICAw.value)
-    EEG.reject.ICAw.value{v}(ICAw(r).reject.post) = [];
+for v = 1:length(EEG.reject.db.value)
+    EEG.reject.db.value{v}(db(r).reject.post) = [];
 end
 
 clear tmpsz nseg

@@ -1,14 +1,14 @@
-function ICAw = db_addpath(ICAw, path)
+function db = db_addpath(db, path)
 
-% ICAw = db_addpath(ICAw, path)
-% add path to ICAw database filepath
+% db = db_addpath(db, path)
+% add path to db database filepath
 % this does not delete the previous
-% path set up in ICAw database but
+% path set up in db database but
 % just adds another one into a cell
 % array of paths
 % The correct path on a given computer
 % can be found by using:
-% correct_path = db_path(ICAw(r).filepath);
+% correct_path = db_path(db(r).filepath);
 
 % TODOs:
 % [ ] 'ignore cleanline' when all files have been
@@ -16,14 +16,14 @@ function ICAw = db_addpath(ICAw, path)
 % CONSIDER - how intermediate files should be treated and located
 
 cll = 'CleanLine\';
-for r = 1:length(ICAw)
-    iscl = iscell(ICAw(r).filepath);
+for r = 1:length(db)
+    iscl = iscell(db(r).filepath);
     if iscl
         ad_cl = any(~cellfun(@isempty, strfind(...
-            ICAw(r).filepath, cll)));
+            db(r).filepath, cll)));
     else
         ad_cl = ~(isempty(strfind(...
-            ICAw(r).filepath, cll)));
+            db(r).filepath, cll)));
     end
     
     
@@ -33,11 +33,11 @@ for r = 1:length(ICAw)
     end
     
     if ~iscl
-        pt = ICAw(r).filepath;
-        ICAw(r).filepath = []; %#ok<*SAGROW>
-        ICAw(r).filepath{1} = pt;
-        ICAw(r).filepath{2} = nowpath;
+        pt = db(r).filepath;
+        db(r).filepath = []; %#ok<*SAGROW>
+        db(r).filepath{1} = pt;
+        db(r).filepath{2} = nowpath;
     else
-        ICAw(r).filepath{end+1} = nowpath;
+        db(r).filepath{end+1} = nowpath;
     end
 end

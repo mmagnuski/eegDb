@@ -1,7 +1,7 @@
-function ICAw = db_applyrej(ICAw, rs, varargin)
+function db = db_applyrej(db, rs, varargin)
 
 % NOHELPINFO
-% function used to apply rejections to ICAw database
+% function used to apply rejections to db database
 
 % written by M Magnuski, imponderabilion@gmail.com
 
@@ -33,8 +33,8 @@ for r = rs
     
     % clearing rejections is simple:
     if clear_rej
-        ICAw(r).reject.post = []; %#ok<UNRCH>
-        ICAw(r).reject.all = ICAw(r).reject.pre;
+        db(r).reject.post = []; %#ok<UNRCH>
+        db(r).reject.all = db(r).reject.pre;
         continue
     end
     
@@ -42,23 +42,23 @@ for r = rs
     ind = [];
     
     % checking fields
-    % fldch = db_checkfields(ICAw, r, flds,...
+    % fldch = db_checkfields(db, r, flds,...
     %     'subfields', true, 'subignore', ignore);
     
     if checksel
         % just scouting
-        % outsel = update_outsel(outsel, fldch, ICAw, r); %#ok<UNRCH>
+        % outsel = update_outsel(outsel, fldch, db, r); %#ok<UNRCH>
     else
         %% applying rejections
         %fldch = simplify_fldch(fldch);
         
         if ~isempty(byname)
-            mrknames = {ICAw(r).marks.name};
+            mrknames = {db(r).marks.name};
             marknums = cellfun(@(x) strcmp(x, mrknames), byname, 'uni', false);
             marknums = reshape(cell2mat(marknums), [length(byname), length(mrknames)]);
             marknums = sum(marknums, 1) > 0;
             
-            mrkvals = {ICAw(r).marks(marknums).value};
+            mrkvals = {db(r).marks(marknums).value};
             clear marknums mrknames
             
             % check mark length:
@@ -74,7 +74,7 @@ for r = rs
             end
             
             % fill 'removed' field :)
-            ICAw = db_addrej(ICAw, r, ind);
+            db = db_addrej(db, r, ind);
         end
         
     end
@@ -84,13 +84,13 @@ for r = rs
         outsel.subfields = outsel.subfields(outsel.fieldpres);
         outsel = rmfield(outsel, 'fieldpres');
         
-        ICAw = outsel;
+        db = outsel;
     end
 end
 % fill scouting structure
 % (scouting structure looks for rejection categories
 %  present in the data before applying these rejections)
-function outsel = update_outsel(outsel, fldch, ICAw, r)
+function outsel = update_outsel(outsel, fldch, db, r)
 
 outsel.fieldpres = outsel.fieldpres | fldch.fpres;
 
@@ -100,7 +100,7 @@ for f = 1:length(outsel.fieldpres)
         zerokill = false(size(prop));
         
         for sf = 1:length(prop)
-            fld = ICAw(r).(outsel.fields{f}).(prop{sf});
+            fld = db(r).(outsel.fields{f}).(prop{sf});
             logi = islogical(fld) || sum(fld)==0;
             if logi
                 zerokill(sf) = true;

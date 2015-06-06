@@ -1,4 +1,4 @@
-function ICAw = db_newrejtype(ICAw, newtypes)
+function db = db_newrejtype(db, newtypes)
 
 % NOHELPINFO
 
@@ -19,7 +19,7 @@ end
 %          for consistency checks one time
 %          (at the beginning)
 %          - use persistent option?
-rejt = db_scanmarks(ICAw);
+rejt = db_scanmarks(db);
 
 % take only userrem types:
 
@@ -35,11 +35,11 @@ clear isnew
 if ~isempty(newt)
     % there are some new types
     
-    % apply to all ICAw records
-    for r = 1:length(ICAw)
+    % apply to all db records
+    for r = 1:length(db)
         for n = 1:length(newt)
-            ICAw(r).marks(end + 1).name = newtypes.name{newt(n)};
-            ICAw(r).marks(end).color = newtypes.color(newt(n),:);
+            db(r).marks(end + 1).name = newtypes.name{newt(n)};
+            db(r).marks(end).color = newtypes.color(newt(n),:);
             % additional?
         end
         

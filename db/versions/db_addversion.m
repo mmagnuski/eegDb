@@ -1,4 +1,4 @@
-function ICAw = db_addversion(ICAw, rr, opt)
+function db = db_addversion(db, rr, opt)
 
 % NOHELPINFO
 
@@ -12,14 +12,14 @@ end
 for r = rr
     
     % check if this record has versions
-    f = db_checkfields(ICAw, r, {'versions'});
+    f = db_checkfields(db, r, {'versions'});
     
     % no versions whatsoever:
     if ~f.fsubf
-        ICAw = db_mainversion(ICAw, r);
+        db = db_mainversion(db, r);
     end
     
-    ver = db_getversions(ICAw, r);
+    ver = db_getversions(db, r);
     
     % ignoring main:
     vnames = ver(:,2);
@@ -70,6 +70,6 @@ for r = rr
         fld = f.fields(f.fnonempt);
         
         for f = 1:length(fld)
-            ICAw(r).versions.(thisver).(fld{f}) = opt.(fld{f});
+            db(r).versions.(thisver).(fld{f}) = opt.(fld{f});
         end
 end

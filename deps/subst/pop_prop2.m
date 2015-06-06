@@ -191,7 +191,7 @@ h.spectrum = axes('units','normalized', 'position',[5 10 95 35].*s+q);
 
 try
     % CHANGE - do not use eeglab_options
-    % CHANGE - get options from eegDb_gui or syncer
+    % CHANGE - get options from db_gui or syncer
 	eeglab_options; 
 		if femp(EEG, 'icaact') 
 			[spectra, freqs] = spectopo_silent( EEG.icaact(comp,:), EEG.pnts, ...

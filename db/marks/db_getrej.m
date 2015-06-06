@@ -1,6 +1,6 @@
-function outlist = db_getrej(ICAw, r, varargin)
+function outlist = db_getrej(db, r, varargin)
 
-% rejlist = db_getrej(ICAw, r)
+% rejlist = db_getrej(db, r)
 %
 % returns a list of markings that are present for a given file
 % rejlist.name - displayed name of the marking
@@ -18,10 +18,10 @@ function outlist = db_getrej(ICAw, r, varargin)
 %% CHANGE!! - this should probably only select nonempty
 %             if this is asked for, in new structure
 %             getting marks is as easy as:
-%             ICAw(r).marks
+%             db(r).marks
 %             
 %             for mark names:
-%             {ICAw(r).marks.name}
+%             {db(r).marks.name}
 
 return_nonempt = false;
 if nargin > 2
@@ -33,9 +33,9 @@ if nargin > 2
 end
 
 % so simple now:
-outlist.name = {ICAw(r).marks.name};
-outlist.color = {ICAw(r).marks.color};
-outlist.value = {ICAw(r).marks.value};
+outlist.name = {db(r).marks.name};
+outlist.color = {db(r).marks.color};
+outlist.value = {db(r).marks.value};
 
 if return_nonempt
 

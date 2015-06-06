@@ -1,6 +1,6 @@
 function db_start(PTH, varargin)
 
-% function for starting your work with ICAw
+% function for starting your work with db
 % FIXHELPINFO
 
 % CHECK, CHANGE this function and to a stable, relatively final form
@@ -10,7 +10,7 @@ function db_start(PTH, varargin)
 % [ ] add some more options?
 
 % TEMPORARY argument checks:
-innm = 'ICAw ';
+innm = 'db ';
 if nargin > 1
     arg = strcmp(varargin, 'inname');
     if sum(arg) > 0
@@ -34,7 +34,7 @@ addpath(PTH);
 all_fls = dir(fullfile(PTH, '*.mat'));
 all_fls = {all_fls.name};
 
-% take only ICAw databases:
+% take only db databases:
 disp('looking for current database...');
 i = regexp(all_fls, innm, 'once');
 em = ~cellfun(@isempty, i);
@@ -74,14 +74,14 @@ clear d a win dts dt tm a i pat em fls
 else
     winner = fls{1};
 end
-%% load current ICAw
+%% load current db
 disp('loading the database...');
 ld = load(fullfile(PTH, winner));
 clear winner
 flds = fields(ld);
 ICAw = ld.(flds{1});
 clear flds ld
-assignin('base', 'ICAw', ICAw);
+assignin('base', 'db', db);
 disp('done.');
 
 %% load current profile:

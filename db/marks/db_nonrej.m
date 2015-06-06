@@ -1,4 +1,4 @@
-function nonrejid = db_nonrej(ICAw, r, varargin)
+function nonrejid = db_nonrej(db, r, varargin)
 
 % NOHELPINFO
 
@@ -37,18 +37,18 @@ end
   
 %% initial input checks
 % checking segment:
-% CHANGE - ICAw.segment may also be ICAw.epoch.segment
-if ~segment && isfield(ICAw.epoch, 'segment') && ...
-    isnumeric(ICAw(r).epoch.segment)
+% CHANGE - db.segment may also be db.epoch.segment
+if ~segment && isfield(db.epoch, 'segment') && ...
+    isnumeric(db(r).epoch.segment)
     segment = true;
 end
 
 %% ==welcome to the code==
 
     % we assume that autorem has fields
-    flds = fields(ICAw(r).autorem);
+    flds = fields(db(r).autorem);
 
-    % CHANGE - now there is no ICAw.autorem by default
+    % CHANGE - now there is no db.autorem by default
     
     for f = 1:length(flds)
         nonrejid_temp = [];
@@ -58,7 +58,7 @@ end
         % if we know, continue (else - ADD)
         if ~isempty(kn)
             
-            rejections = ICAw(r).autorem.(flds{f});
+            rejections = db(r).autorem.(flds{f});
             
             % translating different rejection formats
             if segment

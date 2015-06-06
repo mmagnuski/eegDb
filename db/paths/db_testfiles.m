@@ -1,22 +1,22 @@
-function log = db_testfiles(ICAw)
+function log = db_testfiles(db)
 
-% log = db_testfiles(ICAw)
+% log = db_testfiles(db)
 %
-% tests for file presence in all ICAw records
+% tests for file presence in all db records
 % (checks whether .set file referenced by 
 % filepath and filename is present)
 % log is a boolean vector where true means 
 % that the file was present
 
-len = length(ICAw);
+len = length(db);
 log = false(1, len);
 
 for r = 1:len
     % take correct path:
-    pth = db_path(ICAw(r).filepath);
+    pth = db_path(db(r).filepath);
     
     % check directory:
-    fls = dir([pth, ICAw(r).filename]);
+    fls = dir([pth, db(r).filename]);
     
     if ~isempty(fls)
         log(r) = true;

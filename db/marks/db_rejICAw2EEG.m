@@ -1,22 +1,22 @@
-function EEG = db_rejICAw2EEG(ICAw, r, EEG, prerej)
+function EEG = db_rejdb2EEG(db, r, EEG, prerej)
 
 % NOHELPINFO
 
 % taking care of rejections
-% in and out from ICAw/EEG
+% in and out from db/EEG
 ICAw_present = true;
 
 
 % check for segments
-if db_present && isfield(ICAw, 'segment') && ...
-        isnumeric(ICAw(r).segment) && ~isempty(ICAw(r).segment)
-    nseg = floor(ICAw(r).winlen/ICAw(r).segment); %#ok<NASGU>
+if db_present && isfield(db, 'segment') && ...
+        isnumeric(db(r).segment) && ~isempty(db(r).segment)
+    nseg = floor(db(r).winlen/db(r).segment); %#ok<NASGU>
     seg_pres = true;
 else
     seg_pres = false;
 end
 
-% CHANGE: this is used when EEG --> ICAw
+% CHANGE: this is used when EEG --> db
 % % reshaping to segment rules
 % if seg_pres
 %     rejected = reshape(zerovec,...
@@ -27,11 +27,11 @@ end
 % end
 
 
-if (  prerej || ( isempty(ICAw(r).removed))  ) && isfield(...
-        ICAw, 'autorem') && ~isempty(ICAw(r).autorem)
+if (  prerej || ( isempty(db(r).removed))  ) && isfield(...
+        db, 'autorem') && ~isempty(db(r).autorem)
     known_auto = {'prob', 'mscl', 'freq'};
     goes_to    = {'rejjp', 'rejfreq', 'rejfreq'};
-    flds = fields(ICAw(r).autorem);
+    flds = fields(db(r).autorem);
     
     % we assume that autorem has fields
     for f = 1:length(flds)
@@ -41,7 +41,7 @@ if (  prerej || ( isempty(ICAw(r).removed))  ) && isfield(...
         % if we know, continue (else - ADD)
         if ~isempty(kn)
             
-            rejections = ICAw(r).autorem.(flds{f});
+            rejections = db(r).autorem.(flds{f});
             
             % translating different rejection formats
             if seg_pres
@@ -73,11 +73,11 @@ if (  prerej || ( isempty(ICAw(r).removed))  ) && isfield(...
 end
 
 %% clean up this later
-if (  prerej || ( isempty(ICAw(r).removed) )  ) && isfield(...
-        ICAw, 'userrem') && ~isempty(ICAw(r).userrem)
+if (  prerej || ( isempty(db(r).removed) )  ) && isfield(...
+        db, 'userrem') && ~isempty(db(r).userrem)
     known_auto = {'userreject', 'usermaybe', 'userdontknow'};
     goes_to    = {'userreject', 'usermaybe', 'userdontknow'};
-    flds = fields(ICAw(r).userrem);
+    flds = fields(db(r).userrem);
     
     % we assume that autorem has fields
     for f = 1:length(flds)
@@ -87,7 +87,7 @@ if (  prerej || ( isempty(ICAw(r).removed) )  ) && isfield(...
         % if we know, continue (else - ADD)
         if ~isempty(kn)
             
-            rejections = ICAw(r).userrem.(flds{f});
+            rejections = db(r).userrem.(flds{f});
             
             % translating different rejection formats
             if seg_pres
@@ -113,7 +113,7 @@ if (  prerej || ( isempty(ICAw(r).removed) )  ) && isfield(...
             
             % highlight:
             EEG.reject.(goes_to{kn}) = rejections;
-            EEG.reject.([goes_to{kn}, 'col']) = ICAw(r).userrem.color.(flds{f});
+            EEG.reject.([goes_to{kn}, 'col']) = db(r).userrem.color.(flds{f});
         end
     end
     clear f kn

@@ -11,7 +11,7 @@ function pth = db_path(PTH, varargin)
 
 % TODOs:
 % [ ] check for filename fields when
-%     'withfiles' is active and ICAw was
+%     'withfiles' is active and db was
 %     passed
 % [ ] add 'multiple' option that
 %     allows for multiple correct
@@ -20,14 +20,14 @@ function pth = db_path(PTH, varargin)
 %     a folder that is correct and
 %     contains a given file/list of
 %     files
-% [X] automatically detect ICAw structure
+% [X] automatically detect db structure
 %     (filepath field)
 % [X] if user passed 'r' index - produce
 %     results adequate to:
-%     pth = db_path(ICAw(r).filepath);
+%     pth = db_path(db(r).filepath);
 %     or:
-%     pth = db_path(ICAw(r).filepath,...
-%         'withfiles', ICAw(r).filename);
+%     pth = db_path(db(r).filepath,...
+%         'withfiles', db(r).filename);
 % [X] what if the user did not pass 'r'
 %     and the structure is longer than
 %     one?
@@ -39,8 +39,8 @@ function pth = db_path(PTH, varargin)
 % optional parameters (from varargin)
 r = [];
 
-%% ICAw version
-% check if ICAw structure:
+%% db version
+% check if db structure:
 if isstruct(PTH)
     % ADD checking for filename if
     %     'withfiles' was passed

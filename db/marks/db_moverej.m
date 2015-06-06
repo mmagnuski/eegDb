@@ -1,10 +1,10 @@
-function ICAw = db_moverej(ICAw, r, epoch_info, perc, varargin)
+function db = db_moverej(db, r, epoch_info, perc, varargin)
 
-% ICAw = db_moverej(ICAw, epoch_info, perc, varargin)
+% db = db_moverej(db, epoch_info, perc, varargin)
 %
 % Moves rejections from onesecepoch to any other
 % event-based epoching.
-% ICAw - the database
+% db - the database
 % epoch_info - structure describing epoching
 % perc       - percent of overlap between bad onesec window
 %              and new epoch above (and equal to) which
@@ -28,16 +28,16 @@ end
 % eeg_path('add');
 
 for r = rs
-    pth = db_path(ICAw(r).filepath);
+    pth = db_path(db(r).filepath);
     
-    EEG = load([pth, ICAw(r).filename], '-mat');
+    EEG = load([pth, db(r).filename], '-mat');
     EEG = EEG.EEG;
     
     % check windows it would be cut into:
     siglen = EEG.pnts;
     
-    if femp(ICAw(r).onesecepoch, 'winlen')
-        wln = ICAw(r).onesecepoch.winlen;
+    if femp(db(r).onesecepoch, 'winlen')
+        wln = db(r).onesecepoch.winlen;
     else
         wln = 1;
     end
@@ -50,11 +50,11 @@ for r = rs
     clear winlen wln numwin
     
     % now see which are prerejected (0)
-    win(:,ICAw(r).prerej) = 0;
+    win(:,db(r).prerej) = 0;
     lft = find(win(1,:)); % left after prerej
     
     % and see which are rejected (-1)
-    win(:,lft(ICAw(r).postrej)) = -1;
+    win(:,lft(db(r).postrej)) = -1;
     
     % unroll:
     win = win(:)';
@@ -74,7 +74,7 @@ for r = rs
     if isempty(evn)
         % if no such events - throw error
         error('No epoching events found in file %s :(',...
-            ICAw(r).filename);
+            db(r).filename);
     end
     
     % latencies
@@ -114,29 +114,29 @@ for r = rs
     
     
     %% move rejections:
-    ICAw(r).onesecepoch = [];
-    ICAw(r).prerej = [];
+    db(r).onesecepoch = [];
+    db(r).prerej = [];
     
     if ~addmarks
-        ICAw(r).removed = find(perc_bad >= perc);
-        ICAw(r).postrej = find(perc_bad >= perc);
+        db(r).removed = find(perc_bad >= perc);
+        db(r).postrej = find(perc_bad >= perc);
     else
-        ICAw(r).removed = [];
-        ICAw(r).postrej = [];
+        db(r).removed = [];
+        db(r).postrej = [];
     end
     
     % clear reject fields
     fld = {'userreject', 'usermaybe', 'userdontknow'};
     for f = 1:length(fld)
-        ICAw(r).userrem.(fld{f}) = zeros(length(lat),1);
+        db(r).userrem.(fld{f}) = zeros(length(lat),1);
     end
     
     % add marks to userrem.userreject:
     ep_logic = false(length(lat), 1);
     ep_logic(perc_bad >= perc) = true;
-    ICAw(r).userrem.userreject = ep_logic;
+    db(r).userrem.userreject = ep_logic;
     
     % apply epoch events and limits:
-    ICAw(r).epoch_events = ep_ev;
-    ICAw(r).epoch_limits = ep_lim;
+    db(r).epoch_events = ep_ev;
+    db(r).epoch_limits = ep_lim;
 end

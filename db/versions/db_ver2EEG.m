@@ -1,6 +1,6 @@
-function EEG = db_ver2EEG(ICAw, r, EEG)
+function EEG = db_ver2EEG(db, r, EEG)
 
-% EEG = db_ver2EEG(ICAw, r, EEG)
+% EEG = db_ver2EEG(db, r, EEG)
 % transports current version to EEG.etc.recov
 % this is for the interface to know later whether
 % currently recovered EEG corresponds to currently
@@ -10,8 +10,8 @@ function EEG = db_ver2EEG(ICAw, r, EEG)
 %          to do it...
 
 % current version:
-cvf = ICAw(r).versions.current;
-cv = ICAw(r).versions.(cvf);
+cvf = db(r).versions.current;
+cv = db(r).versions.(cvf);
 
 % move fields to EEG.etc.recov
 f = db_checkfields(cv, 1, [], 'ignore', {'version_name',...
@@ -20,6 +20,6 @@ fld = f.fields(f.fnonempt);
 
 % loop
 for f = 1:length(fld)
-    EEG.etc.recov.(fld{f}) = ICAw(r).versions.(cvf)...
+    EEG.etc.recov.(fld{f}) = db(r).versions.(cvf)...
         .(fld{f});
 end

@@ -1,4 +1,4 @@
-function rejt = db_scanmarks(ICAw)
+function rejt = db_scanmarks(db)
 
 % NOHELPINFO
 
@@ -14,17 +14,17 @@ function rejt = db_scanmarks(ICAw)
 rejName = cell(100,1);
 rejColor = cell(100,1);
 
-newName = {ICAw(1).marks.name};
-newColor = {ICAw(1).marks.color};
+newName = {db(1).marks.name};
+newColor = {db(1).marks.color};
 
 track = length(newName);
 rejName(1:track) = newName;
 rejColor(1:track) = newColor;
 
 
-for r = 2:length(ICAw)
-    newName = {ICAw(r).marks.name};
-    newColor = {ICAw(r).marks.color};
+for r = 2:length(db)
+    newName = {db(r).marks.name};
+    newColor = {db(r).marks.color};
     
     % if new name
     % ADD maybe - check for name - color consistency

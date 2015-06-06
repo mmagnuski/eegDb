@@ -1,4 +1,4 @@
-function versions = db_getversions(ICAw, r)
+function versions = db_getversions(db, r)
 
 % FIXHELPINFO
 % provides info about versions in cell matrix
@@ -8,7 +8,7 @@ function versions = db_getversions(ICAw, r)
 % TODOs:
 % [ ] ignore empty versions (?)
 
-f = db_checkfields(ICAw, r, {'versions'}, 'subfields', true,...
+f = db_checkfields(db, r, {'versions'}, 'subfields', true,...
             'subignore', {'current'});
     fld = f.subfields{1};
     
@@ -31,7 +31,7 @@ f = db_checkfields(ICAw, r, {'versions'}, 'subfields', true,...
     
     for i = (1 + 1*main_present):nvers
         v = i - 1*main_present;
-        versions{i, 2} = ICAw(r).versions.(verf{v})...
+        versions{i, 2} = db(r).versions.(verf{v})...
             .version_name;
     end
     end

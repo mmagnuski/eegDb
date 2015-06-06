@@ -2,8 +2,8 @@ function varargout = comp_explore(varargin)
 % COMP_EXPLORE - GUI used for exploring and classifying
 %                Independent Components
 %      COMP_EXPLORE(EEG) lets you classify components in a given EEG
-%      signal. It is assumed that you have an ICAw variable in your
-%      workspace - this variable should be the ICAw database that
+%      signal. It is assumed that you have an db variable in your
+%      workspace - this variable should be the db database that
 %      you interface with using comp_explore.
 %      EEG should be a given EEG recovered using recoverEEG
 %      with option 'ICAnorem' - that is without removing components
@@ -42,10 +42,10 @@ function varargout = comp_explore(varargin)
 % main fields
 % h.
 %   EEG       - eeg data used in display
-%   ICAw      - used as global and declared as global
+%   db      - used as global and declared as global
 %               in workspace too - this way workspace
-%               and comp_explore's ICAw are in sync
-%   r         - index of ICAw record that corresponds 
+%               and comp_explore's db are in sync
+%   r         - index of db record that corresponds 
 %               to the EEG used
 %   ncomp     - number of components
 %   spect     - holds spectra for components
@@ -84,7 +84,7 @@ function varargout = comp_explore(varargin)
 % [ ] - consider a smarter use of global variables etc.
 %
 % other:
-% [ ] - update ICAw by (inputname?) global variable
+% [ ] - update db by (inputname?) global variable
 % [ ] - compare spectopo and SpectPwelch - are they different in
 %       plotting component spectra?
 % [ ] - add some (floating?) text-box with info on freq when marking
@@ -125,23 +125,23 @@ function comp_explore_OpeningFcn(hObject, eventdata, h, varargin) %#ok<INUSL>
 
 % CHANGE:
 % arguments can be passed as:
-% [ ]        - if no ICAw given we assume it is in the base workspace
+% [ ]        - if no db given we assume it is in the base workspace
 %              we perform checks:
 % [ ]          -- if no EEG given then we search base workspace
-%                for ICAw structures, get name(s) of these structures,
+%                for db structures, get name(s) of these structures,
 %                if multiple exist - pop up gui, if none - return error
 % [ ] EEG      -- if EEG is present we check whether the EEG has
-%                a copy of ICAw in EEG.etc
-%                look for ICAw just as in previous point
-%                (but if EEG.etc.ICAw copy exists then look for ICAw(r) that
-%                matches the EEG.etc.ICAw copy
-%                display warning if no ICAw is present
+%                a copy of db in EEG.etc
+%                look for db just as in previous point
+%                (but if EEG.etc.db copy exists then look for db(r) that
+%                matches the EEG.etc.db copy
+%                display warning if no db is present
 %
-% [ ] ICAw    - then r is assumed to be 1 (not if EEG present)
-% [ ] ICAw, r - then EEG is recovered
+% [ ] db    - then r is assumed to be 1 (not if EEG present)
+% [ ] db, r - then EEG is recovered
 %
 % [ ]     if before first optional key occurs there is
-%         a string we assume it is the name of ICAw database
+%         a string we assume it is the name of db database
 %         that is present in the workspace
 
 % Choose default command line output for comp_explore
@@ -159,17 +159,17 @@ h.button_ID = 1;
 % additional arguments:
 
 % ==============
-% ICAw as global
-if evalin('base', 'exist(''ICAw'', ''var'');');
+% db as global
+if evalin('base', 'exist(''db'', ''var'');');
     % CHANGE - to avoid warning and incompatibility with
     % future MATLAB versions - additional function here
     % is needed that deals with 
     % take care of additional arguments
-    evalin('base', 'global ICAw;');
-    global ICAw %#ok<TLEV>
+    evalin('base', 'global db;');
+    global db %#ok<TLEV>
 else
     % dupa blada
-    error('Damn, you should have an ''ICAw'' structure in your workspace');
+    error('Damn, you should have an ''db'' structure in your workspace');
 end
 
 % additional arguments:
@@ -177,28 +177,28 @@ end
     % take care of additional arguments
     h.r = varargin{3};
     % check if EEG comes from the given record nb
-    if ~strcmp(ICAw(h.r).filename, h.EEG.filename)
+    if ~strcmp(db(h.r).filename, h.EEG.filename)
         error('EEG in workspace does not match the given record number!');
     end
     else
         % CONSIDER - for now the filenames are assumed to be the
         %            same across versions, but this may change in
         %            the future...
-        % ADD      - recoverEEG adds (should add at least) some ICAw
+        % ADD      - recoverEEG adds (should add at least) some db
         %            recovery info to EEG.etc - this can be used to
         %            determine the record AND the version fitting
         %
         % look for record number
-        r = db_find_r(ICAw, 'filename', h.EEG.filename);
+        r = db_find_r(db, 'filename', h.EEG.filename);
         if isempty(r)
-            error(['Could not find ICAw entry with the same filename as ',...
+            error(['Could not find db entry with the same filename as ',...
                 'given in your EEG structure.']);
         elseif length(r) > 1
-            warning(['Found multiple ICAw entries with the same filename as ',...
+            warning(['Found multiple db entries with the same filename as ',...
                 'given in your EEG structure. Taking the first one found.']);
             h.r = r(1);
         else
-            disp(['Relevant ICAw entry:  ', num2str(r)]);
+            disp(['Relevant db entry:  ', num2str(r)]);
             h.r = r;
         end
             
@@ -214,17 +214,17 @@ end
 
 
 % ============================================
-% checking ICAw - if no ICA_desc field, create
-f = femp(ICAw(h.r).ICA, 'desc');
+% checking db - if no ICA_desc field, create
+f = femp(db(h.r).ICA, 'desc');
 
 if ~f % no such field or empty - create and fill it up!
     for cc = 1:h.ncomp
-        ICAw(h.r).ICA.desc(cc).reject = false;
-        ICAw(h.r).ICA.desc(cc).ifreject = false;
-        ICAw(h.r).ICA.desc(cc).type = '?';
-        ICAw(h.r).ICA.desc(cc).subtype = 'none';
-        ICAw(h.r).ICA.desc(cc).rank = [];
-        ICAw(h.r).ICA.desc(cc).notes = [];
+        db(h.r).ICA.desc(cc).reject = false;
+        db(h.r).ICA.desc(cc).ifreject = false;
+        db(h.r).ICA.desc(cc).type = '?';
+        db(h.r).ICA.desc(cc).subtype = 'none';
+        db(h.r).ICA.desc(cc).rank = [];
+        db(h.r).ICA.desc(cc).notes = [];
     end
 end
 
@@ -239,7 +239,7 @@ h.opt.ICA.rejcol = [0.2 0.85 0.15; 0.92 0.28 0.15; 0.78 0.78 0.21];
 h.opt.ICA.rejs = {'spare';'reject';'maybe'};
 
 % ADD:
-% [ ] scan across ICAw to add subtypes etc.
+% [ ] scan across db to add subtypes etc.
 
 % [ ] CHANGE? - should it be a cell for different
 % individual selections?
@@ -269,7 +269,7 @@ h.opt.plot.winl = 3; % this is the nb of windows(epochs) to plot
 
 % ==============
 % dipfit options
-if femp(ICAw(h.r), 'dipfit')
+if femp(db(h.r), 'dipfit')
     h.opt.dipf.plot = true;
 else
     h.opt.dipf.plot = false;
@@ -293,7 +293,7 @@ if isempty(h.EEG.icaact)
 end
 
 % [ ] ADD - use inputname() and declare corresponding
-%     ICAw as global variable
+%     db as global variable
 
 % maybe use narginchk(minargs, maxargs) ?
 
@@ -301,7 +301,7 @@ end
 set(h.freq, 'ButtonDownFcn',@start_getrange);
 
 % display filename
-set(h.uipanel1, 'Title', ICAw(h.r).filename);
+set(h.uipanel1, 'Title', db(h.r).filename);
 
 %  =============
 %% DipFit figure
@@ -436,8 +436,8 @@ if nargin > 1
     refr = varargin;
 end
 
-% global variable ICAw:
-global ICAw
+% global variable db:
+global db
 
 % ========================
 % test for button presses:
@@ -453,12 +453,12 @@ if sum(strcmp('compinfo', refr)) > 0
     set(h.ICnb, 'String', ['IC ', num2str(h.comp)]);
     
     % type of comp:
-    compt = ICAw(h.r).ICA.desc(h.comp).type;
+    compt = db(h.r).ICA.desc(h.comp).type;
     alltps = h.opt.ICA.types;
     compi = find(strcmp(compt, alltps));
     
     if isempty(compi)
-        ICAw(h.r).ICA.desc(h.comp).type = '?';
+        db(h.r).ICA.desc(h.comp).type = '?';
         compi = 3;
     end
     
@@ -466,7 +466,7 @@ if sum(strcmp('compinfo', refr)) > 0
     set(ht(compi), 'Value', 1);
     
     % component subtype:
-    compt = ICAw(h.r).ICA.desc(h.comp).subtype;
+    compt = db(h.r).ICA.desc(h.comp).subtype;
     alltps = h.opt.ICA.subtypes{compi};
     
     compiyou = find(strcmp(compt, alltps));
@@ -481,11 +481,11 @@ if sum(strcmp('compinfo', refr)) > 0
     set(h.compsubtype,'Value', compiyou);
     
     % reject button
-    if ICAw(h.r).ICA.desc(h.comp).reject
-        ICAw(h.r).ICA.desc(h.comp).ifreject = false;
+    if db(h.r).ICA.desc(h.comp).reject
+        db(h.r).ICA.desc(h.comp).ifreject = false;
         set(h.rejbut, 'BackGroundColor', h.opt.ICA.rejcol(2,:), ...
             'String', h.opt.ICA.rejs{2});
-    elseif ICAw(h.r).ICA.desc(h.comp).ifreject
+    elseif db(h.r).ICA.desc(h.comp).ifreject
         set(h.rejbut, 'BackGroundColor', h.opt.ICA.rejcol(3,:), ...
             'String', h.opt.ICA.rejs{3});
     else
@@ -502,11 +502,11 @@ if sum(strcmp('compinfo', refr)) > 0
     % ========================
     
     % notes
-    set(h.componotes, 'String', ICAw(h.r).ICA.desc(h.comp).notes);
+    set(h.componotes, 'String', db(h.r).ICA.desc(h.comp).notes);
     
     %sum of rejected components
-    if ~isempty(sum([ICAw(h.r).ICA.desc.reject]))
-        set(h.sumrej, 'String', num2str(sum([ICAw(h.r).ICA.desc.reject])));
+    if ~isempty(sum([db(h.r).ICA.desc.reject]))
+        set(h.sumrej, 'String', num2str(sum([db(h.r).ICA.desc.reject])));
     else
         set(h.sumrej, 'String','None');
     end
@@ -525,7 +525,7 @@ end
 
 if sum(strcmp('rank', refr)) > 0
     
-    rnk = ICAw(h.r).ICA.desc(h.comp).rank;
+    rnk = db(h.r).ICA.desc(h.comp).rank;
     valr = find(strcmp(rnk, h.opt.ICA.ranks));
     if ~isempty(valr) && valr > 0
         set(h.RatingDropDown, 'Value', valr);
@@ -740,7 +740,7 @@ if isempty(h.spct.startpoint)
         'Color', [0.68, 0.42, 0.12]);
     hold off
     
-    % retaining axis limits (should be updateICAw in
+    % retaining axis limits (should be updatedb in
     % a different way)
     set(h.freq, 'XLim', h.spct.XLim);
     set(h.freq, 'YLim', h.spct.YLim);
@@ -770,7 +770,7 @@ else
     % set it below the line?
     % children = get(h.ax, 'Children');
     
-    % retaining axis limits (should be updateICAw in
+    % retaining axis limits (should be updatedb in
     % a different way)
     set(h.freq, 'XLim', h.spct.XLim);
     set(h.freq, 'YLim', h.spct.YLim);
@@ -872,10 +872,10 @@ function pushbutton3_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 %     component panel
 % [ ] edit box (top?) to allow for quick navigation
 
-global ICAw
+global db
 h = guidata(hObject);
 prevcomp = h.comp;
-rejected=[ICAw(h.r).ICA.desc.reject];
+rejected=[db(h.r).ICA.desc.reject];
 pop_selectcomps2(h.EEG, 1:length(h.EEG.icawinv),...
     'main', h, 'rejects', rejected);
 
@@ -984,7 +984,7 @@ function compsubtype_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 h = guidata(hObject);
-global ICAw
+global db
 strval = get(hObject,'String');
 ICAw(h.r).ICA.desc(h.comp).subtype = strval{get(hObject,'Value')};
 
@@ -1008,7 +1008,7 @@ function componotes_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-global ICAw
+global db
 h = guidata(hObject);
 ICAw(h.r).ICA.desc(h.comp).notes =  get(hObject,'String');
 %        str2double(get(hObject,'String')) returns contents of componotes as a double
@@ -1047,7 +1047,7 @@ function RatingDropDown_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 % Hints: contents = cellstr(get(hObject,'String')) returns RatingDropDown contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from RatingDropDown
 
-global ICAw
+global db
 
 h = guidata(hObject);
 val = get(hObject, 'Value');
@@ -1094,20 +1094,20 @@ stri = stri + 1;
 set(hObject, 'String', h.opt.ICA.rejs{stri});
 set(hObject, 'BackGroundColor', h.opt.ICA.rejcol(stri, :));
 
-global ICAw
+global db
 
-% introduce changes to ICAw
+% introduce changes to db
 if stri == 1
-    ICAw(h.r).ICA.desc(h.comp).reject = false;
-    ICAw(h.r).ICA.desc(h.comp).ifreject = false;
+    db(h.r).ICA.desc(h.comp).reject = false;
+    db(h.r).ICA.desc(h.comp).ifreject = false;
 elseif stri == 2
-    ICAw(h.r).ICA.desc(h.comp).reject = true;
-    ICAw(h.r).ICA.desc(h.comp).ifreject = false;
+    db(h.r).ICA.desc(h.comp).reject = true;
+    db(h.r).ICA.desc(h.comp).ifreject = false;
 else
-    ICAw(h.r).ICA.desc(h.comp).reject = false;
-    ICAw(h.r).ICA.desc(h.comp).ifreject = true;
+    db(h.r).ICA.desc(h.comp).reject = false;
+    db(h.r).ICA.desc(h.comp).ifreject = true;
 end
-set(h.sumrej, 'String', num2str(sum([ICAw(h.r).ICA.desc.reject])))
+set(h.sumrej, 'String', num2str(sum([db(h.r).ICA.desc.reject])))
 
 
 % CHANGE below to a more modern version?
@@ -1138,14 +1138,14 @@ function eeg_changes_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 h = guidata(hObject);
-global ICAw
+global db
 allelecs = 1:size(h.EEG.data,1);
 goodelecs = allelecs;
 
-goodelecs(ICAw(h.r).chan.bad) = [];
+goodelecs(db(h.r).chan.bad) = [];
 
 if isfield(h.opt.plot, 'remall') && h.opt.plot.remall;
-    rejects = find([ICAw(h.r).ICA.desc.reject]);
+    rejects = find([db(h.r).ICA.desc.reject]);
 else
     rejects = h.comp;
 end
@@ -1231,7 +1231,7 @@ function compotype_panel_ButtonDownFcn(hObject, eventdata, handles) %#ok<INUSD,D
 % dont know if this iss the best way to manage radiobutton groups
 
 h = guidata(hObject);
-global ICAw
+global db
 
 % get selected
 vals = find(get([h.artif, h.brain, h.dontknow], 'Value'));
@@ -1240,19 +1240,19 @@ refresh_comp_explore(h, 'compinfo');
 
 
 % CONSIDER
-% updateICAw is obsolete when using global variables
+% updatedb is obsolete when using global variables
 % but may be considered if we switch back to local
 
-% --- Executes on button press in updateICAw.
+% --- Executes on button press in updatedb.
 % function updatedb_Callback(hObject, eventdata, handles)
-% % hObject    handle to updateICAw (see GCBO)
+% % hObject    handle to updatedb (see GCBO)
 % % eventdata  reserved - to be defined in a future version of MATLAB
 % % handles    structure with handles and user data (see GUIDATA)
 % % Update handles structure
 % 
 % h = guidata(hObject);
-% global ICAw
-% assignin('base', 'ICAw', ICAw);
+% global db
+% assignin('base', 'db', db);
 % time=gettime();
 % set(h.lastUpdate, 'String', ['Last update:' time]);
 
@@ -1272,7 +1272,7 @@ guidata(hObject, h);
 function compotype_panel_SelectionChangeFcn(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 h = guidata(hObject);
-global ICAw
+global db
 
 % get selected
 vals = find(cell2mat(get([h.artif, h.brain, h.dontknow], 'Value')));
@@ -1293,12 +1293,12 @@ function preview_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 h = guidata(hObject);
-global ICAw
+global db
 allelecs = 1:size(h.EEG.data,1);
 goodelecs = allelecs;
 
-goodelecs(ICAw(h.r).chan.bad) = [];
-rejects = find([ICAw(h.r).ICA.desc.reject]);
+goodelecs(db(h.r).chan.bad) = [];
+rejects = find([db(h.r).ICA.desc.reject]);
 
 if isempty(rejects);
     h.EEG2 = h.EEG;
@@ -1354,9 +1354,9 @@ elseif ishandle(h.headplotfig)
     cla(ax);
 end
 
-global ICAw
+global db
 allelecs = 1:size(h.EEG.data,1);
 goodelecs = allelecs;
-goodelecs(ICAw(h.r).chan.bad) = [];
+goodelecs(db(h.r).chan.bad) = [];
 
 headplot2(h.EEG.icawinv(:,h.comp), splinefile, 'meshfile', 'mheadnew.mat', 'elecs', goodelecs); 

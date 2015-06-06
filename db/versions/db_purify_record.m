@@ -1,4 +1,4 @@
-function rec = eegDb_purify_record(rec)
+function rec = db_purify_record(rec)
 
 % NOHELPINFO
 

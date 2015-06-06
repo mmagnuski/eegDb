@@ -1,15 +1,15 @@
-function ICAw = db_rem_marks(ICAw)
+function db = db_rem_marks(db)
 
 % NOHELPINFO
 
 not = {'color', 'name'};
 
-for r = 1:length(ICAw)
-    clr = fields(ICAw(r).userrem);
+for r = 1:length(db)
+    clr = fields(db(r).userrem);
     clr = setdiff(clr, not);
     for c = 1:length(clr)
-        if femp(ICAw(r).userrem, (clr{c}))
-            ICAw(r).userrem.(clr{c}) = [];
+        if femp(db(r).userrem, (clr{c}))
+            db(r).userrem.(clr{c}) = [];
         end
     end
 end
