@@ -44,7 +44,7 @@ for r = 1:length(db)
 end
 
 % now - removing old field:
-ICAw = rmfield(ICAw, fieldfrom);
+db = rmfield(db, fieldfrom);
 
 
 function dbto = merger_movefield(dbfrom, dbto, fld)

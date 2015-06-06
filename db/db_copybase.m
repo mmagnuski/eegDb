@@ -73,4 +73,4 @@ for f = 1:length(fld)
 end
 
 % sorting fields
-ICAw = db_sorter(ICAw);
+db = db_sorter(db);

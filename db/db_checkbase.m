@@ -1,11 +1,11 @@
-function [answer, ans_adr] = db_checkbase(ICAbase, EEG, varargin)
+function [answer, ans_adr] = db_checkbase(db, EEG, varargin)
 
 % Its a shitty function that noone really uses 
 % (unfortunatelly it is used in a few places).
 % Needs to be changed/rewritten to be useful.
 % One possibility - recursion instead of those dumb nested ifs
 %
-% [answer, ans_adr] = db_checkbase(ICAbase, EEG, varargin)
+% [answer, ans_adr] = db_checkbase(db, EEG, varargin)
 % Function used for checking whether given EEG structure is
 % represented in a database and to what degree.
 % It takes as arguments the database (structure) and the
@@ -61,7 +61,7 @@ if filename_mod
 end
 
 % chcecking fields
-fields = {ICAbase.filename};
+fields = {db.filename};
 samef = find(strcmp(EEG.filename ,fields));
 if ~silent
     disp('~~~~~~~~');
@@ -79,8 +79,8 @@ if ~isempty(samef)
     if fil && isfield(EEG, 'filter') && ~isempty(EEG.filter)
         % checking whether these files have same
         % filtering:
-        fltr = find(EEG.filter(1) == ICAbase(samef).filter(1) & ...
-            EEG.filter(2) == ICAbase(samef).filter(2));
+        fltr = find(EEG.filter(1) == db(samef).filter(1) & ...
+            EEG.filter(2) == db(samef).filter(2));
         
         % if filtering is the same
         if ~isempty(fltr)
@@ -93,7 +93,7 @@ if ~isempty(samef)
             if rst
                 % CHANGE - epoching or windowing is not checked now
                 % CHANGE - ADD epoch checks!
-                % wincheck = find(EEG.winlen == ICAbase(ans_adr{2}).winlen);
+                % wincheck = find(EEG.winlen == db(ans_adr{2}).winlen);
                 
                 if  ~ filename_mod
                     % if ~silent
@@ -107,7 +107,7 @@ if ~isempty(samef)
                     
                     % checking rejections:
                     for i = 1:length(ans_adr{3})
-                        rejcheck(i) = mean(EEG.removed == ICAbase(ans_adr{3}(i)).reject.all); %#ok<AGROW>
+                        rejcheck(i) = mean(EEG.removed == db(ans_adr{3}(i)).reject.all); %#ok<AGROW>
                         if rejcheck(i) == 1; samerej(i) = true; end
                     end
                     
@@ -148,14 +148,14 @@ if check_icaw && rst % rst can be omitted here
     icas_to_check = ans_adr{4};
     for i = 1:length(icas_to_check)
         % checking if icaweights are present
-        if ~isempty(ICAbase(icas_to_check(i)).ICA.icaweights)
+        if ~isempty(db(icas_to_check(i)).ICA.icaweights)
             if ~silent
                 disp('icaweights present');
             end
             answer(5) = true;
             if isfield(EEG.icaweights) && ~isempty(EEG.icaweights)
                 % checking if icaweights are the same
-                if isequal(ICAbase(icas_to_check(i)).ICA.icaweights,...
+                if isequal(db(icas_to_check(i)).ICA.icaweights,...
                         EEG.icaweights)
                     if ~silent
                         disp('icaweights are different...');

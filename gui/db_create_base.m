@@ -1,6 +1,6 @@
 function varargout = db_create_base(varargin)
 
-% db_CREATE_BASE - GUI for creating eegDb database
+% db_CREATE_BASE - GUI for creating db database
 % The same can be performed using specific calls
 % to functions like db_buildbase etc.
 % FIXHELPINFO
@@ -284,31 +284,31 @@ function EpochOpt_Callback(hObject, eventdata, h)
 
 h = guidata(hObject);
 
-% create a temporary eegDb base and pass it to 
-% db_gui_epoch
+% create a temporary db base and pass it to 
+% db_epoch_gui
 
 [strPth, flist] = get_path_and_files(h);
 
-eegDb_temp = struct('filepath', strPth, 'filename', flist);
+db_temp = struct('filepath', strPth, 'filename', flist);
 
-% here ADD some code to fill this temp eegDb struct
+% here ADD some code to fill this temp db struct
 % with epoch data present in 
-if femp(h, 'eegDb')
+if femp(h, 'db')
     % add epoching options
     opt = [];
-    if femp(h.eegDb(1), 'epoch')
-        opt.epoch = h.eegDb(1).epoch;
+    if femp(h.db(1), 'epoch')
+        opt.epoch = h.db(1).epoch;
     end
     
     % update if relevant
     if ~isempty(opt)
-        db_temp = db_copybase(eegDb, opt);
+        db_temp = db_copybase(db, opt);
     end
 end
 
-eegDb_temp = db_gui_epoch(eegDb_temp);
+db_temp = db_epoch_gui(db_temp);
 if isstruct(db_temp)
-    h.eegDb = db_temp;
+    h.db = db_temp;
     set(h.OK, 'Enable', 'on');
     guidata(h.figure1, h);
 end
@@ -318,7 +318,7 @@ function OK_Callback(hObject, ~, h)
 
 h = guidata(hObject);
 
-if femp(h, 'eegDb')
+if femp(h, 'db')
     % db = h.db;
     opt = [];
     if femp(h, 'PassFilt')
@@ -331,19 +331,19 @@ if femp(h, 'eegDb')
         opt.filter(2,:) = h.PassFilt;
     end
     
-    if femp(h.eegDb(1), 'epoch')
-        opt.epoch = h.eegDb(1).epoch;
+    if femp(h.db(1), 'epoch')
+        opt.epoch = h.db(1).epoch;
     end
     
     [strPth, flist] = get_path_and_files(h);
-    eegDb = db_buildbase(strPth, flist);
+    db = db_buildbase(strPth, flist);
     
     if ~isempty(opt)
-        eegDb = db_copybase(eegDb, opt);
+        db = db_copybase(db, opt);
     end
     
     % db = db_updatetonewformat(db);
-    h.output = eegDb;
+    h.output = db;
     guidata(hObject, h);
     uiresume(h.figure1);
 end

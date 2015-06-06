@@ -10,5 +10,5 @@ fld = fields(loaded);
 
 % ADD in future - search through fields
 % for db and other info about the data
-ICAw = loaded.(fld{1});
+db = loaded.(fld{1});
 

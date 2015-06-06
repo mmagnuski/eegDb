@@ -17,4 +17,4 @@ additf = setdiff(fieldnames(db), fldord);
 [~, ind] = intersect(fldord, fieldnames(db));
 fldord = fldord(sort(ind));
 flds = [fldord; additf];
-ICAw = orderfields(ICAw, flds);
+db = orderfields(db, flds);

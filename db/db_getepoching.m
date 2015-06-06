@@ -1,4 +1,4 @@
-function [epochstruct, epochtype, dtinf] = db_getepoching(eegDb)
+function [epochstruct, epochtype, dtinf] = db_getepoching(db)
 
 % FIXHELPINFO
 % `epochstruct` - structure with relevant fields describing the epoching
@@ -10,14 +10,14 @@ function [epochstruct, epochtype, dtinf] = db_getepoching(eegDb)
 epochstruct = struct();
 
 % check if epoching info is in epoch field
-[epochtype, dtinf] = db_whatepoch(eegDb);
+[epochtype, dtinf] = db_whatepoch(db);
 
 % give back structure of fields describing the epoching
 if epochtype > 0
     if dtinf
-        epochstruct = eegDb.datainfo.epoch;
+        epochstruct = db.datainfo.epoch;
     else
-        epochstruct = eegDb.epoch;
+        epochstruct = db.epoch;
     end
 
     % give default winlen if not defined

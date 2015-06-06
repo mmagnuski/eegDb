@@ -1,18 +1,18 @@
-function varargout = db_gui_epoch(varargin)
+function varargout = db_epoch_gui(varargin)
 
 % NOHELPINFO
-% DB_GUI_EPOCH
+% DB_EPOCH_GUI
 %
 % See also: GUIDE, GUIDATA, GUIh
 
-% Last Modified by GUIDE v2.5 05-Jun-2015 17:28:52
+% Last Modified by GUIDE v2.5 06-Jun-2015 17:45:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
     'gui_Singleton',  gui_Singleton, ...
-    'gui_OpeningFcn', @db_gui_epoch_OpeningFcn, ...
-    'gui_OutputFcn',  @db_gui_epoch_OutputFcn, ...
+    'gui_OpeningFcn', @db_epoch_gui_OpeningFcn, ...
+    'gui_OutputFcn',  @db_epoch_gui_OutputFcn, ...
     'gui_LayoutFcn',  [] , ...
     'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -39,11 +39,11 @@ end
 % [ ] usage of segment option...
 % [ ] progress bar 'scanning events' ?
 
-% --- just before db_gui_epoch is made visible.
-function db_gui_epoch_OpeningFcn(hObject, eventdata, h, varargin) %#ok<*INUSL>
-% varargin - command line arguments to db_gui_epoch (see VARARGIN)
+% --- just before db_epoch_gui is made visible.
+function db_epoch_gui_OpeningFcn(hObject, eventdata, h, varargin) %#ok<*INUSL>
+% varargin - command line arguments to db_epoch_gui (see VARARGIN)
 
-% Choose default command line output for db_gui_epoch
+% Choose default command line output for db_epoch_gui
 h.output = hObject;
 
 % set which h belong to which parts
@@ -126,12 +126,12 @@ guidata(hObject, h);
 % get active settings from db:
 prev_settings(h, r_check);
 
-% UIWAIT makes db_gui_epoch wait for user response (see UIRESUME)
+% UIWAIT makes db_epoch_gui wait for user response (see UIRESUME)
 uiwait(h.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = db_gui_epoch_OutputFcn(hObject, eventdata, h)
+function varargout = db_epoch_gui_OutputFcn(hObject, eventdata, h)
 
 % h    structure with handles and user data (see GUIDATA)
 

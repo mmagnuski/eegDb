@@ -1,6 +1,6 @@
 function db = db_updatetonewformat(db)
 
-% ICAW_UPDATETONEWFORMAT updates a given db database to
+% DB_UPDATETONEWFORMAT updates a given db database to
 % most current format.
 %
 % db = db_updatetonewformat(db)
@@ -27,7 +27,7 @@ flds = {'icaweights', 'icasphere', 'icawinv', 'icachansind',...
     'ica_remove', 'ica_ifremove', 'ICA_desc'};
 asflds = {'icaweights', 'icasphere', 'icawinv', 'icachansind',...
     'reject', 'maybe', 'desc'};
-ICAw = db_pushfields(ICAw, flds, 'ICA', asflds);
+db = db_pushfields(db, flds, 'ICA', asflds);
 
 % check ICA.remove and ICA.ifremove
 fldfrm = {'remove', 'ifremove'};
@@ -53,7 +53,7 @@ end
 % ---------------------------
 flds = {'badchan', 'badchanlab'};
 asflds = {'bad', 'badlab'};
-ICAw = db_pushfields(ICAw, flds, 'chan', asflds);
+db = db_pushfields(db, flds, 'chan', asflds);
 
 % ensure field:
 for r = 1:length(db)
@@ -66,7 +66,7 @@ end
 % ---------------------------
 flds = {'prerej', 'postrej', 'removed'};
 asflds = {'pre', 'post', 'all'};
-ICAw = db_pushfields(ICAw, flds, 'reject', asflds);
+db = db_pushfields(db, flds, 'reject', asflds);
 
 % ensure fields:
 for r = 1:length(db)
@@ -81,7 +81,7 @@ end
 
 % REFIELD usecleanline to cleanline
 % ---------------------------------
-ICAw = db_refield(ICAw, 'usecleanline', 'cleanline');
+db = db_refield(db, 'usecleanline', 'cleanline');
 
 
 
@@ -135,7 +135,7 @@ for r = 1:length(db)
 end
 
 % remove fields
-ICAw = rmfield(ICAw, flds(hasFields));
+db = rmfield(db, flds(hasFields));
 
 end
 
@@ -169,7 +169,7 @@ for r = 1:length(db)
 end
 
 % remove fields
-ICAw = rmfield(ICAw, flds(hasFields));
+db = rmfield(db, flds(hasFields));
 
 end
 
@@ -237,7 +237,7 @@ if hasFields(1)
 end
 
 % remove fields
-ICAw = rmfield(ICAw, flds(hasFields));
+db = rmfield(db, flds(hasFields));
 
 
 % REMOVE if present and none is nonempty:
@@ -262,4 +262,4 @@ end
 
 % SORT fileds as the last step
 % ----------------------------
-ICAw = db_sorter(ICAw);
+db = db_sorter(db);

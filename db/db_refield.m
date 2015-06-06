@@ -27,4 +27,4 @@ for rec = 1:length(db)
 end
 
 % now - removing old field:
-ICAw = rmfield(ICAw, fieldfrom);
+db = rmfield(db, fieldfrom);
