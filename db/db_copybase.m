@@ -63,9 +63,9 @@ for f = 1:length(fld)
             db(r).(fld{f}) = opt.(fld{f});
         else
             % look for the same filename in other database
-            [~, ans_adr] = db_checkbase(db2, db(r), 'silent');
-            if ~isempty(ans_adr) && length(ans_adr{1}) == 1
-                db(r).(fld{f}) = db2(ans_adr{1}).(fld{f});
+            ans_adr = db_find(db2, 'filename', db.filename);
+            if ~isempty(ans_adr) && length(ans_adr) == 1
+                db(r).(fld{f}) = db2(ans_adr).(fld{f});
             end
         end
             

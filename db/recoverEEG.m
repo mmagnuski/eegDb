@@ -162,9 +162,8 @@ end
 if loaded
     EEG = evalin('base', 'EEG;'); %#ok<*UNRCH>
     CURRENTSET = evalin('base', 'length(ALLEEG)+1');
-    [answer, ans_adr] = db_checkbase(db,...
-        EEG, 'filename', 'silent');
-    if ~answer(1)
+    ans_adr = db_find(db, 'filename', EEG.filename);
+    if isempty(ans_adr)
         disp(['The loaded file is not present in ',...
             'the database. Could not reconstruct.']);
         return
@@ -172,8 +171,7 @@ if loaded
     
     % CHANGE:
     % check below - if more than one found in database
-    r = ans_adr{1}(1);
-    
+    r = ans_adr(1);
 end
 
 %% checking path:
