@@ -156,7 +156,7 @@ handles.recov = ~cellfun(@(x) isempty(x.pre),...
 % KEYPRESS
 % --------
 % set window keypress behavior
-set(handles.figure1, 'WindowKeyPressFcn', @winrej_buttonpress);
+set(handles.figure1, 'WindowKeyPressFcn', @db_gui_buttonpress);
 
 % Update handles structure
 guidata(hObject, handles);
@@ -166,7 +166,7 @@ guidata(hObject, handles);
 handles = test_profile(handles, 'load');
 
 % Refresh GUI:
-winreject_refresh(handles);
+db_gui_refresh(handles);
 
 % UIWAIT makes db_gui wait for user response (see UIRESUME)
 uiwait(handles.figure1);
@@ -254,7 +254,7 @@ else
         set(handles.addit_text, 'String', 'EEG recovered');
         
         % refresh gui (CHECK - do we need to?)
-        winreject_refresh(handles);
+        db_gui_refresh(handles);
     end
     
     % disable plotting
@@ -334,7 +334,7 @@ else
     set(hObject, 'Enable', 'on');
     
     % Refresh GUI:
-    winreject_refresh(handles);
+    db_gui_refresh(handles);
 end
 
 
@@ -395,7 +395,7 @@ if ishandle(f_cha)
     guidata(hObject, handles);
     
     % Refresh GUI:
-    winreject_refresh(handles);
+    db_gui_refresh(handles);
 end
 
 
@@ -416,7 +416,7 @@ if handles.r < length(handles.db)
     guidata(hObject, handles);
     
     % refresh
-    winreject_refresh(handles);
+    db_gui_refresh(handles);
 end
 
 
@@ -430,16 +430,16 @@ if handles.r > 1
     guidata(hObject, handles);
     
     % refresh
-    winreject_refresh(handles);
+    db_gui_refresh(handles);
 end
 
 %% [~] SLIDER
 % --- Executes on slider movement.
 function slider_Callback(hObject, eventdata, handles)
 
-% CHANGE - winreject_refresh should be selective - what to
+% CHANGE - db_gui_refresh should be selective - what to
 %          refresh
-winreject_refresh(handles);
+db_gui_refresh(handles);
 
 % --- Executes during object creation, after setting all properties.
 function slider_CreateFcn(hObject, eventdata, handles)
@@ -531,7 +531,7 @@ for c = 1:length(cansel)
     end
     
     str = get(handles.addit_text, 'String');
-    str{2,1} = ['registry ', num2str(c), ' of ',...
+    str{2,1} = ['record ', num2str(c), ' of ',...
         num2str(length(cansel))];
     set(handles.addit_text, 'String', str);
     drawnow;
@@ -649,7 +649,7 @@ if remopt && isequal(sel, length(seltypes))
     guidata(hObject, handles);
     
     % refresh
-    winreject_refresh(handles);
+    db_gui_refresh(handles);
     return
 end
 
@@ -676,7 +676,7 @@ if ~isempty(seltypes)
     guidata(hObject, handles);
     
     % refresh
-    winreject_refresh(handles);
+    db_gui_refresh(handles);
 end
 
 
@@ -786,7 +786,7 @@ drawnow
 guidata(hObject, handles);
 
 % refresh GUI
-winreject_refresh(handles);
+db_gui_refresh(handles);
 
 % --------------------------------------------------------------------
 function vers_Callback(hObject, eventdata, handles)
@@ -814,7 +814,7 @@ if ~isempty(vn)
     % update handles
     guidata(hObject, handles);
     % refresh interface
-    winreject_refresh(handles);
+    db_gui_refresh(handles);
 end
 
 % --------------------------------------------------------------------
@@ -843,7 +843,7 @@ if ~strcmp(strv, curr)
     
     % refresh etc.
     guidata(hObject, handles);
-    winreject_refresh(handles);
+    db_gui_refresh(handles);
 end
 %
 
@@ -1192,7 +1192,7 @@ h.db = db_clearica(h.db, h.r);
 guidata(h.figure1, h);
 
 % refresh GUI:
-winreject_refresh(h);
+db_gui_refresh(h);
 
 function plot_opt_fun(h)
 

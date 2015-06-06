@@ -1,7 +1,7 @@
-function winreject_refresh(handles)
+function db_gui_refresh(handles)
 
 % FIXHELPTINFO
-% --- Refreshes winreject GUI 
+% --- Refreshes eegDb GUI
 
 % CHANGE refreshing info textbox - it should be a separate and
 %        more universal function
@@ -9,8 +9,8 @@ function winreject_refresh(handles)
 
 
 % --- title_text ---
-set(handles.title_text, 'String', {'db data cleaner'; ...
-    ['record number: ', num2str(handles.r)]});
+set(handles.title_text, 'String', ['record number: ', ...
+    num2str(handles.r)]);
 
 
 % =================

@@ -1,4 +1,4 @@
-function winrej_buttonpress(h, ev)
+function db_gui_buttonpress(h, ev)
 
 % HOW to check if textbox is selected?
 % d = guidata(h);
