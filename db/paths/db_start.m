@@ -10,12 +10,15 @@ function db_start(PTH, varargin)
 % [ ] add some more options?
 
 % TEMPORARY argument checks:
-innm = 'db ';
+innm = {'ICAw', 'db '};
 if nargin > 1
     arg = strcmp(varargin, 'inname');
     if sum(arg) > 0
         arg = find(arg) + 1;
         innm = varargin{arg};
+        if ~iscell(innm)
+            innm = {innm};
+        end
     end
 end
 
@@ -36,9 +39,11 @@ all_fls = {all_fls.name};
 
 % take only db databases:
 disp('looking for current database...');
-i = regexp(all_fls, innm, 'once');
-em = ~cellfun(@isempty, i);
-fls= all_fls(em);
+for i = 1:length(innm)
+    reg = regexp(all_fls, innm{i}, 'once');
+    em(:,i) = ~cellfun(@isempty, reg);
+end
+fls = all_fls(sum(em, 2) > 0);
 
 %% decipher dates and choose the current database
 if length(fls) > 1
@@ -79,7 +84,7 @@ disp('loading the database...');
 ld = load(fullfile(PTH, winner));
 clear winner
 flds = fields(ld);
-ICAw = ld.(flds{1});
+db = ld.(flds{1});
 clear flds ld
 assignin('base', 'db', db);
 disp('done.');
