@@ -4,7 +4,7 @@ function [db, EEG] = db_rejTMP(db, r, EEG, TMPREJ)
 
 % taking care of rejections
 % in and out from db/EEG
-ICAw_present = true;
+db_present = true;
 
 % check for segments
 % THIS is kept but segmenting is not officially supported

@@ -1,6 +1,6 @@
 function db = db_cleantopo(db)
 
-% ICAW_CLEANTOPO removes cached topoplot images
+% DB_CLEANTOPO removes cached topoplot images
 % from db base thus significantly reducing size
 % of the database.
 %

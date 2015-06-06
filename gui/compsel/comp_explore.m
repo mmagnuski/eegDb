@@ -882,7 +882,7 @@ pop_selectcomps2(h.EEG, 1:length(h.EEG.icawinv),...
 h = guidata(hObject);
 nowcomp = h.comp;
 if isfield(h, 'ICA_notes')
-ICAw(h.r).ICA_notes = h.ICA_notes;
+db(h.r).ICA_notes = h.ICA_notes;
 end
 
 if ~isequal(prevcomp, nowcomp)
@@ -986,7 +986,7 @@ function compsubtype_Callback(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
 h = guidata(hObject);
 global db
 strval = get(hObject,'String');
-ICAw(h.r).ICA.desc(h.comp).subtype = strval{get(hObject,'Value')};
+db(h.r).ICA.desc(h.comp).subtype = strval{get(hObject,'Value')};
 
 
 % --- Executes during object creation, after setting all properties.
@@ -1010,7 +1010,7 @@ function componotes_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 
 global db
 h = guidata(hObject);
-ICAw(h.r).ICA.desc(h.comp).notes =  get(hObject,'String');
+db(h.r).ICA.desc(h.comp).notes =  get(hObject,'String');
 %        str2double(get(hObject,'String')) returns contents of componotes as a double
 
 
@@ -1053,7 +1053,7 @@ h = guidata(hObject);
 val = get(hObject, 'Value');
 stropt = get(hObject, 'String');
 curropt = stropt{val};
-ICAw(h.r).ICA.desc(h.comp).rank = curropt;
+db(h.r).ICA.desc(h.comp).rank = curropt;
 % now refresh GUI:
 refresh_comp_explore(h, 'rank');
 
@@ -1235,7 +1235,7 @@ global db
 
 % get selected
 vals = find(get([h.artif, h.brain, h.dontknow], 'Value'));
-ICAw(h.r).ICA.desc(h.comp).type = h.opt.ICA.types{vals}; %#ok<FNDSB>
+db(h.r).ICA.desc(h.comp).type = h.opt.ICA.types{vals}; %#ok<FNDSB>
 refresh_comp_explore(h, 'compinfo');
 
 
@@ -1276,7 +1276,7 @@ global db
 
 % get selected
 vals = find(cell2mat(get([h.artif, h.brain, h.dontknow], 'Value')));
-ICAw(h.r).ICA.desc(h.comp).type = h.opt.ICA.types{vals}; %#ok<FNDSB>
+db(h.r).ICA.desc(h.comp).type = h.opt.ICA.types{vals}; %#ok<FNDSB>
 refresh_comp_explore(h, 'compinfo');
 
 

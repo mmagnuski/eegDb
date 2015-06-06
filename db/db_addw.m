@@ -3,7 +3,7 @@ function db = db_addw(db, r, EEG)
 % DB_ADDW adds ICA weights and other ICA-related variables from
 % EEG to given entry of db database.
 %
-% db = ICAW_ADDW(db, r, EEG)
+% db = DB_ADDW(db, r, EEG)
 % 
 % FIXHELPINFO - describe arguments
 

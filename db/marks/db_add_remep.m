@@ -27,4 +27,4 @@ end
 % looking for epoch nums in eps:
 addrem = eps(ep_rem);
 % updating db removed filed:
-ICAw(r).reject.all = sort([ICAw(r).reject.all, addrem]);
+db(r).reject.all = sort([db(r).reject.all, addrem]);

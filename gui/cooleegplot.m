@@ -128,7 +128,7 @@ badplot = 'grey'; badchan = [];
 lsmo = 'on';
 wlen = 4;
 
-ICAw_present = false;
+db_present = false;
 
 % CHANGE so that other rejection types can be applied
 %        may be of use later - to have a connection manual --> reject for example

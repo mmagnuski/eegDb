@@ -4,7 +4,7 @@ function EEG = db_rejdb2EEG(db, r, EEG, prerej)
 
 % taking care of rejections
 % in and out from db/EEG
-ICAw_present = true;
+db_present = true;
 
 
 % check for segments
