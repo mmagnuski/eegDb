@@ -33,7 +33,7 @@ if ~icapres
 end
 
 % check if current EEG is recovered:
-isreco = winreject_isrecovered(h);
+isreco = db_gui_isrecovered(h);
 
 % CHANGE - this should be a separate func:
 % if not recovered - recover
