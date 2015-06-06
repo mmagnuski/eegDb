@@ -1,12 +1,12 @@
-function EEG = recoverEEG(ICAw, r, varargin)
+function EEG = recoverEEG(db, r, varargin)
 
 % RECOVEREEG recovers a file from raw data
-% according to ICAw database 
+% according to db database 
 %
-% EEG = RECOVEREEG(ICAw, r);
+% EEG = RECOVEREEG(db, r);
 %
-% ICAw - the ICAw database
-% r    - ICAw's record number to recover
+% db - the db database
+% r    - db's record number to recover
 % EEG  - eeglab's EEG structure
 % 
 % RECOVEREEG() performs all modifications (filtering,
@@ -40,9 +40,9 @@ function EEG = recoverEEG(ICAw, r, varargin)
 % examples
 % 
 % to get back EEG of the second file in the database:
-% >> EEG = recoverEEG(ICAw, 2);
+% >> EEG = recoverEEG(db, 2);
 % 
-% see also: ICAw_buildbase, winreject
+% see also: db_buildbase, winreject
 
 % =================
 % info for hackers:
@@ -54,7 +54,7 @@ function EEG = recoverEEG(ICAw, r, varargin)
 %     for empty fields 'pnts' (isempty([ALLEEG.pnts]))
 % --> files should have info whether they were fil-
 %     tered (in most cases - they have)
-%     ICAw(r).datainfo.filtered !
+%     db(r).datainfo.filtered !
 % --> undocummented field postfilter allows for
 %     filtering the data as the last step of re-
 %     covery.
@@ -66,7 +66,7 @@ function EEG = recoverEEG(ICAw, r, varargin)
 % 2014.03.25 --> moved interpolation before epoching
 %                added postfilter between interpolation
 %                and epoching
-% 2014.06.22 --> changed path checking loop to ICAw_path 
+% 2014.06.22 --> changed path checking loop to db_path 
 %                function call
 
 % TODOs:
@@ -144,13 +144,13 @@ end
 
 %% initial checks:
 % if only one registry given:
-if length(ICAw) == 1
+if length(db) == 1
     r = 1;
 end
 
 % is segment given:
-if isfield(ICAw(r).epoch, 'segment') && ...
-        ~isempty(ICAw(r).epoch.segment) && isnumeric(ICAw(r).epoch.segment)
+if isfield(db(r).epoch, 'segment') && ...
+        ~isempty(db(r).epoch.segment) && isnumeric(db(r).epoch.segment)
     segment = true;
 end
 
@@ -158,11 +158,11 @@ end
 % CONSIDER moving checks for EEG presence to a separate function
 % CONSIDER - loaded does not seem to be used much now...
 % if EEG is loaded: look for it in the
-% ICAw database:
+% db database:
 if loaded
     EEG = evalin('base', 'EEG;'); %#ok<*UNRCH>
     CURRENTSET = evalin('base', 'length(ALLEEG)+1');
-    [answer, ans_adr] = ICAw_checkbase(ICAw,...
+    [answer, ans_adr] = db_checkbase(db,...
         EEG, 'filename', 'silent');
     if ~answer(1)
         disp(['The loaded file is not present in ',...
@@ -182,7 +182,7 @@ end
 %     % create possible pre-paths and take the path
 %     % as stated in the database
 %     checkpre = {'D:\', '\\Swps-01143\e\'};
-%     path = ICAw(r).filepath;
+%     path = db(r).filepath;
 %
 %     % look for 'Dropbox' in the path:
 %     postpath = [];
@@ -207,29 +207,29 @@ end
 % ====================================
 % if user chooses to override filepath
 if overr_dir
-    ICAw(r).filepath = path;
+    db(r).filepath = path;
 end
 
 % ================================================
 % if multiple paths given, check which one applies
-if iscell(ICAw(r).filepath)
-%     if length(ICAw(r).filepath) > 1
+if iscell(db(r).filepath)
+%     if length(db(r).filepath) > 1
 %         
 %         % loop through possible paths until you find
 %         % the correct one (one that exists - that is)
-%         for p = 1:length(ICAw(r).filepath)
-%             if isdir(ICAw(r).filepath{p})
-%                 ICAw(r).filepath = ICAw(r).filepath{p};
+%         for p = 1:length(db(r).filepath)
+%             if isdir(db(r).filepath{p})
+%                 db(r).filepath = db(r).filepath{p};
 %                 break
 %             end
 %         end
 %         clear p
 %     else
-%         ICAw(r).filepath = ICAw(r).filepath{1};
+%         db(r).filepath = db(r).filepath{1};
 %     end
-    pth = ICAw_path(ICAw(r).filepath);
+    pth = db_path(db(r).filepath);
 else
-    pth = ICAw(r).filepath;
+    pth = db(r).filepath;
 end
 
 
@@ -284,21 +284,21 @@ end
 %% recover file:
 if ~loaded
     % CHANGE if there are problems to try-catch
-    EEG = eegDb_fastread(pth, ICAw(r).filename);
+    EEG = db_fastread(pth, db(r).filename);
     
-    % EEG = pop_loadset('filename', ICAw(r).filename, ...
+    % EEG = pop_loadset('filename', db(r).filename, ...
     %     'filepath', pth);
     
     % =====================
     % checking prefunctions
-    if isfield(ICAw, 'prefun') && ~isempty(ICAw(r).prefun)
-        for pr = 1:size(ICAw(r).prefun,1)
-            if ~ischar(ICAw(r).prefun{pr,1}) && isempty(ICAw(r).prefun{pr,2})
-                EEG = feval(ICAw(r).prefun{pr,1},EEG);
-            elseif ~ischar(ICAw(r).prefun{pr,1})
-                EEG = feval(ICAw(r).prefun{pr,1}, EEG, ICAw(r).prefun{pr,2}{:});
+    if isfield(db, 'prefun') && ~isempty(db(r).prefun)
+        for pr = 1:size(db(r).prefun,1)
+            if ~ischar(db(r).prefun{pr,1}) && isempty(db(r).prefun{pr,2})
+                EEG = feval(db(r).prefun{pr,1},EEG);
+            elseif ~ischar(db(r).prefun{pr,1})
+                EEG = feval(db(r).prefun{pr,1}, EEG, db(r).prefun{pr,2}{:});
             else
-                EEG = eval(ICAw(r).prefun{pr,1});
+                EEG = eval(db(r).prefun{pr,1});
             end
         end
     end
@@ -307,11 +307,11 @@ if ~loaded
     % checking filtering
     if ~nofilter
         % optional filtering:
-        if isfield(ICAw(r), 'filter') && ...
-                ~isempty(ICAw(r).filter)
+        if isfield(db(r), 'filter') && ...
+                ~isempty(db(r).filter)
             
             % setting up filter:
-            filt = ICAw(r).filter;
+            filt = db(r).filter;
             
             % addfilt is no longer supported
             % its better to create another version
@@ -319,7 +319,7 @@ if ~loaded
             %
             %             if ~isempty(addfilt)
             %                 if ~(addfilt(1) == 0)
-            %                     filt(1) = max(ICAw(r).filter(1),...
+            %                     filt(1) = max(db(r).filter(1),...
             %                         addfilt(1));
             %                 end
             %
@@ -337,9 +337,9 @@ if ~loaded
             
             % ===============
             % notch filtering
-            % add notch filering if ICAw(r).filter has
+            % add notch filering if db(r).filter has
             % two rows...
-            if size(ICAw(r).filter, 1) == 2
+            if size(db(r).filter, 1) == 2
                 EEG = pop_eegfiltnew(EEG, filt(2,1), filt(2,2), [], 1, [], 0);
             end
             
@@ -356,11 +356,11 @@ if ~loaded
     % ==============
     % good channels:
     allchan = 1:size(EEG.data,1);
-    allchan(ICAw(r).chan.bad) = [];
+    allchan(db(r).chan.bad) = [];
     
     % ============================
     % cleanline for good channels:
-    if cleanl && ICAw(r).usecleanline
+    if cleanl && db(r).usecleanline
         EEG = pop_cleanline(EEG, 'bandwidth', 2, 'chanlist', allchan,...
             'computepower', 1, 'linefreqs', [50 100] , 'normSpectrum', 0,...
             'p', 0.01, 'pad', 2, 'plotfigures', 0, 'scanforlines', 1,...
@@ -371,28 +371,28 @@ end
 
 
 %% adding ICA info
-if ~noICA && femp(ICAw(r), 'ICA') && ...
-    femp(ICAw(r).ICA, 'icaweights')
+if ~noICA && femp(db(r), 'ICA') && ...
+    femp(db(r).ICA, 'icaweights')
     
     % =====================
     % add weights and stuff:
-    EEG.icaweights = ICAw(r).ICA.icaweights;
-    EEG.icasphere = ICAw(r).ICA.icasphere;
-    EEG.icawinv = ICAw(r).ICA.icawinv;
-    EEG.icachansind = ICAw(r).ICA.icachansind;
+    EEG.icaweights = db(r).ICA.icaweights;
+    EEG.icasphere = db(r).ICA.icasphere;
+    EEG.icawinv = db(r).ICA.icawinv;
+    EEG.icachansind = db(r).ICA.icachansind;
     
     % add dipfit info:
-    fld = ICAw_checkfields(ICAw, r, {'dipfit'});
+    fld = db_checkfields(db, r, {'dipfit'});
     if fld.fnonempt(1)
-        EEG.dipfit = ICAw(r).dipfit;
+        EEG.dipfit = db(r).dipfit;
     end
     
     % =======================
     % removing bad components:
-    if femp(ICAw(r).ICA, 'reject') && ...
+    if femp(db(r).ICA, 'reject') && ...
             ~ICAnorem
         % removing comps:
-        EEG = pop_subcomp( EEG, ICAw(r)...
+        EEG = pop_subcomp( EEG, db(r)...
             .ICA.reject, 0);
     end
     
@@ -409,7 +409,7 @@ end
 
 %% interpolating bad channels
 if interp
-    EEG = eeg_interp2(EEG, ICAw(r).chan.bad, 'spherical');
+    EEG = eeg_interp2(EEG, db(r).chan.bad, 'spherical');
     if ~isempty(EEG.icaweights)
         
         % add weights etc. after interpolation
@@ -431,16 +431,16 @@ if interp
 end
 
 %% postfilter:
-if femp(ICAw(r), 'postfilter')
+if femp(db(r), 'postfilter')
     % filtering
     test_pop_eegfiltnew();
-    EEG = pop_eegfiltnew(EEG, ICAw(r).postfilter(1,1),...
-        ICAw(r).postfilter(1,2));
+    EEG = pop_eegfiltnew(EEG, db(r).postfilter(1,1),...
+        db(r).postfilter(1,2));
 end
 
 %% epoching
-if femp(ICAw(r), 'epoch')
-    if femp(ICAw(r).epoch, 'locked') && ~ICAw(r).epoch.locked
+if femp(db(r), 'epoch')
+    if femp(db(r).epoch, 'locked') && ~db(r).epoch.locked
         
         % ==============
         % onesec options
@@ -452,13 +452,13 @@ if femp(ICAw(r), 'epoch')
         
         % checking fields for onesecepoch
         for f = 1:length(flds)
-            if femp(ICAw(r).epoch, flds{f})
-                options.(flds{f}) = ICAw(r).epoch.(flds{f});
+            if femp(db(r).epoch, flds{f})
+                options.(flds{f}) = db(r).epoch.(flds{f});
             end
         end
         
         % if prerej is present then no need to use distance
-        if femp(ICAw(r).reject, 'pre')
+        if femp(db(r).reject, 'pre')
             options.distance = [];
         end
         
@@ -467,12 +467,12 @@ if femp(ICAw(r), 'epoch')
         EEG = onesecepoch(options);
         clear options
         
-    elseif ~isempty(ICAw(r).epoch.events) && ...
-            ~isempty(ICAw(r).epoch.limits)
+    elseif ~isempty(db(r).epoch.events) && ...
+            ~isempty(db(r).epoch.limits)
         
         % ==================
         % classical epoching
-        epoc = ICAw(r).epoch.events;
+        epoc = db(r).epoch.events;
         
         % checking for code generator of epochs
         % ADD - function handle for epoching?
@@ -484,12 +484,12 @@ if femp(ICAw(r), 'epoch')
             epoc = eval(epoc(cidlen+1:end));
         end
         
-        EEG = eegDb_fastepoch(EEG, epoc, ICAw(r).epoch.limits);
+        EEG = db_fastepoch(EEG, epoc, db(r).epoch.limits);
         
         % =======================
         % checking for segmenting
         if segment && ~nosegment
-            EEG = segmentEEG(EEG, ICAw(r).epoch.segment);
+            EEG = segmentEEG(EEG, db(r).epoch.segment);
         end
     end
 end
@@ -499,7 +499,7 @@ end
 % [ ] instead of numep this all can be done in a smarter way
 %                1) generally - onesec can add numep too
 %                2) numep can be inferred from length of rejections
-%                   in ICAw(r)!
+%                   in db(r)!
 %                3) ...
 % [ ] in the current version only onesecepoching is checked
 %     for while in future releases we want to include also
@@ -518,30 +518,30 @@ end
 EEG.etc.orig_numep = size(EEG.data, 3);
 
 % if onesecepoch was perfromed add onesec info
-if femp(ICAw(r).epoch, 'locked') && ~ICAw(r).epoch.locked
+if femp(db(r).epoch, 'locked') && ~db(r).epoch.locked
     
     % either prerej is nonempty  % or what?
-    if femp(ICAw(r).reject, 'pre')
+    if femp(db(r).reject, 'pre')
         % there is some info about prerej,
         % we correct orig_numep
-        EEG.etc.orig_numep = EEG.etc.orig_numep - length(ICAw(r).reject.pre);
+        EEG.etc.orig_numep = EEG.etc.orig_numep - length(db(r).reject.pre);
     end
 end
 
 %% removing bad epochs
-if ~prerej && ~isempty(ICAw(r).reject.all)
+if ~prerej && ~isempty(db(r).reject.all)
     if segment
-        EEG = eeg_rmepoch(EEG, ICAw(r).reject.all(:)');
+        EEG = eeg_rmepoch(EEG, db(r).reject.all(:)');
         
     else
-        EEG = pop_selectevent( EEG, 'epoch', ICAw(r).reject.all(:)' ,...
+        EEG = pop_selectevent( EEG, 'epoch', db(r).reject.all(:)' ,...
             'deleteevents','off','deleteepochs','on','invertepochs','on');
     end
-elseif ~isempty(ICAw(r).reject.pre)
+elseif ~isempty(db(r).reject.pre)
     if segment
-        EEG = eeg_rmepoch(EEG, ICAw(r).reject.pre(:)');
+        EEG = eeg_rmepoch(EEG, db(r).reject.pre(:)');
     else
-        EEG = pop_selectevent( EEG, 'epoch', ICAw(r).reject.pre(:)' ,...
+        EEG = pop_selectevent( EEG, 'epoch', db(r).reject.pre(:)' ,...
             'deleteevents','off','deleteepochs','on','invertepochs','on');
     end
 end
@@ -550,37 +550,37 @@ end
 %% highlight rejections
 % highlight automatical rejections (and user
 % rejections if present)
-% EEG = ICAw_rejICAw2EEG(ICAw, r, EEG, prerej);
+% EEG = db_rejdb2EEG(db, r, EEG, prerej);
 % CHANGE, CONSIDER:
-% sometimes ICAw_getrej gives empty rejection
+% sometimes db_getrej gives empty rejection
 % type for a given registry - should this be
 % allowed, should it be corrected for if
 % there are filled rejectons?
-EEG.reject.ICAw = ICAw_getrej(ICAw, r);
+EEG.reject.db = db_getrej(db, r);
 
 % CONSIDER:
 % for now we assume correction, but should
-% be rather done in ICAw_getrej or something...
+% be rather done in db_getrej or something...
 
-% ln = cellfun(@length, EEG.reject.ICAw.value);
+% ln = cellfun(@length, EEG.reject.db.value);
 % maxlen = max(ln);
 
 maxlen = EEG.etc.orig_numep;
 
-if ~(prerej || isempty(ICAw(r).reject.all))
+if ~(prerej || isempty(db(r).reject.all))
     % we have to correct for removed epochs:
-    for f = 1:length(EEG.reject.ICAw.value)
-        if isempty(EEG.reject.ICAw.value{f})
-            EEG.reject.ICAw.value{f} = zeros(maxlen,1);
+    for f = 1:length(EEG.reject.db.value)
+        if isempty(EEG.reject.db.value{f})
+            EEG.reject.db.value{f} = zeros(maxlen,1);
         end
         
         % remove postrej
-        EEG.reject.ICAw.value{f}(ICAw(r).reject.post) = [];
+        EEG.reject.db.value{f}(db(r).reject.post) = [];
     end
 end
 
 % stamp the EEG with recovery version info
-EEG = ICAw_stampEEG(ICAw, r, EEG);
+EEG = db_stampEEG(db, r, EEG);
 
 % just to be on the safe side: checkset
 EEG = eeg_checkset(EEG);

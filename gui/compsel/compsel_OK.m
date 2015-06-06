@@ -10,14 +10,14 @@ function compsel_OK(figh)
 
 info = getappdata(figh, 'info');
 
-if info.eegDb_present && info.otherfigh && femp(info, 'eegDb_gui')
+if info.db_present && info.otherfigh && femp(info, 'db_gui')
 
 	% get r for syncing
 	r = info.rsync;
 
 	% currently winrej uses h, not appdata ( :( )
-	h = guidata(info.eegDb_gui);
-	eegDb = h.ICAw;
+	h = guidata(info.db_gui);
+	eegDb = h.db;
 
 	% components marked as removed
 	st2fld = {'reject', 'select', 'maybe'};
@@ -31,8 +31,8 @@ if info.eegDb_present && info.otherfigh && femp(info, 'eegDb_gui')
 	% eegDb(r).ICA.topo = getappdata(figh, 'topocache');
 
 	% update h
-	h.ICAw = eegDb;
-	guidata(info.eegDb_gui, h);
+	h.db = eegDb;
+	guidata(info.db_gui, h);
 
 	% close fiugre if still alive
 	close(figh);

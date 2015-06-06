@@ -20,7 +20,7 @@ function linkfun_comp_prop(hfig, src, cmp)
 info = getappdata(hfig, 'info');
 
 % if eegDb - check mapping
-if info.eegDb_present
+if info.db_present
 	eegcmp = find(info.mapping == cmp);
 
 	% do not open if no mapping

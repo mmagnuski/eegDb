@@ -22,7 +22,7 @@ end
 
 % prepare GUI variables
 % ---------------------
-allsel = 1:length(h.ICAw);
+allsel = 1:length(h.db);
 allstr = cellfun(@num2str, num2cell(allsel), 'UniformOutput', false);
 allstr = allstr(:);
 

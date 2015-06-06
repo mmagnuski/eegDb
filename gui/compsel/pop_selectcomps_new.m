@@ -4,7 +4,7 @@
 % Inputs:
 %   INEEG    - Input dataset
 %              May have some additional fields to allow for
-%              additional stuff (? - or ICAw alongside ?)
+%              additional stuff (? - or db alongside ?)
 %   compnum  - vector of component numbers
 %
 %  ---myadd---
@@ -13,7 +13,7 @@
 %              not used yet!
 %  'perfig'  - how many components to plot per figure
 %  'fill'    - ?? what was this for ??
-%  'ICAw' ?
+%  'db' ?
 %  'rsync' ?
 %  'r'    ?
 %  'appdata' ? (handles structure etc. in case it was called from
@@ -23,7 +23,7 @@
 % Output:
 %   OUTEEG - Output dataset with updated rejected components
 % Additional outputs:
-%   ICAw   - updated ICAw structure
+%   db   - updated db structure
 %
 % Note:
 %   if the function POP_REJCOMP is ran prior to this function, some
@@ -52,7 +52,7 @@ function [EEG, com] = pop_selectcomps_new( EEG, compnum, fig, varargin )
 % ---------------------------------
 % h     - structure of handles (to figure, axes and buttons)
 % info  - structure of lightweight info:
-%     .eegDb_present      - boolean; whether eegDb was passed
+%     .db_present      - boolean; whether eegDb was passed
 %     .compnum (?)
 %     .topopts (?)
 %     .r                  
@@ -177,7 +177,7 @@ clear prs
 % clean up parameters
 % -------------------
 PLOTPERFIG = params.perfig;
-info.eegDb_present = ~isempty(params.eegDb);
+info.db_present = ~isempty(params.eegDb);
 info.EGGcompN = size(EEG.icaweights,1);
 
 
@@ -185,7 +185,7 @@ info.EGGcompN = size(EEG.icaweights,1);
 if ~isempty(params.h)
     info.otherfigh = true;
 
-    testflds = {'eegDb_gui', 'comp_explore'};
+    testflds = {'db_gui', 'comp_explore'};
     for f = testflds
         if isfield(params.h, f{1})
             info.(f{1}) = params.h.(f{1});
@@ -196,7 +196,7 @@ else
 end
 
 % if eegDb is present:
-if info.eegDb_present
+if info.db_present
     eegDb = params.eegDb;
 
     info.r = params.r;
@@ -211,7 +211,7 @@ if info.eegDb_present
     info.eegDbcompN = size(eegDb(info.r).ICA.icaweights, 1);
 
     % check mapping between EEG and eegDb comps:
-    info.mapping = eegDb_get_ica_ind(EEG, eegDb(info.r));
+    info.mapping = db_get_ica_ind(EEG, eegDb(info.r));
 
     % CHANGE
     % test for problems - when EEG does not have the same num
@@ -272,7 +272,7 @@ currentfigtag = ['selcomp' num2str(rand)];
 % -------
 % using icadefs is generally a bad idea - especially in terms of speed
 % for compatibility it is still used if no eegDb was passed
-if ~info.eegDb_present
+if ~info.db_present
     try %#ok<*TRYNC>
         icadefs;        
     end
@@ -349,7 +349,7 @@ info.ifcached = false;
 topocache     = [];
 
 % if eegDb passed - there
-if info.eegDb_present
+if info.db_present
     tst = femp(eegDb(info.r).ICA, 'topo');
     if tst
         info.ifcached = true;
@@ -378,7 +378,7 @@ end
 info.comps.colorcycle = [GUIBUTTONCOLOR; eval(COLREJ); ...
                             eval(COLACC); [1, 0.65, 0]];
 info.comps.stateNames = {'', 'reject', 'select', 'maybe'};
-if info.eegDb_present 
+if info.db_present 
 
     % compstate
     info.comps.state = zeros(1, info.eegDbcompN);
@@ -603,7 +603,7 @@ snc = sync_compsel(h.fig);
 setappdata(h.fig, 'syncer', snc);
 setappdata(h.fig, 'scheduler', s);
 
-if info.eegDb_present
+if info.db_present
     setappdata(h.fig, 'eegDb', eegDb);
 end
 

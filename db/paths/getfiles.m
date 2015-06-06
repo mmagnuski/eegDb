@@ -34,7 +34,7 @@ function file_list = getfiles(PTH, whatfiles, regex)
 % fls = getfiles('D:\DATA\eegDb', '*.m');
 %
 % 3. list all files that fulfill a given regular expression
-% fls = getfiles('D:\DATA\eegDb', 'ICAw.+\.m', true);
+% fls = getfiles('D:\DATA\eegDb', 'db.+\.m', true);
 
 
 % check if whatfiles exists
