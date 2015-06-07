@@ -51,9 +51,6 @@ if ~exist('h', 'var')
     h = [];
 end
 
-getfld = {'filename'; 'filter'; 'epoch';...
-    'marks'; 'reject'; 'ICA'};
-
 ttl = {'filename:', 'filter:', 'epoch:', ...
     'marks:', 'reject:', 'ICA:'};
 
@@ -61,15 +58,9 @@ infotext = addblanks_samelength(ttl, 2)';
 startCol = length(infotext{1});
 
 
-
 % filename:
 % -----------------
-currentRow = 1;
-%style.copy = [1]; %#ok<NBRAK>
-
-for i = currentRow
-    infotext{i} = [infotext{i}, db_getfield(eegDb, getfld{i})];
-end
+infotext{1} = [infotext{1}, eegDb.('filename')];
 
 % filter:
 % --------
