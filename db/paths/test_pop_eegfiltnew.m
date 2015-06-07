@@ -1,10 +1,10 @@
 function test_pop_eegfiltnew()
 
-persistent isfilt
+% persistent isfilt
 
-if isempty(isfilt)
+% if isempty(isfilt)
     isfilt = ~isempty(which('pop_eegfiltnew'));
-end
+% end
 
 if ~isfilt
     % add filtering
