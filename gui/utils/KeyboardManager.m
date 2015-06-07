@@ -52,7 +52,7 @@ methods
         % pass character by character to read function:
         for k = string_chars
             ev.Modifier = [];
-            ev.Key = k;
+            ev.Key = k{1};
             obj.read(ev);
         end
     end
