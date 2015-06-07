@@ -1,11 +1,12 @@
-function infotext = db_struct2text(eegDb, h)
+function infotext = db_struct2text(db, h)
 
-% EEGDB_STRUCT2TEXT returns a string representation of eegDb contents
+% DB_STRUCT2TEXT returns a string representation of eegDb 
+% database contents
 %
-% infotext = db_struct2text(eegDb)
+% infotext = db_struct2text(db)
 %
 % EXAMPLE:
-% >> db_struct2text(eegDb(2));
+% >> db_struct2text(db(2));
 %    
 % filename:  crazy_study_01.set
 % filter:    [ 1  x ] (highpass)
@@ -28,7 +29,7 @@ function infotext = db_struct2text(eegDb, h)
 %            5 muscle components
 %              (4 rejected)
 %    
-% see also: db_buildbase
+% see also: db_buildbase, db_gui
 
 % TODOs:
 % [ ] - add text-wrapping with respect to h uicontrol
@@ -40,10 +41,10 @@ function infotext = db_struct2text(eegDb, h)
 % [ ] - if r > 1 - present a text summary of all chosen entries
 
 % currently we assume eegDb is one chosen entry
-if length(eegDb) > 1
+if length(db) > 1
     warning('more than one eegDb entry passed, choosing first');
     % choose first
-    eegDb = eegDb(1);
+    db = bd(1);
 end
 
 % check for h
@@ -60,14 +61,15 @@ startCol = length(infotext{1});
 
 % filename:
 % -----------------
-infotext{1} = [infotext{1}, eegDb.('filename')];
+infotext{1} = [infotext{1}, db.('filename')];
 
 % filter:
 % --------
 currentRow = 2;
 
-if femp(eegDb, 'filter')
-    infotext{currentRow} = [infotext{currentRow}, sprintf('[ %3.2f   %3.2f ]', eegDb.filter(1,1), eegDb.filter(1,2))];
+if femp(db, 'filter')
+    infotext{currentRow} = [infotext{currentRow}, ...
+        sprintf('[ %3.2f   %3.2f ]', db.filter(1,1), db.filter(1,2))];
 end
 
 
@@ -75,7 +77,7 @@ end
 % -------
 currentRow = 3;
 addtx{1} = 'no epoching defined';
-[ep, eptp] = db_getepoching(eegDb);
+[ep, eptp] = db_getepoching(db);
 
 if eptp == 1
     addtx{1} = 'cut into consecutive windows';
@@ -136,12 +138,12 @@ end
 % marks:
 % ------
 currentRow = currentRow + 1;
-nmarks = length(eegDb.marks);
+nmarks = length(db.marks);
 addtx = {};
 addtx{1}  = 'no marks';
 
 if nmarks > 0
-    mrkNums = cellfun(@sum, {eegDb.marks.value});
+    mrkNums = cellfun(@sum, {db.marks.value});
     
     nonzero = find(mrkNums > 0);
     nonzerN = length(nonzero);
@@ -156,10 +158,10 @@ if nmarks > 0
         
         for i = 1:nonzerN
             % mark name
-            addtx{2 * (i-1) + 1} = eegDb.marks(nonzero(i)).name;
+            addtx{2 * (i-1) + 1} = db.marks(nonzero(i)).name;
             
             % no marked
-            marked = eegDb.marks(nonzero(i)).value;
+            marked = db.marks(nonzero(i)).value;
             markedN = sum(marked);
             % marked perc
             markedP = sprintf('%3.1f%%', markedN/length(marked) * 100);
@@ -189,16 +191,16 @@ else
     unit = 'epochs';
 end          
 
-is.pre = femp(eegDb.reject, 'pre');
-is.post = femp(eegDb.reject, 'post');
-is.all = femp(eegDb.reject, 'all');
+is.pre = femp(db.reject, 'pre');
+is.post = femp(db.reject, 'post');
+is.all = femp(db.reject, 'all');
 
 
 % CHANGE - currently we do not ensure that reject.pre is logical
 %          so it is displayed without % if we do not know the ori-
 %          ginal number of epochs (from EEG.etc.orig_numep kept
 %          as epochNum or origNum ?)
-is.orig = femp(eegDb.epoch, 'origNum');
+is.orig = femp(db.epoch, 'origNum');
 
 tracker = 1;
 addtx = {};
@@ -206,11 +208,11 @@ addtx = {};
 % PRE-REJECTIONS
 % -------------
 if is.pre 
-    prelen = length(eegDb.reject.pre);
+    prelen = length(db.reject.pre);
     addtx{tracker} = 'pre-rejected:';
     if is.orig
         addtx{tracker + 1} = sprintf(['  %d  (%3.2f%%) ', unit],...
-            prelen, prelen/eegDb.epoch.origNum * 100);
+            prelen, prelen/db.epoch.origNum * 100);
     else
         addtx{tracker + 1} = sprintf(['  %d  ', unit], prelen);
     end
@@ -220,17 +222,17 @@ end
 % POST-REJECTIONS
 % -------------
 if is.post
-    postlen = length(eegDb.reject.post);
-    % postrej = sum(eegDb.epoch.post);
+    postlen = length(db.reject.post);
+    % postrej = sum(db.epoch.post);
     % addtx{tracker} = fprintf(['pre-rejected:  %d  (%3.2f%%) ', unit],...
-    %      prelen, prelen/eegDb.epoch.origNum * 100);
+    %      prelen, prelen/db.epoch.origNum * 100);
     addtx{tracker} = 'rejected:';
 
     if is.orig
         if is.pre
-            origNumAfterPre = eegDb.epoch.origNum - prelen;
+            origNumAfterPre = db.epoch.origNum - prelen;
         else
-            origNumAfterPre = eegDb.epoch.origNum;
+            origNumAfterPre = db.epoch.origNum;
         end
         addtx{tracker + 1} = sprintf(['  %d  (%3.2f%%) ', unit],...
             postlen, postlen/origNumAfterPre * 100);
@@ -242,13 +244,13 @@ end
 
 % ALL (pre + post)
 % ----------------
-if is.post && is.pre && is.all && ~isequal(eegDb.reject.pre, eegDb.reject.all)
-   alllen = length(eegDb.reject.all);
+if is.post && is.pre && is.all && ~isequal(db.reject.pre, db.reject.all)
+   alllen = length(db.reject.all);
    addtx{tracker} = 'alltogether:';
 
    if is.orig
         addtx{tracker + 1} = sprintf(['  %d  (%3.2f%%) ', unit],...
-            alllen, alllen/eegDb.epoch.origNum * 100);
+            alllen, alllen/db.epoch.origNum * 100);
     else
         addtx{tracker + 1} = sprintf(['  %d  ', unit], alllen);
     end
@@ -272,9 +274,9 @@ end
 % -------
 addtx = {};
 currentRow = currentRow + 1;
-if femp(eegDb.ICA, 'icaweights')
-    if femp(eegDb.ICA, 'time')
-        time = seconds2time(eegDb.ICA.time);
+if femp(db.ICA, 'icaweights')
+    if femp(db.ICA, 'time')
+        time = seconds2time(db.ICA.time);
         addtx{1} = ['done  (took ', time, ')'];
     else
         addtx{1} = 'done';
