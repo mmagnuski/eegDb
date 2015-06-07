@@ -46,8 +46,10 @@ methods
         % as if they were actual sequences of keyboard button presses
 
         string_chars = mat2cell(string, 1, ones(1, length(string)));
-        % change '>' and '<' to arrows ...
-        % ADD
+        rgt = cellfun(@(x) x == '>', string_chars);
+        lft = cellfun(@(x) x == '<', string_chars);
+        string_chars(rgt) = {'rightarrow'};
+        string_chars(lft) = {'leftarrow'};
 
         % pass character by character to read function:
         for k = string_chars
