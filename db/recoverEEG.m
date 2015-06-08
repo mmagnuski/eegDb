@@ -369,8 +369,9 @@ end
 
 
 %% adding ICA info
-if ~noICA && femp(db(r), 'ICA') && ...
-    femp(db(r).ICA, 'icaweights')
+add_comprej = false;
+hasica = femp(db(r), 'ICA') && femp(db(r).ICA, 'icaweights');
+if ~noICA && hasica
     
     % =====================
     % add weights and stuff:
@@ -387,11 +388,21 @@ if ~noICA && femp(db(r), 'ICA') && ...
     
     % =======================
     % removing bad components:
-    if femp(db(r).ICA, 'reject') && ...
-            ~ICAnorem
-        % removing comps:
-        EEG = pop_subcomp( EEG, db(r)...
-            .ICA.reject, 0);
+    if femp(db(r).ICA, 'reject')
+        if ~ICAnorem
+            % removing comps:
+            EEG = pop_subcomp( EEG, db(r)...
+                .ICA.reject, 0);
+        else
+            % transferring component rejection marks:
+            comprej = zeros(1, length(db(r).ICA.icachansind));
+            comprej(db(r).ICA.reject) = 1;
+
+            % eeglab removes comprej marks when removing components
+            % so we keep it in separate variable and only then apply
+            % to EEG:
+            add_comprej = true;
+        end
     end
     
     % save temp icainfo
@@ -401,7 +412,6 @@ if ~noICA && femp(db(r), 'ICA') && ...
         temp.icawinv = EEG.icawinv;
         temp.icachansind = EEG.icachansind;
     end
-    
 end
 
 
@@ -575,6 +585,11 @@ if ~(prerej || isempty(db(r).reject.all))
         % remove postrej
         EEG.reject.db.value{f}(db(r).reject.post) = [];
     end
+end
+
+% add component rejection marks if necessary
+if add_comprej
+    EEG.reject.gcompreject = comprej;
 end
 
 % stamp the EEG with recovery version info
