@@ -818,8 +818,12 @@ classdef fastplot < handle
             % initialize 
             km.register(pattern);
             
-            % add eegplot_readkey to WindowKeyPressFcn
-            set(obj.h.fig, 'WindowKeyPressFcn', @(o, e) km.read(e));
+            % emulate windowkeypress if matlab older than 2008a
+            if is_mat_version_older({2008, 'a'})
+                emulate_winkeypress(obj.h.fig, @(o, e) km.read(e));
+            else
+                set(obj.h.fig, 'WindowKeyPressFcn', @(o, e) km.read(e));
+            end
             obj.keys = km;
         end
 
