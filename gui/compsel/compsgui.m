@@ -652,7 +652,11 @@ if ishandle(h.fig)
 end
 
 if info.EEG_present
-    varargout{find(strcmp(varargout_ord, 'EEG'))} = EEG;
+    EEG.reject.gcompreject(info.comps.state == 1) = 1;
+    out_eeg = find(strcmp(varargout_ord, 'EEG'));
+    if ~isempty(out_eeg) && nargout > 0
+        varargout{out_eeg} = EEG;
+    end
 end
 
 % CHANGE
