@@ -818,12 +818,8 @@ classdef fastplot < handle
             % initialize 
             km.register(pattern);
             
-            % emulate windowkeypress if matlab older than 2008a
-            if is_mat_version_older({2008, 'a'})
-                emulate_winkeypress(obj.h.fig, @(o, e) km.read(e));
-            else
-                set(obj.h.fig, 'WindowKeyPressFcn', @(o, e) km.read(e));
-            end
+            % connect keyboard manager to windowkeypress callback
+            set(obj.h.fig, 'WindowKeyPressFcn', @(o, e) km.read(e));
             obj.keys = km;
         end
 

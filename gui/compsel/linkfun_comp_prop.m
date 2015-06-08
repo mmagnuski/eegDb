@@ -48,12 +48,8 @@ set(h.fig, 'DeleteFcn', @(src, ev) snc.clear_h(h.fig) );
 % add callback for ok to close figure
 set(h.ok, 'Callback', @(src, ev) close(h.fig) );
 
-% add callback for enter and escape
-if is_mat_version_older({2008, 'a'})
-    emulate_winkeypress(h.fig, @prop_buttonpress);
-else
-    set(h.fig, 'WindowKeyPressFcn', @prop_buttonpress);
-end
+% add callback for enter escape, 's' and 'c'
+set(h.fig, 'WindowKeyPressFcn', @prop_buttonpress);
 
 
 % CHANGE - use spec_opt in the future

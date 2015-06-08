@@ -606,13 +606,8 @@ setappdata(h.fig, 'chansind', chansind);
 setappdata(h.fig, 'chanlocs', chanlocs);
 setappdata(h.fig, 'topocache', topocache);
 
-
-% emulate windowkeypress if matlab older than 2008a
-if is_mat_version_older({2008, 'a'})
-    emulate_winkeypress(h.fig, @compsel_compare_changes);
-else
-    set(h.fig, 'WindowKeyPressFcn', @compsel_compare_changes);
-end
+% define window key press callback
+set(h.fig, 'WindowKeyPressFcn', @compsel_compare_changes);
 
 % initialize scheduler
 % --------------------
