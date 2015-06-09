@@ -184,7 +184,7 @@ classdef fastplot < handle
         end
 
 
-        function refresh(obj, mthd)
+        function refresh(obj, elements, mthd)
             % refresh fastplot window
 
             % CHANGE should check if sth actually changed
@@ -192,9 +192,22 @@ classdef fastplot < handle
             % during re-plotting:
             % always use set 'XData', 'YData'
             obj.window.span = obj.window.lims(1):obj.window.lims(2);
+            if ~exist('elements', 'var')
+                elements = {'all'};
+            elseif ~iscell(elements)
+                elements = {elements};
+            end
             
             if ~exist('mthd', 'var')
                 mthd = obj.scrollmethod;
+            end
+
+            if any(strcmp('all', elements))
+                refresh_elem = true(4, 1);
+            else
+                elem_order = {'signal', 'events', 'limits', 'marks'}';
+                refresh_elem = cellfun(@(x) any(strcmp(x, elements)), ...
+                    elem_order);
             end
             
             % tic;
@@ -214,9 +227,9 @@ classdef fastplot < handle
                             dat(obj.window.span, i), 'HitTest', 'off');
                     end
             end
-            obj.plotevents();
-            obj.plot_epochlimits();
-            obj.plot_marks();
+            if refresh_elem(2); obj.plotevents(); end;
+            if refresh_elem(3); obj.plot_epochlimits(); end;
+            if refresh_elem(4); obj.plot_marks(); end;
             % timetaken = toc;
             % fprintf('time taken: %f\n', timetaken);
         end
