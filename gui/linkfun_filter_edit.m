@@ -145,7 +145,7 @@ function checkopt(h, e, hwin, hobj)
 		end
 	end
 
-	winreject_refresh(d);
+	db_gui_refresh(d);
 
 	uiresume(hwin.hf);
 	close(hwin.hf);

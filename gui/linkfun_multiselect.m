@@ -41,7 +41,7 @@ if length(sel) == 1
         h.multisel_col);
     
     % refresh
-    winreject_refresh(h);
+    db_gui_refresh(h);
 
 elseif length(sel) > 1
     
