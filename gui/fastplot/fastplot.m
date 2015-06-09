@@ -38,6 +38,11 @@ classdef fastplot < handle
     %     selected    - M by E boolean matrix; informs which epochs are marked
     %                   with which mark types (M - number of marks, E - number
     %                   of epochs)
+    % opt      -  various options, including:
+    %    .step    - step values for different movement and scaling types:
+    %         .epoch_move
+    %         .epoch_scale
+    %         .signal_scale
     % keys     -  a KeyboardManager instance - it is responsible for keyboard
     %             interactions with the gui including sequences of key presses
 
@@ -82,6 +87,11 @@ classdef fastplot < handle
     methods
         
         function obj = fastplot(EEG, varargin)
+
+            % default opt settings
+            obj.opt.step.move_unit = 'epoch';
+            obj.opt.step.move = 1;
+            obj.opt.step.epoch_scale = 1;
 
             % check varargin for 'comp' or 'chan'
             isind = false;
@@ -134,16 +144,14 @@ classdef fastplot < handle
             obj.opt.readfield = {'data'}; % later - add support for multiple fields
             obj.opt.readfrom = 1;
 
-            % calculate spacing
-            obj.opt.chan_sd = std(obj.data, [], 1);
+            % calculate spacing and scale step
+            obj.opt.chan_sd = std(obj.data, [], 1); % this kind of thing can be in info property
+            obj.opt.step.signal_scale = 0.1;
+            obj.opt.signal_scale = 1;
             obj.spacing = 4.5 * mean(obj.opt.chan_sd);
             obj.arg_parser(varargin); % arg_parser should be used at the top
 
             chan_pos = (0:obj.data_size(2)-1)*obj.spacing;
-
-            % introduce spacing to the data
-            obj.data = obj.data - repmat(...
-                chan_pos, [obj.data_size(1), 1]);
 
             % set y limits
             obj.h.ylim = [-(obj.data_size(2)+1) * obj.spacing,...
@@ -184,39 +192,57 @@ classdef fastplot < handle
         end
 
 
-        function refresh(obj, mthd)
+        function refresh(obj, elements, mthd)
             % refresh fastplot window
 
-            % CHANGE should check if sth actually changed
+            % CHANGE maybe should check if sth actually changed
 
             % during re-plotting:
             % always use set 'XData', 'YData'
             obj.window.span = obj.window.lims(1):obj.window.lims(2);
+            if ~exist('elements', 'var')
+                elements = {'all'};
+            elseif ~iscell(elements)
+                elements = {elements};
+            end
             
             if ~exist('mthd', 'var')
                 mthd = obj.scrollmethod;
             end
+
+            if any(strcmp('all', elements))
+                refresh_elem = true(4, 1);
+            else
+                elem_order = {'signal', 'events', 'limits', 'marks'}';
+                refresh_elem = cellfun(@(x) any(strcmp(x, elements)), ...
+                    elem_order);
+            end
             
             % tic;
-            dat = obj.(obj.opt.readfield{obj.opt.readfrom});
-            switch mthd
-                case 'replot'
-                    delete(obj.h.lines);
-                    obj.h.lines = plot(dat(obj.window.span, :));
-                case 'allset'
-                    dat = mat2cell(dat(obj.window.span, :), ...
-                        diff(obj.window.lims) + 1, ones(1, ...
-                        obj.data_size(2)))';
-                    set(obj.h.lines, {'YData'}, dat, 'HitTest', 'off');
-                case 'loopset'
-                    for i = 1:length(obj.h.lines)
-                        set(obj.h.lines(i), 'YData', ...
-                            dat(obj.window.span, i), 'HitTest', 'off');
-                    end
+            if refresh_elem(1)
+                chan_pos = (0:obj.data_size(2)-1)*obj.spacing;
+
+                dat = obj.(obj.opt.readfield{obj.opt.readfrom}) * ...
+                    obj.opt.signal_scale;
+                dat = bsxfun(@minus, dat(obj.window.span, :), chan_pos);
+                switch mthd
+                    case 'replot'
+                        delete(obj.h.lines);
+                        obj.h.lines = plot(dat);
+                    case 'allset'
+                        dat = mat2cell(dat, diff(obj.window.lims) + 1, ...
+                            ones(1, obj.data_size(2)))';
+                        set(obj.h.lines, {'YData'}, dat, 'HitTest', 'off');
+                    case 'loopset'
+                        for i = 1:length(obj.h.lines)
+                            set(obj.h.lines(i), 'YData', ...
+                                dat(:, i), 'HitTest', 'off');
+                        end
+                end
             end
-            obj.plotevents();
-            obj.plot_epochlimits();
-            obj.plot_marks();
+            if refresh_elem(2); obj.plotevents(); end;
+            if refresh_elem(3); obj.plot_epochlimits(); end;
+            if refresh_elem(4); obj.plot_marks(); end;
             % timetaken = toc;
             % fprintf('time taken: %f\n', timetaken);
         end
@@ -290,6 +316,19 @@ classdef fastplot < handle
                 ev.latency = [];
                 ev.time = [];
             end
+        end
+
+        function scale_signal(obj, val, num)
+
+            if ~exist('num', 'var')
+                num = 1;
+            end
+
+            obj.opt.signal_scale = obj.opt.signal_scale + ...
+                obj.opt.step.signal_scale * val * num;
+            obj.opt.signal_scale = max([0, obj.opt.signal_scale]);
+
+            obj.refresh('signal');
         end
 
         function ep = epochlimits_in_range(obj, rng)
@@ -574,8 +613,12 @@ classdef fastplot < handle
             % ---------
             % CHANGE
             % use 'ColorOrder' to set color of electrodes
-            obj.h.lines = plot(obj.data(obj.window.span, :), ...
-                'HitTest', 'off', 'Parent', obj.h.ax);
+            chan_pos = (0:obj.data_size(2)-1)*obj.spacing;
+            dat = obj.(obj.opt.readfield{obj.opt.readfrom}) * ...
+                obj.opt.signal_scale;
+            dat = bsxfun(@minus, dat(obj.window.span, :), chan_pos);
+            obj.h.lines = plot(dat, 'HitTest', 'off', ...
+                'Parent', obj.h.ax);
 
             % set y limits and y lim mode (for faster replotting)
             set(obj.h.ax, 'YLim', obj.h.ylim, 'YLimMode', 'manual');
@@ -814,6 +857,11 @@ classdef fastplot < handle
             pattern{5,2} = {@obj.select_mark};
             pattern{6,1} = {'a', 'm'};
             pattern{6,2} = {@obj.gui_add_mark};
+            pattern{7,1} = {'num', 'equal'};
+            pattern{7,2} = {@obj.scale_signal, 1};
+            pattern{8,1} = {'num', 'hyphen'};
+            pattern{8,2} = {@obj.scale_signal, -1};
+
 
             % initialize 
             km.register(pattern);
