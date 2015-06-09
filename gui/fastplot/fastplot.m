@@ -195,7 +195,7 @@ classdef fastplot < handle
         function refresh(obj, elements, mthd)
             % refresh fastplot window
 
-            % CHANGE should check if sth actually changed
+            % CHANGE maybe should check if sth actually changed
 
             % during re-plotting:
             % always use set 'XData', 'YData'
