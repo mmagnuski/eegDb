@@ -38,6 +38,11 @@ classdef fastplot < handle
     %     selected    - M by E boolean matrix; informs which epochs are marked
     %                   with which mark types (M - number of marks, E - number
     %                   of epochs)
+    % opt      -  various options, including:
+    %    .step    - step values for different movement and scaling types:
+    %         .epoch_move
+    %         .epoch_scale
+    %         .signal_scale
     % keys     -  a KeyboardManager instance - it is responsible for keyboard
     %             interactions with the gui including sequences of key presses
 
@@ -82,6 +87,11 @@ classdef fastplot < handle
     methods
         
         function obj = fastplot(EEG, varargin)
+
+            % default opt settings
+            obj.opt.step.move_unit = 'epoch';
+            obj.opt.step.move = 1;
+            obj.opt.step.epoch_scale = 1;
 
             % check varargin for 'comp' or 'chan'
             isind = false;
