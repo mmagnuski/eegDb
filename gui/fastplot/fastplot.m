@@ -563,10 +563,6 @@ classdef fastplot < handle
                 if isstruct(args{1}) && isfield(args{1}, 'data')
                     % another EEG data coming in!
                     obj.data2 = reshape(args{1}.data, fliplr(obj.data_size))';
-
-                    % introduce spacing to data2:
-                    obj.data2 = obj.data2 - repmat(...
-                        (0:obj.data_size(2)-1)*obj.spacing, [obj.data_size(1), 1]);
                     obj.opt.readfield(end + 1) = {'data2'};
                 end
             end
