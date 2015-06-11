@@ -248,10 +248,18 @@ classdef fastplot < handle
         end
         
         
-        function move(obj, value, mlt, unit)
+        function move(obj, value, unit, mlt)
             % move the current view a number of units.
+            %
+            % fastplot.move(value, unit)
+            % 
+            % value:
             % positive value indicates forward motion
             % negative value indicates backward motion
+            %
+            % unit:
+            % 'epoch'
+            % 'window'
 
             % CHANGE - mlt is temporary
             % ADD - mode of window.step?
@@ -271,8 +279,10 @@ classdef fastplot < handle
             if ~exist('mlt', 'var')
                 mlt = 1;
             end
-            if ~exist('unit', 'var')
+            if ~exist('unit', 'var') || isempty(unit)
                 unit = obj.window.step;
+            elseif strcmp(unit, 'window')
+                unit = obj.window.size;
             end
             
             % create and test new window limits
