@@ -3,9 +3,9 @@ function db = db_addversion(db, rr, opt)
 % NOHELPINFO
 
 % version name must be given
-f = db_checkfields(opt, 1, {'version_name'});
-if ~f.fnonempt
-    return
+f = femp(opt, 'version_name');
+if ~f
+    error('Version name was not given.');
 end
 
 
