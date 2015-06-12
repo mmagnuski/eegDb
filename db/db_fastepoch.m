@@ -46,7 +46,7 @@ reallim(1) = round(lim(1)*EEG.srate);
 reallim(2) = round(lim(2)*EEG.srate-1); % do not include the last sample (as pop_epoch does)
 
 % get epoch ranges:
-epoch_lats = [lats + reallim(1); lats + reallim(2)];
+epoch_lats = int64([lats + reallim(1); lats + reallim(2)]);
 
 % check trial length
 epoch_length = reallim(2)-reallim(1)+1;
