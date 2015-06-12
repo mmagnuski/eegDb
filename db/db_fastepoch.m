@@ -1,16 +1,18 @@
 function EEG = db_fastepoch(EEG, ev, lim)
 
 % faster epoching
+% 
+% faster because:
 % does not use various key options
-% does not load eeglab_options
-% does not use eeg_checkset etc.
+% does not load eeglab_options (which is quite slow)
+% does not use eeg_checkset etc. (really slow!)
 % does not add AMICA probs
 %
-% coded by MMagnuski
+% coded by mmagnuski
 
 % TODOs:
 % [ ] check if fillig EEG.epoch could be faster...
-% [ ] repect boundary events
+% [x] repect boundary events
 
 % persistent uint32_max
 % if isempty(uint32_max)
