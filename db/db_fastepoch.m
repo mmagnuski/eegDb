@@ -12,6 +12,11 @@ function EEG = db_fastepoch(EEG, ev, lim)
 % [ ] check if fillig EEG.epoch could be faster...
 % [ ] repect boundary events
 
+% persistent uint32_max
+% if isempty(uint32_max)
+%     uint32_max = int64(4294967296);
+% end
+
 all_tps = {EEG.event.type};
 ms_per_sample = (1000/EEG.srate);
 
