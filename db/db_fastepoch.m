@@ -37,7 +37,7 @@ epoch_num = length(ev);
 
 % get event number and event latencies
 all_ev_num = length(EEG.event);
-all_lats   = [EEG.event.latency];
+all_lats   = uint32([EEG.event.latency]);
 lats       = all_lats(ev);
 
 
@@ -46,10 +46,10 @@ reallim(1) = round(lim(1)*EEG.srate);
 reallim(2) = round(lim(2)*EEG.srate-1); % do not include the last sample (as pop_epoch does)
 
 % get epoch ranges:
-epoch_lats = int64([lats + reallim(1); lats + reallim(2)]);
+epoch_lats = uint32([lats + reallim(1); lats + reallim(2)]);
 
 % check trial length
-epoch_length = reallim(2)-reallim(1)+1;
+epoch_length = uint32(reallim(2)-reallim(1)+1);
 
 % prepare loop variables
 epdt    = zeros( EEG.nbchan, epoch_length, epoch_num );
