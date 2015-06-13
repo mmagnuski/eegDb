@@ -15,9 +15,6 @@ function outlist = db_getrej(db, r, varargin)
 % [ ] change name from db_getrej to db_getmarks
 % [ ] clear up db_getrej
 % [ ] profile and change/rewrite
-% [X] db_checkfields takes up about 80% of execution time
-%     - should we resign from db_checkfields?
-%     it shouldn't be called so often...
 
 %% CHANGE!! - this should probably only select nonempty
 %             if this is asked for, in new structure
