@@ -6,6 +6,10 @@ function outlist = db_getrej(db, r, varargin)
 % rejlist.name - displayed name of the marking
 % rejlist.color - color of the marking
 % rejlist.value - value of the marking (what is being marked)
+%
+% key-value options:
+% nonempt - boolean, if true DB_GETREJ returns only nonempty 
+%           rejection types (?)
 
 % CHANGE
 % [ ] change name from db_getrej to db_getmarks
@@ -23,13 +27,9 @@ function outlist = db_getrej(db, r, varargin)
 %             for mark names:
 %             {db(r).marks.name}
 
-return_nonempt = false;
+opt.nonempt = false;
 if nargin > 2
-    isit = strcmp('nonempt', varargin);
-    if ~isempty(isit)
-        return_nonempt = true;
-    end
-    clear isit
+    opt = parse_arse(varargin, opt);
 end
 
 % so simple now:
@@ -37,7 +37,7 @@ outlist.name = {db(r).marks.name};
 outlist.color = {db(r).marks.color};
 outlist.value = {db(r).marks.value};
 
-if return_nonempt
+if opt.nonempt
 
     kill = cellfun(@(x) isempty(x) || sum(x) == 0, outlist.value);
     
