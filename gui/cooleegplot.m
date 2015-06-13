@@ -126,6 +126,7 @@ opt.wlen = 4;
 opt.nowait = false;
 db_present = false;
 opt.eegDb = [];
+opt.r = 1;
 
 % CHANGE so that other rejection types can be applied
 %        may be of use later - to have a connection manual --> reject for example
@@ -153,13 +154,9 @@ if nargin > 1
 
     if ~isempty(opt.eegDb)
         db_present = true;
-        r = 1;
         db = opt.eegDb;
         opt = rmfield(opt, 'eegDb');
-
-        if isempty(opt.r)
-            r = opt.r;
-        end
+        r = opt.r;
 
         % these are later needed for rejection checks...
         to_field = {'prob', 'manual', 'mscl', 'reject', 'maybe',...
