@@ -14,13 +14,13 @@ function varscatter(h, data, varargin)
 %               'type'  - marker type (default: 'fill', usage: 'type', 'fill')
 %               'lineColor' - default: [0 0.75 0.75]
 %% defaults
-s = 30;
-c = [0 0.45 0.95];
-type = 'fill';
-lineColor = [0 0.75 0.75];
-tooltip = false;
-label = 'Variance';
-sd = []; outm = 'zscore';
+opt.s = 30;
+opt.c = [0 0.45 0.95];
+opt.type = 'fill';
+opt.lineColor = [0 0.75 0.75];
+opt.tooltip = false;
+opt.label = 'Variance';
+opt.sd = []; opt.outm = 'zscore';
 % plotout - sd outliers plotted with
 % "rich red color"
 plotout = [1 0 0];
@@ -31,37 +31,18 @@ if sz(1) == 1
     data = data(:);
 end
 
-%%
-% MM - added nargin to run only when additional arguments are
-%      provided
-if nargin > 2
-    args = {'s', 'c', 'type', 'lineColor', 'tooltip',...
-        'label', 'sd', 'outm'};
-    vars = args;
-    
-    for a = 1:length(args)
-        reslt = find(strcmp(args{a}, varargin));
-        if ~isempty(reslt)
-            reslt = reslt(1);
-            eval([vars{a}, ' = varargin{reslt+1};']);
-            varargin([reslt, reslt+1]) = [];
-            if isempty(varargin)
-                break
-            end
-        end
-    end
-end
+opt = parse_arse(varargin, opt);
 
 % MM - added to avoid try catch
 if ~(~isempty(h) && ishandle(h))
     h = gca;
 end   
 
-c = repmat(c, length(data),1);
+opt.c = repmat(opt.c, length(data),1);
 datind = 1:length(data);
 
 % MM - added for outlier detection
-if ~isempty(sd) && isnumeric(sd)
+if ~isempty(opt.sd) && isnumeric(opt.sd)
     
     switch outm
         case 'none'
@@ -70,7 +51,7 @@ if ~isempty(sd) && isnumeric(sd)
             
             % simple z-score selection
             std_val = zscore(data);
-            outlim = (std_val < -sd | std_val > sd);
+            outlim = (std_val < -opt.sd | std_val > opt.sd);
         case 'jackknife'
             
             % construct a leave-one-out matrix:
@@ -84,12 +65,12 @@ if ~isempty(sd) && isnumeric(sd)
             % we do not want those that drag the
             % mean too much
             dragmean_z = zscore(dragmean);
-            outlim = (dragmean_z(:) < -sd | ...
-                dragmean_z(:) > sd);
+            outlim = (dragmean_z(:) < -opt.sd | ...
+                dragmean_z(:) > opt.sd);
     end
 
     if sum(outlim) > 0
-    c(outlim, :) = repmat(plotout, [sum(outlim), 1]);
+    c(outlim, :) = repmat(opt.plotout, [sum(outlim), 1]);
     end
 end
 
@@ -98,8 +79,8 @@ end
 % MM - tooltip will be useful later to check data trials
 %      but I couldn't find an obvious solution, will add
 %      it later
-if ~tooltip
-    scatter(h, datind, data, s, c, type);
+if ~opt.tooltip
+    scatter(h, datind, data, opt.s, opt.c, opt.type);
 else
     error('The Universe will explode in 10 seconds...');
 end
@@ -115,10 +96,10 @@ warning('off');
 
 % set labels
 xlabel(h, 'Trial');
-ylabel(h, label);
+ylabel(h, opt.label);
 
 
 % lines
 tick = repmat(round(length(data)/4)*[1,2,3,4],2,1);
 lims = repmat(get(h, 'Ylim'), size(tick,2),1)';
-line(tick, lims ,'LineStyle','--', 'Color', lineColor, 'Parent', h);
+line(tick, lims ,'LineStyle','--', 'Color', opt.lineColor, 'Parent', h);
