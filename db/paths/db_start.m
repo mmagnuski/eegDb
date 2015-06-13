@@ -10,16 +10,9 @@ function db_start(PTH, varargin)
 % [ ] add some more options?
 
 % TEMPORARY argument checks:
-innm = {'ICAw', 'db '};
+opt.inname = {'ICAw', 'db '};
 if nargin > 1
-    arg = strcmp(varargin, 'inname');
-    if sum(arg) > 0
-        arg = find(arg) + 1;
-        innm = varargin{arg};
-        if ~iscell(innm)
-            innm = {innm};
-        end
-    end
+    opt = parse_arse(varargin, opt);
 end
 
 % initial operations
@@ -39,8 +32,8 @@ all_fls = {all_fls.name};
 
 % take only db databases:
 disp('looking for current database...');
-for i = 1:length(innm)
-    reg = regexp(all_fls, innm{i}, 'once');
+for i = 1:length(opt.inname)
+    reg = regexp(all_fls, opt.inname{i}, 'once');
     em(:,i) = ~cellfun(@isempty, reg);
 end
 fls = all_fls(sum(em, 2) > 0);
