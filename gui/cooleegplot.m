@@ -108,27 +108,24 @@ function varargout = cooleegplot(EEG, varargin)
 % [ ] check updating db - change the current mess
 % [ ] multiple rejections in eegplot2
 % [X] handle default EEG rejections...
-% [ ] work a little bit with button commands
-%     so that for example user can pass the button
-%     command (just like in eegplot)
-% [ ] LATER add file (possibly .m) with default settings
-%     that can be changed by the user
 
 
 %% defaults:
-tag = 'cooleegplot';
-com = 'fprintf(''Updated EEG marks\n'')';
-update = true;
+opt.tag = 'cooleegplot';
+opt.comm = 'fprintf(''Updated EEG marks\n'')';
+opt.update = true;
 
-elec = 1:EEG.nbchan;
-nelec = EEG.nbchan;
+opt.elec = 1:EEG.nbchan;
+opt.nelec = EEG.nbchan;
 
-butlabel = 'UPDATE MARKS';
-badplot = 'grey'; badchan = [];
-lsmo = 'on';
-wlen = 4;
+opt.butlabel = 'UPDATE MARKS';
+opt.badplot = 'grey'; opt.badchan = [];
+opt.lsmo = 'on';
+opt.wlen = 4;
 
+opt.nowait = false;
 db_present = false;
+opt.eegDb = [];
 
 % CHANGE so that other rejection types can be applied
 %        may be of use later - to have a connection manual --> reject for example
@@ -138,8 +135,9 @@ db_present = false;
 
 
 % electrode colors
-cpal = color_palette(); nowait = false;
-elec_color = mat2cell(cpal, ones(size(cpal,1), 1), 3);
+cpal = color_palette(); 
+opt.ecol = mat2cell(cpal, ones(size(cpal,1), 1), 3);
+opt.selcol = EEG.reject.rejmanualcol;
 
 if nargout > 0
     for nin = 1:nargout
@@ -149,60 +147,26 @@ end
 
 %% check optional input
 if nargin > 1
-    
-    args = {'ecol', 'selcol', 'tag', 'butlab', ...
-        'comm', 'winlen', 'nowait', 'elec', ...
-        'nelec', 'update', 'badplot', 'badchan', 'lsmo'};
-    vars = {'elec_color', 'EEG.reject.rejmanualcol',...
-        'tag', 'butlabel', 'com', 'wlen', 'nowait',...
-        'elec', 'nelec', 'update', 'badplot', 'badchan',...
-        'lsmo'};
-    
-    for a = 1:length(args)
-        reslt = find(strcmp(args{a}, varargin));
-        if ~isempty(reslt)
-            reslt = reslt(1);
-            eval([vars{a}, ' = varargin{reslt+1};']);
-            varargin([reslt, reslt+1]) = [];
-            if isempty(varargin)
-                break
-            end
+    opt = parse_arse(varargin, opt);
+
+    EEG.reject.rejmanualcol = opt.selcol;
+
+    if ~isempty(opt.eegDb)
+        db_present = true;
+        r = 1;
+        db = opt.eegDb;
+        opt = rmfield(opt, 'eegDb');
+
+        if isempty(opt.r)
+            r = opt.r;
         end
-    end
-    
-    %% check db presence etc.
-    if ~isempty(varargin)
-        % look for db:
-        db_adr = find(cellfun(@isstruct, varargin));
-        if ~isempty(db_adr)
-            db_present = true;
-            db = varargin{db_adr}; r = 1;
-            to_field = {'prob', 'manual', 'mscl', 'reject', 'maybe',...
-                'dontknow'};
-            % field name within which the ones below are hidden:
-            to_ftype = [1, 1, 1, 2, 2, 2];
-            ftype = {'autorem', 'userrem'};
-            
-            com = ['fprintf(''Updated relevant EEG and db fileds\n',...
-                'First returned argument is the db database\n'')'];
-            
-        end
-        
-        % look for numeric values:
-        num_adr = find(cellfun(@isnumeric, varargin));
-        
-        for n = 1:length(num_adr)
-            if ~db_present || (db_present ...
-                    && num_adr(n) < db_adr)
-                nm = varargin{num_adr(n)};
-                wlen = nm(1);
-                if length(nm) > 1
-                    nelec = nm(2);
-                end
-            elseif db_present && num_adr(n) > db_adr
-                r = varargin{num_adr(n)};
-            end
-        end
+
+        % these are later needed for rejection checks...
+        to_field = {'prob', 'manual', 'mscl', 'reject', 'maybe',...
+            'dontknow'};
+        % field name within which the ones below are hidden:
+        to_ftype = [1, 1, 1, 2, 2, 2];
+        ftype = {'autorem', 'userrem'};
     end
 end
 
@@ -221,40 +185,40 @@ if isfield(EEG.reject, 'db') && ~isempty(EEG.reject.db)...
 end
 
 % formatting color
-if ischar(elec_color) && ~strcmp('off', elec_color)
-    cpal = color_palette(elec_color);
-    elec_color = mat2cell(cpal, ...
+if ischar(opt.ecol) && ~strcmp('off', opt.ecol)
+    cpal = color_palette(opt.ecol);
+    opt.ecol = mat2cell(cpal, ...
         ones(size(cpal,1), 1), 3);
-elseif isnumeric(elec_color)
-    elec_color = mat2cell(elec_color, ...
-        ones(size(elec_color,1), 1), 3);
-elseif strcmp('off', elec_color)
-    elec_color = {[0, 0, 0]};
+elseif isnumeric(opt.ecol)
+    opt.ecol = mat2cell(opt.ecol, ...
+        ones(size(opt.ecol,1), 1), 3);
+elseif strcmp('off', opt.ecol)
+    opt.ecol = {[0, 0, 0]};
 end
 
 % changing elec
-if length(elec) ~= EEG.nbchan
+if length(opt.elec) ~= EEG.nbchan
     % EEG.nbchan = length(elec);
 end
 
 % if badchan not provided
-if isempty(badchan) && db_present
+if isempty(opt.badchan) && db_present
     if femp(db(r), 'chan') && femp(db(r).chan, 'bad')
         badchan = db(r).chan.bad;
     end
 end
 
 % if badchan is present and badplot is not 'plot':
-if ~isempty(badchan)&& ~(ischar(badplot) &&...
-        strcmp(badchan, 'plot'))
+if ~isempty(opt.badchan)&& ~(ischar(opt.badplot) &&...
+        strcmp(opt.badchan, 'plot'))
     
     done = false;
     colplot = false;
     
     % check mapping badchan --> elec
-    kill = zeros(length(badchan),1);
-    for k = 1:length(badchan)
-        temp = find(elec == badchan(k));
+    kill = zeros(length(opt.badchan),1);
+    for k = 1:length(opt.badchan)
+        temp = find(opt.elec == opt.badchan(k));
         if temp
             kill(k) = temp;
         end
@@ -266,23 +230,23 @@ if ~isempty(badchan)&& ~(ischar(badplot) &&...
         done = true;
     end
         
-    if ~done && ischar(badplot) && strcmp(badplot, 'hide') 
+    if ~done && ischar(opt.badplot) && strcmp(opt.badplot, 'hide') 
         % delete given elecs:
-        elec(kill) = [];
+        opt.elec(kill) = [];
         clear kill
         done = true;
     end
     
-    if ~done && ischar(badplot) && strcmp(...
-            badplot, 'grey')
+    if ~done && ischar(opt.badplot) && strcmp(...
+            opt.badplot, 'grey')
         colplot = true;
         color = [195, 195, 195]/255;
     end
     
-    if ~done && isnumeric(badplot) && size(...
-            badplot, 2) == 3
+    if ~done && isnumeric(opt.badplot) && size(...
+            opt.badplot, 2) == 3
         colplot = true;
-        color = badplot(1,:);
+        color = opt.badplot(1,:);
         
         % from 0-255 colors to 0-1
         if sum(color > 1) > 0
@@ -291,14 +255,14 @@ if ~isempty(badchan)&& ~(ischar(badplot) &&...
     end
     
     if colplot
-        rep = ceil(length(elec) / length(elec_color));
+        rep = ceil(length(opt.elec) / length(opt.ecol));
         
         if rep > 1
-            elec_color = repmat(elec_color, [rep, 1]);
-            elec_color = elec_color(1:length(elec));
+            opt.ecol = repmat(opt.ecol, [rep, 1]);
+            opt.ecol = opt.ecol(1:length(opt.elec));
         end
         
-        elec_color(length(elec) + 1 - kill) = deal({color});
+        opt.ecol(length(opt.elec) + 1 - kill) = deal({color});
     end
     
     clear colplot done
@@ -307,39 +271,39 @@ end
 
 % button name
 if db_present
-    butlabel = ['UPDATE db(', num2str(r), ')'];
+    opt.butlabel = ['UPDATE db(', num2str(r), ')'];
 end
 
 % if no eegplot2
 if isempty(which('eegplot2'))
     % plot EEG.data
-    eegplot(EEG.data(elec,:,:), 'srate', EEG.srate, 'color', ...
-        elec_color, 'dispchans', nelec, 'eloc_file',...
-        EEG.chanlocs(elec), 'events', EEG.event, 'winrej',...
-        rejmat, 'tag', tag, 'wincolor', ...
-        EEG.reject.rejmanualcol, 'butlabel', butlabel,...
-        'command', com, 'winlength', wlen, 'limits', ...
+    eegplot(EEG.data(opt.elec,:,:), 'srate', EEG.srate, 'color', ...
+        opt.ecol, 'dispchans', opt.nelec, 'eloc_file',...
+        EEG.chanlocs(opt.elec), 'events', EEG.event, 'winrej',...
+        rejmat, 'tag', opt.tag, 'wincolor', ...
+        EEG.reject.rejmanualcol, 'butlabel', opt.butlabel,...
+        'command', opt.comm, 'winlength', opt.wlen, 'limits', ...
         [EEG.times(1), EEG.times(end)]);
 else
     % plot EEG.data
-    eegplot2(EEG.data(elec,:,:), 'srate', EEG.srate, 'color', ...
-        elec_color, 'dispchans', nelec, 'eloc_file',...
-        EEG.chanlocs(elec), 'events', EEG.event, 'winrej',...
-        rejmat, 'tag', tag, 'wincolor', ...
-        EEG.reject.rejmanualcol, 'butlabel', butlabel,...
-        'command', com, 'winlength', wlen, 'limits', ...
+    eegplot2(EEG.data(opt.elec,:,:), 'srate', EEG.srate, 'color', ...
+        opt.ecol, 'dispchans', opt.nelec, 'eloc_file',...
+        EEG.chanlocs(opt.elec), 'events', EEG.event, 'winrej',...
+        rejmat, 'tag', opt.tag, 'wincolor', ...
+        EEG.reject.rejmanualcol, 'butlabel', opt.butlabel,...
         [EEG.times(1), EEG.times(end)], 'labels', ...
+        'command', opt.comm, 'winlength', opt.wlen, 'limits', ...
         labels, 'labcol', labcol, 'linesmoothing',...
-        lsmo);
+        opt.lsmo);
 end
 
-h = findobj('tag', tag);
+h = findobj('tag', opt.tag);
 
-if nowait && nargout > 0
+if opt.nowait && nargout > 0
     varargout{1} = h; %#ok<*UNRCH>
 end
 
-if ~nowait
+if ~opt.nowait
     uiwait(h);
     
     % update db autorem
@@ -356,7 +320,7 @@ if ~nowait
         % get TMPREJ from workspace
         TMPREJ = evalin('base', 'TMPREJ;');
         
-        if update
+        if opt.update
             tmpsz = size(TMPREJ);
             
             % check for segments
@@ -411,20 +375,20 @@ if ~nowait
             clear tmpsz nseg
         end
         
-    elseif ~update
+    elseif ~opt.update
         TMPREJ = []; %#ok<NASGU>
     end
     
     % returning output
     if db_present && nargout > 0
-        if update
+        if opt.update
             varargout{1} = db;
             if nargout > 1, varargout{2} = EEG; end;
         else
             varargout{1} = TMPREJ;
         end
     elseif nargout > 0
-        if update
+        if opt.update
             varargout{1} = EEG;
         else
             varargout{1} = TMPREJ;
