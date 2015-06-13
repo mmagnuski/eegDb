@@ -36,4 +36,6 @@ if info.db_present && info.otherfigh && femp(info, 'db_gui')
 
 	% close fiugre if still alive
 	close(figh);
+else
+	uiresume(figh);
 end

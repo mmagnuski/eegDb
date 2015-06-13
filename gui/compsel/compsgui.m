@@ -528,7 +528,7 @@ for i = 1:length(compnum)
         %          findobj is unneccessarily slow
 
         % find the button of a present figure:
-        button = findobj('parent', h.fig, 'tag', ['comp' num2str(ri)]);
+        button = findobj('parent', h.fig, 'tag', ['comp' num2str(ri)]); %#ok<UNRCH>
         
         % no such button was found, whoops!
         if isempty(button)
@@ -646,12 +646,14 @@ if ishandle(h.fig)
     uiwait(h.fig);
 end
 
-if info.EEG_present
+if ishandle(h.fig) && info.EEG_present
     EEG.reject.gcompreject(info.comps.state == 1) = 1;
     out_eeg = find(strcmp(varargout_ord, 'EEG'));
     if ~isempty(out_eeg) && nargout > 0
+        EEG = getappdata(h.fig, 'EEG');
         varargout{out_eeg} = EEG;
     end
+    close(h.fig);
 end
 
 % CHANGE
