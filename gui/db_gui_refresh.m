@@ -112,7 +112,6 @@ f = db_checkfields(handles.db, handles.r, {'versions'});
 if ~f.fsubf
     % add main version
     handles.db = db_mainversion(handles.db, handles.r);
-    
 end
 
 guidata(handles.figure1, handles);

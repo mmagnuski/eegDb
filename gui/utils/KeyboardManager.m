@@ -30,14 +30,11 @@ methods
         obj.buffer = {};
         obj.hBox = [];
 
-        % check optional input
-        if ~isempty(varargin)
-            vin = struct(varargin);
-            flds = fields(vin);
-            testfld = find(strcmpi('hbox', flds));
-            if ~isempty(testfld)
-                obj.hBox = vin.(flds{testfld});
-            end
+        opt.hbox = [];
+        opt = parse_arse(varargin, opt);
+
+        if ~isempty(opt.hbox)
+            obj.hBox = opt.hbox;
         end
     end
 

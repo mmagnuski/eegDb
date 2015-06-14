@@ -8,13 +8,13 @@ function fldch = db_checkfields(db, r, flds, varargin)
 % written by Miko³aj Magnuski, imponderabilion@gmail.com
 
 %% defaults
-ignore = {};
-subf = false;
-subignore = {};
-simplify = false;
+opt.ignore = {};
+opt.subfields = false;
+opt.subignore = {};
+opt.simplify = false;
 
 % get fields
-if isempty(flds)
+if ~exist('flds', 'var') || isempty(flds)
     fldch.fields = fields(db(r));
     fldch.fields = fldch.fields(:);
 else
@@ -23,30 +23,20 @@ end
 
 %% check inputs
 if nargin > 3
-    inp = {'subfields', 'ignore', 'subignore', 'simplify'};
-    tovar = {'subf', 'ignore', 'subignore', 'simplify'};
-    
-    for i = 1:length(inp)
-        ind = find(strcmp(inp{i}, varargin));
-        if ~isempty(ind)
-            % CHANGE - try to avoid eval + num2str
-            %          num2str takes a lot of time...
-            eval([tovar{i}, ' = varargin{', num2str(ind + 1), '};']);
-        end
-    end
+    opt = parse_arse(varargin, opt);
 end
 
 %% last preparations
-if subf
+if opt.subfields
     fldch.subfields = {}; %#ok<UNRCH>
     fldch.subfnonempt = {};
 end
 
-% set ignore
-if ~isempty(ignore)
+% set opt.ignore
+if ~isempty(opt.ignore)
     kill = false(size(fldch.fields));
-    for ig = 1:length(ignore)
-        kill = kill | strcmp(ignore{ig}, fldch.fields);
+    for ig = 1:length(opt.ignore)
+        kill = kill | strcmp(opt.ignore{ig}, fldch.fields);
     end
     fldch.fields(kill) = [];
 end
@@ -84,17 +74,17 @@ for f = 1:length(fldch.fields)
         continue
     end
     
-    if subf && fldch.fsubf(f)
+    if opt.subfields && fldch.fsubf(f)
         % subfields
         fldch.subfields{f,1} = fields(db(r).(fldch.fields{f}));
         fldch.subfields{f,1} = fldch.subfields{f}(:);
         
         % if we need to ignore fields:
-        if ~isempty(subignore)
+        if ~isempty(opt.subignore)
             kill = false(size(fldch.subfields{f}));
             
-            for ig = 1:length(subignore)
-                found = find(strcmp(subignore{ig}, fldch.subfields{f}));
+            for ig = 1:length(opt.subignore)
+                found = find(strcmp(opt.subignore{ig}, fldch.subfields{f}));
                 
                 if ~isempty(found)
                     kill(found) = true;
@@ -116,6 +106,6 @@ for f = 1:length(fldch.fields)
     
 end
 
-if simplify
+if opt.simplify
     fldch = simplify_fldch(fldch); %#ok<UNRCH>
 end

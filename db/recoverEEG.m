@@ -381,8 +381,8 @@ if ~noICA && hasica
     EEG.icachansind = db(r).ICA.icachansind;
     
     % add dipfit info:
-    fld = db_checkfields(db, r, {'dipfit'});
-    if fld.fnonempt(1)
+    fld = femp(db(r), 'dipfit');
+    if fld
         EEG.dipfit = db(r).dipfit;
     end
     

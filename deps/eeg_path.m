@@ -23,16 +23,13 @@ function eeg_path(type, varargin)
 %     ADD and option for this
 
 %% defaults
-external = false;
+opt.external = false;
 remglob = true;
 % toolboxes = false; % add usage!
 
 %% check input
 if nargin > 1
-    fnd = strcmp('external', varargin);
-    if sum(fnd) > 0
-        external = true;
-    end
+    opt = parse_arse(varargin, opt);
 end
 
 % reformat type if char:
@@ -69,7 +66,7 @@ switch type
         myaddpath( eeglabpath, 'eeglab1020.ced',   [ 'functions' filesep 'resources'        ]);
         myaddpath( eeglabpath, 'startpane.m',      [ 'functions' filesep 'javachatfunc' ]);
         
-        if external
+        if opt.external
             %% adding all folders in external
             %  ------------------------------
             
