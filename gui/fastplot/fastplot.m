@@ -673,6 +673,12 @@ classdef fastplot < handle
                 obj.event.type(type2ind{i}) = i;
             end
 
+            % make sure that event names have \_ in place 
+            % of _ because matlab renders it as lower index
+            % CONSIDER - alltypes (rawtypes) vs disptypes
+            obj.event.alltypes = cellfun(@(x) strrep(x, '_', '\_'), ...
+                obj.event.alltypes, 'UniformOutput', false);
+
             % CHANGE
             % event colors - random at the moment
             obj.event.color = rand(obj.event.numtypes,3);
@@ -692,7 +698,7 @@ classdef fastplot < handle
                 % set default marks
                 if isempty(obj.marks)
                     obj.marks.names    = {'reject'};
-                    obj.marks.colors   = [0.85, 0.3, 0.1];
+                    obj.marks.colors   = [0.95, 0.73, 0.71];
                     obj.marks.current  = 1;
                     obj.marks.selected = false(1, obj.epoch.num);
                     obj.marks.lastclick = 0;
