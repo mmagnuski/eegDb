@@ -577,6 +577,7 @@ classdef fastplot < handle
                 end
             end
 
+            obj.opt.vim = false;
             obj.opt.data2 = [];
             % now check for 'data2' argument
             if ~isempty(first_char)
@@ -875,14 +876,16 @@ classdef fastplot < handle
             pattern{8,2} = {@obj.scale_signal, -1};
 
             % vim-like:
-            pattern{9,1} = {'num', 'h'};
-            pattern{9,2} = {@obj.move, -1, []};
-            pattern{10,1} = {'num', 'l'};
-            pattern{10,2} = {@obj.move, 1, []};
-            pattern{11,1} = {'num', 'w'};
-            pattern{11,2} = {@obj.move, 1, 'window'};
-            pattern{12,1} = {'num', 'b'};
-            pattern{12,2} = {@obj.move, -1, 'window'};
+            if obj.opt.vim
+                pattern{9,1} = {'num', 'h'};
+                pattern{9,2} = {@obj.move, -1, []};
+                pattern{10,1} = {'num', 'l'};
+                pattern{10,2} = {@obj.move, 1, []};
+                pattern{11,1} = {'num', 'w'};
+                pattern{11,2} = {@obj.move, 1, 'window'};
+                pattern{12,1} = {'num', 'b'};
+                pattern{12,2} = {@obj.move, -1, 'window'};
+            end
 
             % initialize 
             km.register(pattern);
