@@ -566,7 +566,7 @@ classdef fastplot < handle
             if isempty(args)
                 return
             end
-            first_char = find(cellfun(@ischar, args));
+            first_char = find(cellfun(@ischar, args), 1, 'first');
             if isempty(first_char) || (~isempty(first_char) && first_char > 1)
                 % some non-named arguments were given
                 % check if EEG struct
@@ -577,16 +577,15 @@ classdef fastplot < handle
                 end
             end
 
+            obj.opt.data2 = [];
             % now check for 'data2' argument
             if ~isempty(first_char)
-                str_args = args(first_char:end);
-                ifkey = strcmp('data2', str_args);
-                if any(ifkey)
-                    ind = find(ifkey);
-                    ind = ind(1);
-                    obj.data2 = str_args{ind + 1};
-                    obj.opt.readfield(end + 1) = {'data2'};
+                obj.opt = parse_arse(args(first_char:end), obj.opt);
                 end
+            end
+            if ~isempty(obj.opt.data2)
+                obj.data2 = str_args{ind + 1};
+                obj.opt.readfield(end + 1) = {'data2'};
             end
         end
                     
