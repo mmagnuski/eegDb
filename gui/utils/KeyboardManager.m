@@ -16,7 +16,12 @@ properties (SetAccess = private, GetAccess = public)
     numstr
     nums
     selected
+    lastpress_time
+end
+
+properties
     hBox
+    timeout
 end
 
 methods
@@ -29,13 +34,16 @@ methods
         obj.numstr = [];
         obj.buffer = {};
         obj.hBox = [];
+        obj.lastpress_time = clock();
 
         opt.hbox = [];
+        opt.timeout = 3;
         opt = parse_arse(varargin, opt);
 
         if ~isempty(opt.hbox)
             obj.hBox = opt.hbox;
         end
+        obj.timeout = opt.timeout;
     end
 
     function eval(obj, string)
@@ -80,6 +88,13 @@ methods
         if ~isempty(event.Modifier)
             return
         end
+        % reset buffer if time diff longer than timeout:
+        time_now = clock();
+        if etime(time_now, obj.lastpress_time) > obj.timeout
+            obj.reset();
+        end
+        obj.lastpress_time = time_now;
+
         % get pressed character and key
         % (currently we only use key, but
         %  this may change in the future)
