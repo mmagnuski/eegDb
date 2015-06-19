@@ -78,6 +78,13 @@ for nump = start:-1:1
         hnd(nump) = eval([topo{nump, 1}, '(', addcom,...
             '''Parent'', axh, command{:});']);
     else
+        % make sure we do not set ContourMatrix
+        cmat = strcmp('ContourMatrix', command);
+        if any(cmat)
+            cmat_ind = find(cmat);
+            command(cmat_ind:cmat_ind+1) = [];
+        end
+
         [~, hnd(nump)] = eval([topo{nump, 1}, '(', addcom,...
             '''Parent'', axh, command{:});']);
     end
