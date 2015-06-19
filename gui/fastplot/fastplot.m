@@ -563,6 +563,9 @@ classdef fastplot < handle
             % helper function that lets to parse matlab style arguments
             % (why oh why matlab doesn't have named function arguments?)
             
+            obj.opt.vim = false;
+            obj.opt.data2 = [];
+
             if isempty(args)
                 return
             end
@@ -577,15 +580,13 @@ classdef fastplot < handle
                 end
             end
 
-            obj.opt.vim = false;
-            obj.opt.data2 = [];
             % now check for 'data2' argument
             if ~isempty(first_char)
                 obj.opt = parse_arse(args(first_char:end), obj.opt);
-                end
             end
             if ~isempty(obj.opt.data2)
-                obj.data2 = str_args{ind + 1};
+                obj.data2 = obj.opt.data2;
+                obj.opt.data2 = true;
                 obj.opt.readfield(end + 1) = {'data2'};
             end
         end
