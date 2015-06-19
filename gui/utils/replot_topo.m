@@ -2,8 +2,8 @@ function replot_topo(topocache, compN, axh)
 
 % NOHELPINFO
 
-% TODOs:
-% [ ] - needs some more work, cleaning up etc.
+% 2015a seems to have problems with setting 
+% ContourMatrix of Contour
 
 persistent is2014b
 if isempty(is2014b)
@@ -36,6 +36,7 @@ topo = topocache(gettopo).Children;
 start = size(topo,1);
 hnd = zeros(start,1);
 
+% loop through children of the topo:
 for nump = start:-1:1
     
     % get fields:
@@ -59,6 +60,8 @@ for nump = start:-1:1
         continue
     end
     
+    % CHANGE - below structure is transformed to
+    %          a cell matrix, this could use struct_unroll
     command = cell(1,length(flds)*2);
     stp = 1;
     
