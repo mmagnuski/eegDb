@@ -4,7 +4,7 @@ classdef KeyboardManager < handle
 % buttonpress handler for eegplot
 
 % TODOs:
-% [ ] finish eval method
+% [x] finish eval method
 % [ ] add a method to clear registered patterns
 % [ ] think how registering method should work
 
@@ -30,7 +30,7 @@ methods
         obj.h = h;
         obj.patterns = {};
         obj.selected = {};
-        obj.nums = mat2cell('0123456789', 1, ones(1, 10));
+        obj.nums = num2cell('0123456789');
         obj.numstr = [];
         obj.buffer = {};
         obj.hBox = [];
@@ -50,7 +50,7 @@ methods
         % KeyboardManager.eval() allows to evaluate strings
         % as if they were actual sequences of keyboard button presses
 
-        string_chars = mat2cell(string, 1, ones(1, length(string)));
+        string_chars = num2cell(string);
         rgt = cellfun(@(x) x == '>', string_chars);
         lft = cellfun(@(x) x == '<', string_chars);
         string_chars(rgt) = {'rightarrow'};
