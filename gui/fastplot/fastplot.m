@@ -371,6 +371,27 @@ classdef fastplot < handle
             end
         end
 
+
+        function windowsize(obj, val, num)
+            if ~exist('val', 'var')
+                val = 1;
+            end
+            if ~exist('num', 'var')
+                num = 1;
+            end
+
+            % ADD !!! check limits, safty checks !!!
+            obj.opt.num_epoch_per_window = obj.opt.num_epoch_per_window + (val*num);
+            obj.window.size = length(obj.epoch.time) * obj.opt.num_epoch_per_window;
+            obj.window.lims = [obj.window.lims(1), obj.window.lims(1) + obj.window.size - 1];
+            obj.window.span = obj.window.lims(1):obj.window.lims(2);
+
+            set(obj.h.ax, 'XLim', [1, length(obj.epoch.time) * ...
+                obj.opt.num_epoch_per_window]);
+            obj.refresh();
+        end
+
+
         function add_mark(obj, mark)
             % allows to add new mark types to fastplot
             % this does not mark epochs but adds new mark types 
@@ -875,17 +896,21 @@ classdef fastplot < handle
             pattern{7,2} = {@obj.scale_signal, 1};
             pattern{8,1} = {'num', 'hyphen'};
             pattern{8,2} = {@obj.scale_signal, -1};
+            pattern{9,1} = {'num', 'e', 'equal'};
+            pattern{9,2} = {@obj.windowsize, 1};
+            pattern{10,1} = {'num', 'e', 'hyphen'};
+            pattern{10,2} = {@obj.windowsize, -1};
 
             % vim-like:
             if obj.opt.vim
-                pattern{9,1} = {'num', 'h'};
-                pattern{9,2} = {@obj.move, -1, []};
-                pattern{10,1} = {'num', 'l'};
-                pattern{10,2} = {@obj.move, 1, []};
-                pattern{11,1} = {'num', 'w'};
-                pattern{11,2} = {@obj.move, 1, 'window'};
-                pattern{12,1} = {'num', 'b'};
-                pattern{12,2} = {@obj.move, -1, 'window'};
+                pattern{11,1} = {'num', 'h'};
+                pattern{11,2} = {@obj.move, -1, []};
+                pattern{12,1} = {'num', 'l'};
+                pattern{12,2} = {@obj.move, 1, []};
+                pattern{13,1} = {'num', 'w'};
+                pattern{13,2} = {@obj.move, 1, 'window'};
+                pattern{14,1} = {'num', 'b'};
+                pattern{14,2} = {@obj.move, -1, 'window'};
             end
 
             % initialize 
