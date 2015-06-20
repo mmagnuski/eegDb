@@ -103,6 +103,7 @@ overr_dir = false; noICA = false;
 ICAnorem = false;
 interp = false; segment = false;
 nosegment = false;
+haspostfilter = femp(db(r), 'postfilter');
 
 
 %% checking additional arguments
@@ -366,6 +367,10 @@ if ~loaded
     end
 end
 
+%% epoching if not haspostfilter
+if ~haspostfilter
+    EEG = db_epoch(EEG, db, r, min(segment, ~nosegment));
+end
 
 %% adding ICA info
 add_comprej = false;
@@ -446,6 +451,7 @@ if femp(db(r), 'postfilter')
 end
 
 %% epoching
+if haspostfilter
     EEG = db_epoch(EEG, db, r, min(segment, ~nosegment));
 end
 
