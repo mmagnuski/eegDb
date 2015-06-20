@@ -714,6 +714,10 @@ if ~f
     eeg_path('add');
 end
 
+if femp(handles.db(handles.r).ICA, 'icaweights')
+    % plot ica of the first record
+    linkfun_compexplore(handles.figure1);
+else
 %% run ica
 % for all versions and all selections that do not have ICA
 
@@ -775,7 +779,7 @@ for c = 1:length(cansel)
             guidata(hObject, handles);
         end
     end
-    
+    end
 end
 
 % update text display
