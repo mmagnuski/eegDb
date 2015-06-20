@@ -218,7 +218,8 @@ else
         drawnow;
         
         % RECOVER EEG data
-        handles.EEG = recoverEEG(handles.db, handles.r, 'local', handles.recovopts{:});
+        [handles.EEG, handles.db] = recoverEEG(handles.db, handles.r, ...
+            'local', 'tempsave', handles.recovopts{:});
         handles.rEEG = handles.r;
         rEEG = handles.rEEG;
         
