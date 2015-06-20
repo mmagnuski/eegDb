@@ -1,4 +1,4 @@
-function EEG = recoverEEG(db, r, varargin)
+function [EEG, orig_db] = recoverEEG(db, r, varargin)
 
 % RECOVEREEG recovers a file from raw data
 % according to db database 
@@ -18,8 +18,8 @@ function EEG = recoverEEG(db, r, varargin)
 % additional keys:
 % 'prerej'      - remove only the prerejected
 %                 epochs
-% 'loaded'      - the file is loaded - look for corresponding
-%                 modifications in the database and recover
+% 'tempsave'    - whether to save a temporary file to
+%                 speed up later recovery
 % 'dir'         - allows to pass the directory
 %                 where files reside (the path
 %                 stated in the database can be
@@ -102,15 +102,17 @@ loaded = false; addfilt = [];
 overr_dir = false; noICA = false;
 ICAnorem = false;
 interp = false; segment = false;
-nosegment = false;
+nosegment = false; tempsave = false;
 haspostfilter = femp(db(r), 'postfilter');
+orig_db = db;
 
 
 %% checking additional arguments
 if nargin > 2
     % optional arguments
     args = {'interp', 'ICAnorem', 'prerej', 'local',...
-        'loaded', 'nofilter', 'noICA', 'nosegment'};
+        'loaded', 'nofilter', 'noICA', 'nosegment', ...
+        'tempsave'};
     
     % simple argument checks
     for a = 1:length(args)
@@ -201,6 +203,20 @@ end
 %         end
 %     end
 % end
+
+% ======================
+% support for tempfiles:
+tmp = db_temp_get(db, r);
+got_temp = false;
+if ~isempty(tmp)
+    got_temp = true;
+    db(r).filename = tmp.filename;
+    db(r).filepath = tmp.filepath;
+    db(r).filter = [];
+    if femp(tmp, 'epoch')
+        db(r).epoch = [];
+    end
+end
 
 % ====================================
 % if user chooses to override filepath
@@ -370,6 +386,40 @@ end
 %% epoching if not haspostfilter
 if ~haspostfilter
     EEG = db_epoch(EEG, db, r, min(segment, ~nosegment));
+    if ~got_temp && tempsave
+        % save temp
+        % CHANGE - multiple paths issue, CleanLine path issue
+        valid_path = get_valid_path(db(r).filepath, 'file', ...
+            db(r).filename);
+        temp_path = fullfile(valid_path, 'tempfiles');
+        if ~isdir(temp_path)
+            mkdir(temp_path)
+        end
+        % ADD CHANGE - ensure that such tempfile is not present
+        EEG.filename = [num2str(randi(9999, 1)), '.set'];
+        EEG.filepath = temp_path;
+        pop_saveset(EEG, 'filepath', temp_path, ...
+            'filename', EEG.filename);
+
+        % add temp info to EEG.etc.temp
+        EEG.etc.temp.filter = db(r).filter;
+        EEG.etc.temp.epoch = db(r).epoch;
+        EEG.etc.temp.filepath = temp_path;
+        EEG.etc.temp.filename = EEG.filename;
+
+        if femp(db(r).datainfo, 'cleanline')
+            EEG.etc.temp.cleanline = db(r).datainfo.cleanline;
+        else
+            EEG.etc.temp.cleanline = [];
+        end
+        if ~femp(orig_db(r).datainfo, 'tempfiles')
+            orig_db(r).datainfo.tempfiles = EEG.etc.temp;
+        else
+            flds = fields(orig_db(r).datainfo.tempfiles);
+            EEG.etc.temp = orderfields(EEG.etc.temp, flds);
+            orig_db(r).datainfo.tempfiles(end+1) = EEG.etc.temp;
+        end
+    end
 end
 
 %% adding ICA info
