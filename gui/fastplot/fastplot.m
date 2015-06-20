@@ -616,9 +616,19 @@ classdef fastplot < handle
             end
         end
 
+
         function eval(obj, string)
             % EVAL evaluates a string as if it was a series of button presses
             obj.keys.eval(string);
+        end
+
+
+        function plot(obj)
+            if ~ishandle(obj.h.fig)
+                obj.launchplot();
+            else
+                obj.refresh();
+            end
         end
 
     end
