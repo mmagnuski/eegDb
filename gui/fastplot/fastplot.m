@@ -371,6 +371,7 @@ classdef fastplot < handle
             end
         end
 
+
         function scale_signal(obj, val, num)
 
             if ~exist('num', 'var')
@@ -383,6 +384,7 @@ classdef fastplot < handle
 
             obj.refresh('signal');
         end
+
 
         function ep = epochlimits_in_range(obj, rng)
             % gives latency of epoch limits that are
@@ -493,6 +495,7 @@ classdef fastplot < handle
 
         end
 
+
         function gui_add_mark(obj)
             % ask for mark name:
             markname = gui_editbox('', {'Type mark name'; 'here:'});
@@ -569,6 +572,7 @@ classdef fastplot < handle
             end
         end
 
+
         function select_mark(obj)
             % SELECT_MARK brings up fuzzy menu for mark selection
             %
@@ -595,6 +599,7 @@ classdef fastplot < handle
             % update used mark
             obj.use_mark(marknum);
         end
+
 
         function mark(obj, mark_type, epoch_ind)
             % MARK allows to mark specific epochs with given mark type
