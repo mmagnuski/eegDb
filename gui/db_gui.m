@@ -410,6 +410,8 @@ function col_butt_Callback(hObject, eventdata, handles)
 % --- Executes on button press in next_butt.
 function next_butt_Callback(hObject, eventdata, handles)
 
+handles = guidata(hObject);
+
 if handles.r < length(handles.db)
     handles.r = handles.r + 1;
     
@@ -423,6 +425,8 @@ end
 
 % --- Executes on button press in prev_butt.
 function prev_butt_Callback(hObject, eventdata, handles)
+
+handles = guidata(hObject);
 
 if handles.r > 1
     handles.r = handles.r - 1;
