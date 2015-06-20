@@ -60,14 +60,6 @@ function [EEG, orig_db] = recoverEEG(db, r, varargin)
 %     covery.
 %
 
-% VERSION info:
-% 2014.01.27 --> compressed icaweights temp usage when
-%                interpolating
-% 2014.03.25 --> moved interpolation before epoching
-%                added postfilter between interpolation
-%                and epoching
-% 2014.06.22 --> changed path checking loop to db_path 
-%                function call
 
 % TODOs:
 % [ ] path availability and eeglab inteface presence
@@ -90,9 +82,6 @@ function [EEG, orig_db] = recoverEEG(db, r, varargin)
 %     visible
 % [ ] remove the paths to eeglab in 'local' or recover
 %     previous path?
-% [ ] CHANGE 'loaded' behavior - now it only adds ICA,
-%     should it perform other modifs (filtering, epoching,
-%     etc.)? How should 'loaded' generally work??
 
 
 %% defaults:
@@ -137,10 +126,9 @@ if nargin > 2
     reslt = strcmp('dir', varargin);
     if sum(reslt)>0
         overr_dir = true;
-        path = varargin{find(reslt) + 1};
+        additional_path = varargin{find(reslt) + 1};
     end
     
-    %zmienilam cos - tzn co? [Miko]
     % ADD - check for path override
 end
 
@@ -221,7 +209,7 @@ end
 % ====================================
 % if user chooses to override filepath
 if overr_dir
-    db(r).filepath = path;
+    db(r).filepath = additional_path;
 end
 
 % ================================================
@@ -321,8 +309,7 @@ if ~loaded
     % checking filtering
     if ~nofilter
         % optional filtering:
-        if isfield(db(r), 'filter') && ...
-                ~isempty(db(r).filter)
+        if femp(db(r), 'filter')
             
             % setting up filter:
             filt = db(r).filter;
