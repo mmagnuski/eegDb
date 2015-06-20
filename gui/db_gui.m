@@ -688,6 +688,7 @@ function runICA_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % check selection
+handles = guidata(hObject);
 if isempty(handles.selected)
     sel = handles.r;
 else
@@ -779,7 +780,6 @@ for c = 1:length(cansel)
             guidata(hObject, handles);
         end
     end
-    end
 end
 
 % update text display
@@ -791,6 +791,7 @@ guidata(hObject, handles);
 
 % refresh GUI
 db_gui_refresh(handles);
+end
 
 % --------------------------------------------------------------------
 function vers_Callback(hObject, eventdata, handles)
