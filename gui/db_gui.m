@@ -218,7 +218,8 @@ else
         drawnow;
         
         % RECOVER EEG data
-        handles.EEG = recoverEEG(handles.db, handles.r, 'local', handles.recovopts{:});
+        [handles.EEG, handles.db] = recoverEEG(handles.db, handles.r, ...
+            'local', 'tempsave', handles.recovopts{:});
         handles.rEEG = handles.r;
         rEEG = handles.rEEG;
         
@@ -409,6 +410,8 @@ function col_butt_Callback(hObject, eventdata, handles)
 % --- Executes on button press in next_butt.
 function next_butt_Callback(hObject, eventdata, handles)
 
+handles = guidata(hObject);
+
 if handles.r < length(handles.db)
     handles.r = handles.r + 1;
     
@@ -422,6 +425,8 @@ end
 
 % --- Executes on button press in prev_butt.
 function prev_butt_Callback(hObject, eventdata, handles)
+
+handles = guidata(hObject);
 
 if handles.r > 1
     handles.r = handles.r - 1;
@@ -688,6 +693,7 @@ function runICA_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % check selection
+handles = guidata(hObject);
 if isempty(handles.selected)
     sel = handles.r;
 else
@@ -779,7 +785,6 @@ for c = 1:length(cansel)
             guidata(hObject, handles);
         end
     end
-    end
 end
 
 % update text display
@@ -791,6 +796,7 @@ guidata(hObject, handles);
 
 % refresh GUI
 db_gui_refresh(handles);
+end
 
 % --------------------------------------------------------------------
 function vers_Callback(hObject, eventdata, handles)

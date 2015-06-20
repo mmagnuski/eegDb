@@ -1,4 +1,4 @@
-function EEG = recoverEEG(db, r, varargin)
+function [EEG, orig_db] = recoverEEG(db, r, varargin)
 
 % RECOVEREEG recovers a file from raw data
 % according to db database 
@@ -18,8 +18,8 @@ function EEG = recoverEEG(db, r, varargin)
 % additional keys:
 % 'prerej'      - remove only the prerejected
 %                 epochs
-% 'loaded'      - the file is loaded - look for corresponding
-%                 modifications in the database and recover
+% 'tempsave'    - whether to save a temporary file to
+%                 speed up later recovery
 % 'dir'         - allows to pass the directory
 %                 where files reside (the path
 %                 stated in the database can be
@@ -60,14 +60,6 @@ function EEG = recoverEEG(db, r, varargin)
 %     covery.
 %
 
-% VERSION info:
-% 2014.01.27 --> compressed icaweights temp usage when
-%                interpolating
-% 2014.03.25 --> moved interpolation before epoching
-%                added postfilter between interpolation
-%                and epoching
-% 2014.06.22 --> changed path checking loop to db_path 
-%                function call
 
 % TODOs:
 % [ ] path availability and eeglab inteface presence
@@ -90,9 +82,6 @@ function EEG = recoverEEG(db, r, varargin)
 %     visible
 % [ ] remove the paths to eeglab in 'local' or recover
 %     previous path?
-% [ ] CHANGE 'loaded' behavior - now it only adds ICA,
-%     should it perform other modifs (filtering, epoching,
-%     etc.)? How should 'loaded' generally work??
 
 
 %% defaults:
@@ -100,17 +89,19 @@ prerej = false; cleanl = false;
 local = false; nofilter = false;
 loaded = false; addfilt = [];
 overr_dir = false; noICA = false;
-code_id = '\code:'; ICAnorem = false;
+ICAnorem = false;
 interp = false; segment = false;
-nosegment = false;
+nosegment = false; tempsave = false;
+haspostfilter = femp(db(r), 'postfilter');
+orig_db = db;
 
-cidlen = length(code_id);
 
 %% checking additional arguments
 if nargin > 2
     % optional arguments
     args = {'interp', 'ICAnorem', 'prerej', 'local',...
-        'loaded', 'nofilter', 'noICA', 'nosegment'};
+        'loaded', 'nofilter', 'noICA', 'nosegment', ...
+        'tempsave'};
     
     % simple argument checks
     for a = 1:length(args)
@@ -135,10 +126,9 @@ if nargin > 2
     reslt = strcmp('dir', varargin);
     if sum(reslt)>0
         overr_dir = true;
-        path = varargin{find(reslt) + 1};
+        additional_path = varargin{find(reslt) + 1};
     end
     
-    %zmienilam cos - tzn co? [Miko]
     % ADD - check for path override
 end
 
@@ -202,10 +192,24 @@ end
 %     end
 % end
 
+% ======================
+% support for tempfiles:
+tmp = db_temp_get(db, r);
+got_temp = false;
+if ~isempty(tmp)
+    got_temp = true;
+    db(r).filename = tmp.filename;
+    db(r).filepath = tmp.filepath;
+    db(r).filter = [];
+    if femp(tmp, 'epoch')
+        db(r).epoch = [];
+    end
+end
+
 % ====================================
 % if user chooses to override filepath
 if overr_dir
-    db(r).filepath = path;
+    db(r).filepath = additional_path;
 end
 
 % ================================================
@@ -305,8 +309,7 @@ if ~loaded
     % checking filtering
     if ~nofilter
         % optional filtering:
-        if isfield(db(r), 'filter') && ...
-                ~isempty(db(r).filter)
+        if femp(db(r), 'filter')
             
             % setting up filter:
             filt = db(r).filter;
@@ -367,6 +370,44 @@ if ~loaded
     end
 end
 
+%% epoching if not haspostfilter
+if ~haspostfilter
+    EEG = db_epoch(EEG, db, r, min(segment, ~nosegment));
+    if ~got_temp && tempsave
+        % save temp
+        % CHANGE - multiple paths issue, CleanLine path issue
+        valid_path = get_valid_path(db(r).filepath, 'file', ...
+            db(r).filename);
+        temp_path = fullfile(valid_path, 'tempfiles');
+        if ~isdir(temp_path)
+            mkdir(temp_path)
+        end
+        % ADD CHANGE - ensure that such tempfile is not present
+        EEG.filename = [num2str(randi(9999, 1)), '.set'];
+        EEG.filepath = temp_path;
+        pop_saveset(EEG, 'filepath', temp_path, ...
+            'filename', EEG.filename);
+
+        % add temp info to EEG.etc.temp
+        EEG.etc.temp.filter = db(r).filter;
+        EEG.etc.temp.epoch = db(r).epoch;
+        EEG.etc.temp.filepath = temp_path;
+        EEG.etc.temp.filename = EEG.filename;
+
+        if femp(db(r).datainfo, 'cleanline')
+            EEG.etc.temp.cleanline = db(r).datainfo.cleanline;
+        else
+            EEG.etc.temp.cleanline = [];
+        end
+        if ~femp(orig_db(r).datainfo, 'tempfiles')
+            orig_db(r).datainfo.tempfiles = EEG.etc.temp;
+        else
+            flds = fields(orig_db(r).datainfo.tempfiles);
+            EEG.etc.temp = orderfields(EEG.etc.temp, flds);
+            orig_db(r).datainfo.tempfiles(end+1) = EEG.etc.temp;
+        end
+    end
+end
 
 %% adding ICA info
 add_comprej = false;
@@ -447,94 +488,10 @@ if femp(db(r), 'postfilter')
 end
 
 %% epoching
-if femp(db(r), 'epoch')
-    if femp(db(r).epoch, 'locked') && ~db(r).epoch.locked
-        
-        % ==============
-        % onesec options
-        options.filename = EEG;
-        options.fill = true;
-        
-        flds = {'filter', 'winlen', 'distance',...
-            'leave', 'eventname'};
-        
-        % checking fields for onesecepoch
-        for f = 1:length(flds)
-            if femp(db(r).epoch, flds{f})
-                options.(flds{f}) = db(r).epoch.(flds{f});
-            end
-        end
-        
-        % if prerej is present then no need to use distance
-        if femp(db(r).reject, 'pre')
-            options.distance = [];
-        end
-        
-        % ===================
-        % call to onesecepoch
-        EEG = onesecepoch(options);
-        clear options
-        
-    elseif ~isempty(db(r).epoch.events) && ...
-            ~isempty(db(r).epoch.limits)
-        
-        % ==================
-        % classical epoching
-        epoc = db(r).epoch.events;
-        
-        % checking for code generator of epochs
-        % ADD - function handle for epoching?
-        %       or maybe not necessary - there is an
-        %       option for user-defined function
-        if ischar(epoc) && length(epoc) > cidlen && ...
-                strcmp(epoc(1:cidlen), code_id)
-            
-            epoc = eval(epoc(cidlen+1:end));
-        end
-        
-        EEG = db_fastepoch(EEG, epoc, db(r).epoch.limits);
-        
-        % =======================
-        % checking for segmenting
-        if segment && ~nosegment
-            EEG = segmentEEG(EEG, db(r).epoch.segment);
-        end
-    end
+if haspostfilter
+    EEG = db_epoch(EEG, db, r, min(segment, ~nosegment));
 end
 
-% CHANGE
-% [ ] if we segment then orig_numep should be adjusted too
-% [ ] instead of numep this all can be done in a smarter way
-%                1) generally - onesec can add numep too
-%                2) numep can be inferred from length of rejections
-%                   in db(r)!
-%                3) ...
-% [ ] in the current version only onesecepoching is checked
-%     for while in future releases we want to include also
-%     conditional epoch extraction (only correct etc.) which
-%     is another prerej
-%
-%
-% ======================
-% adding orig_numep info
-%
-% (this is later used when rejections are added
-%  using a recovered file that has some of the
-%  rejections already removed)
-%
-% if epoched signal add orig_numep
-EEG.etc.orig_numep = size(EEG.data, 3);
-
-% if onesecepoch was perfromed add onesec info
-if femp(db(r).epoch, 'locked') && ~db(r).epoch.locked
-    
-    % either prerej is nonempty  % or what?
-    if femp(db(r).reject, 'pre')
-        % there is some info about prerej,
-        % we correct orig_numep
-        EEG.etc.orig_numep = EEG.etc.orig_numep - length(db(r).reject.pre);
-    end
-end
 
 %% removing bad epochs
 if ~prerej && ~isempty(db(r).reject.all)
