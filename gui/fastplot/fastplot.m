@@ -1,6 +1,8 @@
 classdef fastplot < handle
     
-    % fastplot is a fast and friendly signal plotter.
+    % FASTPLOT is a fast and friendly signal plotter.
+    % It has full keyboard support, with some vim-like
+    % features (see 'keyboard shortcuts' section).
     % 
     % plt = fastplot(EEG);
     %
@@ -12,9 +14,41 @@ classdef fastplot < handle
     %    .epoch
     %    .event
     %    .times
-    %    
     %
-    % the output is a fastplot object
+    % optional input
+    % --------------
+    % second EEG can be given ....
+    %
+    % key-value options
+    % -----------------
+    % 'vim' - *logical*, whether vim keybindings are active
+    %         (more information in 'keyboard shortcuts' section)
+    %         default: true
+    % 'data2' - *structure* second dataset to compare with the
+    %           first one. It must be an EEG structure of the
+    %           same size as the first EEG passed. If data2 is
+    %           passed the user can switch between viewing one
+    %           or the other of the two datasets with up/down
+    %           key presses (or k/j if vim mode is on)
+    %
+    % examples
+    % --------
+    % run fastplot with vim keybindings on:
+    % plt = fastplot(EEG, 'vim', true);
+    %    
+    % run fastplot comparing two datasets (for example
+    % one with all components and the other with a sub-
+    % set of components removed):
+    % plt = fastplot(EEG, EEG2);
+    %
+    % the same as above can be also done with key-value pairs:
+    % plt = fastplot(EEG, 'data2', EEG2);
+    %
+    % output
+    % ------
+    % the output is a fastplot object. Below you can find the
+    % description of its properties and methods.
+    %
     % fastplot properties:
     % --------------------
     % h        -  structure of handles to:
@@ -45,6 +79,15 @@ classdef fastplot < handle
     %         .signal_scale
     % keys     -  a KeyboardManager instance - it is responsible for keyboard
     %             interactions with the gui including sequences of key presses
+    %
+    % fastplot methdos
+    % ----------------
+    % plot
+    % move
+    % windowsize
+    % mark
+    % use_mark
+    % ...
 
     % REMEMBER
     % opt could contain data_names field that could inform the
