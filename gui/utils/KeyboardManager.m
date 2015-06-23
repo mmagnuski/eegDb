@@ -70,6 +70,13 @@ methods
         % specific functions
         % FIXHELPINFO
 
+        if ~iscell(patterns) || ~(size(patterns, 2) == 2)
+            error(['input patterns must be N by 2 cell arrays with the', ...
+                'first column containing keypress sequences and the second', ...
+                'column containing handles to functions that should be ', ...
+                'evaluated when the keypress/keypress sequence ocurrs.']);
+        end
+
         obj.patterns = [obj.patterns; patterns];
         if isempty(obj.buffer)
             obj.selected = obj.patterns;
