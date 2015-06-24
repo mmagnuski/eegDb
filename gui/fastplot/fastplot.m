@@ -732,6 +732,8 @@ classdef fastplot < handle
             obj.plotevents();
             % plot epoch limits
             obj.plot_epochlimits();
+            % plot events too
+            obj.plot_marks();
 
             % set keyboard shortcuts
             obj.init_keypress();
