@@ -21,6 +21,7 @@ classdef fastplot < handle
     %
     % key-value options
     % -----------------
+    % 'show' - whether to immediately plot the signal
     % 'vim' - *logical*, whether vim keybindings are active
     %         (more information in 'keyboard shortcuts' section)
     %         default: true
@@ -231,7 +232,9 @@ classdef fastplot < handle
             if ~ifpix; set(0, 'unit', unts); end
 
             % launch the plot
-            obj.launchplot();
+            if obj.opt.show
+                obj.launchplot();
+            end
         end
 
 
@@ -242,6 +245,9 @@ classdef fastplot < handle
 
             % during re-plotting:
             % always use set 'XData', 'YData'
+            if ~obj.opt.show
+                return
+            end
             obj.window.span = obj.window.lims(1):obj.window.lims(2);
             if ~exist('elements', 'var')
                 elements = {'all'};
@@ -431,8 +437,10 @@ classdef fastplot < handle
             obj.window.lims = [obj.window.lims(1), obj.window.lims(1) + obj.window.size - 1];
             obj.window.span = obj.window.lims(1):obj.window.lims(2);
 
-            set(obj.h.ax, 'XLim', [1, length(obj.epoch.time) * ...
-                obj.opt.num_epoch_per_window]);
+            if obj.opt.show
+                set(obj.h.ax, 'XLim', [1, length(obj.epoch.time) * ...
+                    obj.opt.num_epoch_per_window]);
+            end
             obj.refresh();
         end
 
@@ -624,7 +632,8 @@ classdef fastplot < handle
 
 
         function plot(obj)
-            if ~ishandle(obj.h.fig)
+            obj.opt.show = true;
+            if ~femp(obj.h, 'fig') || ~ishandle(obj.h.fig)
                 obj.launchplot();
             else
                 obj.refresh();
@@ -643,6 +652,7 @@ classdef fastplot < handle
             % (why oh why matlab doesn't have named function arguments?)
             
             obj.opt.vim = false;
+            obj.opt.show = true;
             obj.opt.data2 = [];
 
             if isempty(args)
