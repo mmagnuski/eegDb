@@ -1092,7 +1092,7 @@ db_gui_refresh(h);
 function plot_opt_fun(h)
 
 colol = selcol_GUI; 
-set(h.edit(1), 'userdata', colol);
+set(h.edit(2), 'userdata', colol);
 
 function some_other_callback(hnd)
 

@@ -62,8 +62,16 @@ if strcmp(plotopt.plotter, 'eegplot')
 	end
 elseif strcmp(plotopt.plotter, 'fastplot')
 
+    % electrode color
+    if ischar(plotopt.ecol)
+        if strcmp(plotopt.ecol, 'off')
+            plotopt.ecol = [0, 0, 0];
+        end
+    end
+
 	% add vim opts
-	plt = fastplot(h.EEG, 'show', false, 'vim', true);
+	plt = fastplot(h.EEG, 'show', false, 'vim', true,...
+        'ecol', plotopt.ecol);
 	n_winepoch = plt.opt.num_epoch_per_window;
 	windiff = plotopt.winlen - n_winepoch;
 	plt.windowsize(windiff);
