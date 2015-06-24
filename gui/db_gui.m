@@ -530,7 +530,7 @@ if isempty(cansel)
 end
 
 % what kind of selections?
-rej = db_getrej(handles.db, handles.r, 'nonempt');
+rej = db_getrej(handles.db, handles.r, 'nonempt', true);
 seltypes = (rej.name)';
 
 
