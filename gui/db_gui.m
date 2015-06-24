@@ -263,78 +263,20 @@ else
     % ADD warining if removed is filled and
     % userrem or autorem too ?
     
-    % clear base workspace
-    evalin('base', 'clear TMPREJ TMPNEWREJ');
-    
-    % display badelectrodes according to options
-    badchadr = find(strcmp('badchan', handles.cooleegopts));
-    if ~isempty(badchadr)
-        handles.cooleegopts{badchadr + 1} = handles.db(handles.r)...
-            .chan.bad;
-    else
-        if ~isempty(handles.db(handles.r).chan.bad)
-            handles.cooleegopts = [handles.cooleegopts, 'badchan', ...
-                handles.db(handles.r).chan.bad];
-        else
-            handles.cooleegopts = [handles.cooleegopts, 'badchan'];
-            handles.cooleegopts{end + 1} = [];
-        end
-    end
-    
-    
-    %     if ~femp(handles, 'recovopts') || (femp(handles, 'recovopts')...
-    %             && sum(strcmp('interp', handles.recovopts)) == 0)
-    %     goodel(handles.db(handles.r).badchan) = [];
-    %     end
-    
-    % get rejections from cooleegplot
-    if isempty(handles.cooleegopts)
-        TMPREJ = cooleegplot(handles.EEG, 'eegDb', handles.db, ...
-            'r', handles.r, 'update', false);
-    else
-        TMPREJ = cooleegplot(handles.EEG, 'eegDb', handles.db, ...
-            'r', handles.r, 'update', false, ...
-            handles.cooleegopts{:});
-    end
-    
-    % CHECK db_newrejtype - and think about
-    %       whether it is of final form or only
-    %       a temporary solution (kind of slow...)
-    %
-    % get additional rejections set in eegplot2
-    handles.db = db_newrejtype(handles.db,...
-        []);
-    
-    % Update handles structure
-    guidata(hObject, handles);
-    
-    if ~isempty(TMPREJ)
-        % get current handles
-        handles = guidata(hObject);
-        
-        if ~exist('rEEG', 'var')
-            rEEG = handles.rEEG;
-        end
-        
-        % CHANGE FIXME
-        % update rejections
-        [handles.db, handles.EEG] = db_rejTMP(handles.db,...
-            rEEG, handles.EEG, TMPREJ);
-        
-        % Update handles structure
-        guidata(hObject, handles);
-        
-        % remove TMPREJ from base workspace
-        if evalin('base', 'exist(''TMPREJ'', ''var'');')
-            evalin('base', 'clear TMPREJ');
-        end
-    end
+    linkfun_eegplot(handles);
     
     % enable plotting
     set(hObject, 'Enable', 'on');
+
+    % get updated handles
+    handles = guidata(hObject);
     
     % Refresh GUI:
     db_gui_refresh(handles);
+    
+    % just to be sure - update version
+    currf = handles.db(handles.r).versions.current;
+    handles.db = db_updateversion(handles.db, handles.r, currf);
 end
 
 
