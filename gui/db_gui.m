@@ -83,10 +83,8 @@ end
 % CHANGE:
 % [ ] old (distance --> prerej) assumptions are dangerous
 %     should be changed as priority
-% [ ] organize handles into neat
-% structures and sub-structures
-% so that it's easiest to add
-% profile use later on
+% [ ] organize handles into neat structures and sub-structures
+%     so that it's easiest to add profile use later on
 % [ ] change handles to h and test
 %
 % currently it works this way:
