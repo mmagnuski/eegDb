@@ -138,8 +138,8 @@ handles.multisel_col = get(handles.multisel, 'BackgroundColor');
 handles.structpath = false;
 
 handles.recovopts = cell(1); % CHECK - why is this cell length one and not zero?
-handles.cooleegopts = {'ecol', 'off', 'winlen', 3, 'badplot', 'grey', ...
-    'lsmo', 'on'};
+handles.plotopts = struct('ecol', 'off', 'winlen', 3, ...
+    'badplot', 'grey', 'lsmo', 'off', 'plotter', 'eegplot');
 handles.last_recovered_opts = handles.recovopts;
 
 % set info_text to FiexedWidth
@@ -931,72 +931,47 @@ function coolplo_opt_Callback(hObject, eventdata, handles)
 h = guidata(hObject);
 
 hs = gui_multiedit('Plotting options', ...
-    {'electrode colors', 'show this many epochs',...
+    {'plotter', 'electrode colors', 'show this many epochs',...
     'plot bad channels in', 'line smoothing'},...
-    {'select colors', '4', 'ba³watkowy', 'on'});
+    {'eegplot', 'select colors', '4', 'ba³watkowy', 'on'});
 
-% ====================
-% num epochs displayed
-
-% CONSIDER - wrap the code below into one function
-%            as it is repeated 3 times in this
-%            function
-epdefadr = find(strcmp('winlen', h.cooleegopts));
-if ~isempty(epdefadr) && ~(epdefadr(1) > length(...
-        h.cooleegopts))
-    epdef = num2str(h.cooleegopts{epdefadr(1) + 1});
-    if isempty(epdef)
-        epdef = '3';
-    end
-else
-    epdef = '3';
-end
-
-set(hs.edit(2), 'string', epdef);
+% ============
+% plotter type
+opts = {'eegplot'; 'fastplot'};
+val = find(strcmp(h.plotopts.plotter, opts));
+set(hs.edit(1), 'style', 'popupmenu', ...
+    'string', opts, ...
+    'value', val);
 
 % ================
 % electrode colors
-coldefadr = find(strcmp('ecol', h.cooleegopts));
-if ~isempty(coldefadr) && ~(coldefadr(1) > length(...
-        h.cooleegopts))
-    coldef = h.cooleegopts{coldefadr(1) + 1};
-else
-    coldef = 'off';
-end
-
-set(hs.edit(1), 'userdata', coldef);
-set(hs.edit(1), 'callback', ...
+set(hs.edit(2), 'userdata', h.plotopts.ecol);
+set(hs.edit(2), 'callback', ...
     @(obj, evnt) plot_opt_fun(hs),...
     'style', 'pushbutton');
 
+% ====================
+% num epochs displayed
+set(hs.edit(3), 'string', h.plotopts.winlen);
 
-coldefadr = find(strcmp('badplot', h.cooleegopts));
 val = 1;
-if ~isempty(coldefadr) && ~(coldefadr(1) > length(...
-        h.cooleegopts))
-    coldef = h.cooleegopts{coldefadr(1) + 1};
-    if isnumeric(coldef)
-        val = 2;
+coldef = h.plotopts.badplot;
+
+if isnumeric(coldef)
+    val = 2;
+elseif ischar(coldef)
+    tovar = {'grey'; ''; 'plot'; 'hide'};
+    val = find(strcmp(coldef, tovar));
         
-    elseif ischar(coldef)
-        tovar = {'grey'; ''; 'plot'; 'hide'};
-        val = find(strcmp(coldef, tovar));
-        
-        if isempty(val) || val == 2
-            val = 1;
-            coldef = 'grey';
-        end
-        clear tovar
-    else
+    if isempty(val) || val == 2
+        val = 1;
         coldef = 'grey';
     end
-    
-else
-    coldef = 'grey';
+    clear tovar
 end
 
-set(hs.edit(3), 'userdata', coldef);
-set(hs.edit(3), 'callback', @badplot_callback,...
+set(hs.edit(4), 'userdata', coldef);
+set(hs.edit(4), 'callback', @badplot_callback,...
     'style', 'popupmenu', 'string', {'grey'; ...
     'specific color'; 'normal'; 'do not plot'},...
     'value', val);
@@ -1004,33 +979,12 @@ set(hs.edit(3), 'callback', @badplot_callback,...
 % =============
 % linesmoothing
 
-coldefadr = find(strcmp('lsmo', h.cooleegopts));
-val = 1;
-if ~isempty(coldefadr) && ~(coldefadr(1) > length(...
-        h.cooleegopts))
-    coldef = h.cooleegopts{coldefadr(1) + 1};
-        
-    if ischar(coldef)
-        tovar = {'on'; 'off'};
-        val = find(strcmp(coldef, tovar));
-        
-        if isempty(val)
-            val = 1;
-            coldef = 'on';
-        end
-        
-        clear tovar
-    else
-        coldef = 'on';
-    end
-    
-else
-    coldef = 'on';
-end
+tovar = {'on'; 'off'};
+val = find(strcmp(h.plotopts.lsmo, tovar));
 
-set(hs.edit(4), 'userdata', coldef);
-thish = hs.edit(4);
-set(hs.edit(4), 'callback', ...
+set(hs.edit(5), 'userdata', h.plotopts.lsmo);
+thish = hs.edit(5);
+set(hs.edit(5), 'callback', ...
     @(obj, evnt) some_other_callback(thish), ...
     'style', 'popupmenu', ...
     'string', {'on'; 'off'}, 'value', val);
@@ -1059,49 +1013,39 @@ set(h, 'userdata', tovar{val});
 % callback function for Cooleegplot options
 function coolopt(h, e, hobj, hwin) %#ok<INUSL>
 
-hgui = guidata(hobj);
-prevopts = hgui.cooleegopts;
+h = guidata(hobj);
+prevopts = h.plotopts;
+str = get(hwin.edit(1), 'String');
+h.plotopts.plotter = str(get(hwin.edit(1), 'value'));
 
-cols = get(hwin.edit(1), 'userdata');
+cols = get(hwin.edit(2), 'userdata');
 if ~isempty(cols)
-    hgui.cooleegopts = {'ecol', cols};
+    h.plotopts.ecol = cols;
 else
-    hgui.cooleegopts = {'ecol', 'off'};
+    h.plotopts.ecol = 'off';
 end
 
-winl = get(hwin.edit(2), 'String');
+winl = get(hwin.edit(3), 'String');
 if ~isempty(winl)
-    if isempty(hgui.cooleegopts)
-        hgui.cooleegopts = {'winlen', str2double(winl)};
-    else
-        hgui.cooleegopts = [hgui.cooleegopts, 'winlen', str2double(winl)];
-    end
+    h.plotopts.winlen = str2double(winl);
 end
 
 % bad channel plot:
-badpl = get(hwin.edit(3), 'userdata');
+badpl = get(hwin.edit(4), 'userdata');
 if ~isempty(badpl)
-    if isempty(hgui.cooleegopts)
-        hgui.cooleegopts = {'badplot', badpl};
-    else
-        hgui.cooleegopts = [hgui.cooleegopts, 'badplot', badpl];
-    end
+    h.plotopts.badplot = badpl;
 end
 
-smo = get(hwin.edit(4), 'userdata');
+smo = get(hwin.edit(5), 'userdata');
 if ~isempty(smo)
-    if isempty(hgui.cooleegopts)
-        hgui.cooleegopts = {'lsmo', smo};
-    else
-        hgui.cooleegopts = [hgui.cooleegopts, 'lsmo', smo];
-    end
+    h.plotopts.lsmo = smo;
 end
 
-guidata(hobj,hgui);
+guidata(hobj,h);
 
 % save profile if changes have been made:
-if ~isequal(prevopts, hgui.cooleegopts)
-    test_profile(hgui, 'update');
+if ~isequal(prevopts, h.plotopts)
+    test_profile(h, 'update');
 end
 delete(hwin.hf);
 
@@ -1136,10 +1080,17 @@ switch opt
             flds = fields(base_profile);
             
             for f = 1:length(flds)
-                if ~strcmp('savepath', flds{f})
-                    handles.(flds{f}) = base_profile.(flds{f});
-                else
+                if strcmp('plotopts', flds{f})
+                    base_plotopts = fields(base_profile.(flds{f}));
+                    for ff = 1:length(base_plotopts)
+                        thisfield = base_plotopts{ff};
+                        handles.(flds{f}).(thisfield) = ...
+                            base_profile.(flds{f}).(thisfield);
+                    end
+                elseif strcmp('savepath', flds{f})
                     handles.structpath = base_profile.(flds{f});
+                else
+                    handles.(flds{f}) = base_profile.(flds{f});
                 end
             end
             guidata(handles.figure1, handles);
@@ -1152,8 +1103,8 @@ switch opt
         % updating profile
         
         profile = [];
-        if ~isempty(handles.cooleegopts)
-            profile.cooleegopts = handles.cooleegopts;
+        if ~isempty(handles.plotopts)
+            profile.plotopts = handles.plotopts;
         end
         
         if isfield(handles, 'savepath') && ~isempty(handles.savepath)
