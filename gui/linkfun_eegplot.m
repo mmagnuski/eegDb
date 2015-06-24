@@ -106,7 +106,7 @@ elseif strcmp(plotopt.plotter, 'fastplot')
 	% check original number of epochs
     if isempty(h.db(h.r).marks(1).value)
         h.db(h.r).marks(1).value = false(h.EEG.etc.orig_numep, 1);
-        orig_numep = EEG.etc.orig_numep;
+        orig_numep = h.EEG.etc.orig_numep;
     else
         orig_numep = length(h.db(h.r).marks(1).value);
     end
