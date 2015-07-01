@@ -50,11 +50,18 @@ methods
         % KeyboardManager.eval() allows to evaluate strings
         % as if they were actual sequences of keyboard button presses
 
-        string_chars = num2cell(string);
-        rgt = cellfun(@(x) x == '>', string_chars);
-        lft = cellfun(@(x) x == '<', string_chars);
-        string_chars(rgt) = {'rightarrow'};
-        string_chars(lft) = {'leftarrow'};
+        chng_chars = {'>', 'rightarrow'; ...
+                      '<', 'leftarrow'; ...
+                      '+', 'equal'; ...
+                      '-', 'hyphen'};
+        string_chars = num2str(string);
+        match_chars = cellfun(@(x) find(string == x), chng_chars(:,1), ...
+            'UniformOutput', false);
+        for c = 1:size(chng_chars, 1)
+            if ~isempty(match_chars{c})
+                string(match_chars{c}) = chng_chars(c,2);
+            end
+        end
 
         % pass character by character to read function:
         for k = string_chars
