@@ -596,9 +596,10 @@ classdef fastplot < handle
 
             % get mark names
             marknames = obj.marks.names;
+            opt.boxColor = obj.marks.colors;
 
             % ask for mark name:
-            marknum = fuzzy_gui(marknames);
+            marknum = fuzzy_gui(marknames, opt);
 
             % if user aborts do not go any further
             if isempty(marknum) || marknum == 0
