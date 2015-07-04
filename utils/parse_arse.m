@@ -3,9 +3,11 @@ function opt = parse_arse(varin, varargin)
 % currently - a simple input parser
 % 
 % opt = parse_arse(varin, opt);
+% opt = parse_arse(varin);
 %
-% varin is a cell array of alternating keys and
-% values.
+% varin - a cell array of alternating keys and
+%         values.
+% opt   - structure with default options
 % 
 % see also: InputParser
 
