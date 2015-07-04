@@ -31,7 +31,10 @@ if ~isempty(ch)
         uData.active(~uData.active) = true;
         uData.typed = uData.typed(1:end-1);
 
-    elseif strcmp(evnt.Key, 'return')
+    elseif any(strcmp(evnt.Key, {'return', 'escape'}))
+        if strcmp(evnt.Key, 'escape')
+            udat.active = [];
+        end
     	uiresume(hObj);
     	return
     elseif uData.allowHighlight
