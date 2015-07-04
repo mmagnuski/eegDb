@@ -54,12 +54,12 @@ methods
                       '<', 'leftarrow'; ...
                       '+', 'equal'; ...
                       '-', 'hyphen'};
-        string_chars = num2str(string);
+        string_chars = num2cell(string);
         match_chars = cellfun(@(x) find(string == x), chng_chars(:,1), ...
             'UniformOutput', false);
         for c = 1:size(chng_chars, 1)
             if ~isempty(match_chars{c})
-                string(match_chars{c}) = chng_chars(c,2);
+                string_chars(match_chars{c}) = chng_chars(c,2);
             end
         end
 
