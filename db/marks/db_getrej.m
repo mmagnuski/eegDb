@@ -8,8 +8,9 @@ function outlist = db_getrej(db, r, varargin)
 % rejlist.value - value of the marking (what is being marked)
 %
 % key-value options:
-% nonempt - boolean, if true DB_GETREJ returns only nonempty 
-%           rejection types (?)
+% nonempt - boolean, if true DB_GETREJ returns only
+%           these rejection types that were used in
+%           the gven eegDb record 
 
 % CHANGE
 % [ ] change name from db_getrej to db_getmarks

@@ -39,6 +39,9 @@ function varargout = cooleegplot(EEG, varargin)
 %           |    cell of    | of strings) - these electrodes
 %           |    strings    | will be plotted
 % __________|_______________|____________________________________
+%           |               |
+% 'wlen'    |   integer     | number of epochs to display
+% __________|_______________|____________________________________
 %           |               | electrode indices (if vector
 % 'badchan' | vector of in- | of integers) or labels (if cell
 %           |   tegers or   | of strings) - these electrodes
