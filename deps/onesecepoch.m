@@ -256,7 +256,15 @@ if isdist
             ev_ind = find(ev_ind);
         else
             % specific event
-            ev_ind = find(strcmp(rules{r,1},{EEG.event.type}));
+            rls = rules{r,1};
+            tps = {EEG.event.type};
+            if ~iscell(rls)
+                ev_ind = find(strcmp(rls, tps));
+            else
+                ev_ind = cellfun(@(x) find(strcmp(x, tps)), ...
+                    rls, 'UniformOutput', false);
+                ev_ind = unique([ev_ind{:}]);
+            end
         end
         
         % once we have event indices, we extract their latencies:
