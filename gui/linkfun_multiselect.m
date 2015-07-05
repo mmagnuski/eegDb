@@ -52,7 +52,7 @@ elseif length(sel) > 1
         [0.9, 0.2, 0.1]);
     
     % refresh
-    winreject_refresh(h);
+    db_gui_refresh(h);
 
 elseif isempty(sel)
 

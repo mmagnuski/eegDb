@@ -21,6 +21,8 @@ classdef fastplot < handle
     %
     % key-value options
     % -----------------
+    % 'show' - whether to immediately plot the signal
+    % 'ecol' - electrode color cycle
     % 'vim' - *logical*, whether vim keybindings are active
     %         (more information in 'keyboard shortcuts' section)
     %         default: true
@@ -231,7 +233,9 @@ classdef fastplot < handle
             if ~ifpix; set(0, 'unit', unts); end
 
             % launch the plot
-            obj.launchplot();
+            if obj.opt.show
+                obj.launchplot();
+            end
         end
 
 
@@ -242,6 +246,9 @@ classdef fastplot < handle
 
             % during re-plotting:
             % always use set 'XData', 'YData'
+            if ~obj.opt.show
+                return
+            end
             obj.window.span = obj.window.lims(1):obj.window.lims(2);
             if ~exist('elements', 'var')
                 elements = {'all'};
@@ -431,8 +438,10 @@ classdef fastplot < handle
             obj.window.lims = [obj.window.lims(1), obj.window.lims(1) + obj.window.size - 1];
             obj.window.span = obj.window.lims(1):obj.window.lims(2);
 
-            set(obj.h.ax, 'XLim', [1, length(obj.epoch.time) * ...
-                obj.opt.num_epoch_per_window]);
+            if obj.opt.show
+                set(obj.h.ax, 'XLim', [1, length(obj.epoch.time) * ...
+                    obj.opt.num_epoch_per_window]);
+            end
             obj.refresh();
         end
 
@@ -587,9 +596,10 @@ classdef fastplot < handle
 
             % get mark names
             marknames = obj.marks.names;
+            opt.boxColor = obj.marks.colors;
 
             % ask for mark name:
-            marknum = fuzzy_gui(marknames);
+            marknum = fuzzy_gui(marknames, opt);
 
             % if user aborts do not go any further
             if isempty(marknum) || marknum == 0
@@ -624,7 +634,8 @@ classdef fastplot < handle
 
 
         function plot(obj)
-            if ~ishandle(obj.h.fig)
+            obj.opt.show = true;
+            if ~femp(obj.h, 'fig') || ~ishandle(obj.h.fig)
                 obj.launchplot();
             else
                 obj.refresh();
@@ -643,7 +654,15 @@ classdef fastplot < handle
             % (why oh why matlab doesn't have named function arguments?)
             
             obj.opt.vim = false;
+            obj.opt.show = true;
             obj.opt.data2 = [];
+            obj.opt.ecol =[    0         0.4470    0.7410; ...
+                               0.8500    0.3250    0.0980; ...
+                               0.9290    0.6940    0.1250; ...
+                               0.4940    0.1840    0.5560; ...
+                               0.4660    0.6740    0.1880; ...
+                               0.3010    0.7450    0.9330; ...
+                               0.6350    0.0780    0.1840];
 
             if isempty(args)
                 return
@@ -691,6 +710,13 @@ classdef fastplot < handle
             obj.h.ax = axes('Position', [0.05, 0.05, 0.9, 0.85], ...
                 'Parent', obj.h.fig);
 
+            % set color cycle
+            if ~isempty(obj.opt.ecol)
+                set(obj.h.ax, 'ColorOrder', obj.opt.ecol);
+                % could set the NextPlot property to 'replacechildren'
+                % instead of using hold on
+            end
+
             obj.h.eventlines = [];
             obj.h.eventlabels = [];
             obj.h.epochlimits = [];
@@ -704,8 +730,10 @@ classdef fastplot < handle
             dat = obj.(obj.opt.readfield{obj.opt.readfrom}) * ...
                 obj.opt.signal_scale;
             dat = bsxfun(@minus, dat(obj.window.span, :), chan_pos);
+            hold on; % hold is set so that plot uses ColorOrder
             obj.h.lines = plot(dat, 'HitTest', 'off', ...
                 'Parent', obj.h.ax);
+            hold off;
 
             % set y limits and y lim mode (for faster replotting)
             set(obj.h.ax, 'YLim', obj.h.ylim, 'YLimMode', 'manual');
@@ -722,6 +750,8 @@ classdef fastplot < handle
             obj.plotevents();
             % plot epoch limits
             obj.plot_epochlimits();
+            % plot events too
+            obj.plot_marks();
 
             % set keyboard shortcuts
             obj.init_keypress();
