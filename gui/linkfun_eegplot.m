@@ -50,7 +50,7 @@ if strcmp(plotopt.plotter, 'eegplot')
 	    % CHANGE FIXME
 	    % update rejections
 	    [h.db, h.EEG] = db_rejTMP(h.db,...
-	        rEEG, h.EEG, tmprej);
+	        rEEG, h.EEG, TMPREJ);
 	    
 	    % Update h structure
 	    guidata(h.figure1, h);
