@@ -31,7 +31,6 @@ if femp(db(r), 'epoch')
         
         % ==============
         % onesec options
-        options.filename = EEG;
         options.fill = true;
         
         flds = {'filter', 'winlen', 'distance',...
@@ -51,7 +50,7 @@ if femp(db(r), 'epoch')
         
         % ===================
         % call to onesecepoch
-        EEG = onesecepoch(options);
+        EEG = onesecepoch(EEG, options);
         clear options
         
     elseif ~isempty(db(r).epoch.events) && ...

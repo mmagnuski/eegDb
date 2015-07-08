@@ -1,4 +1,4 @@
-function EEG = onesecepoch(options)
+function EEG = onesecepoch(EEG, options)
 
 % onsecepoch - funkcja dzieli podany plik EEG na epoki
 % o podanej d³ugoœci (w sekundach, domyœlnie 1s)
@@ -7,19 +7,17 @@ function EEG = onesecepoch(options)
 % wiêcej opcjonalnych parametrów ni¿ej w 'PE£NE OPCJE'
 %
 % do pookienkowania sygna³u w najprostszej wersji wystarczy:
-% options.filename = EEG;   % wrzucamy do pola filename strukturê EEG
-% EEG = onesecepoch(options);  % dostajemy pookienkowane EEG
+% EEG = onesecepoch(EEG);  % dostajemy pookienkowane EEG
 % 
 % !! je¿eli korzystamy z filtrowania: wymagana !!
 % !!  jest wersja eeglaba 12.0100 lub nowsza   !!
 % 
-% PE£NE OPCJE:
-% funkcja przyjmuje jako input strukurê o nast. polach:
-% filename - nazwa pliku (albo struktura EEG)
-% filepath - œcie¿ka dostêpu do pliku (tylko je¿eli 'filename'
-%            jest nazw¹ pliku, a nie struktur¹ EEG)
-% filter  -  opcjonalnie: wektor [dolny górny] próg filtrowania
-%            np. options.filter = [1 0]; (filtruje tylko górnoprzpustowo)
+% INPUT
+% -----
+% EEG - eeglab EEG structure
+%
+% options structure
+% -----------------
 % winlen  -  opcjonalnie: dlugosc okna do epokowania
 % leave   -  opcjonalnie: [true/false] - czy zostawiaæ w danych
 %            pookienkowanych oryginalne eventy, czy te¿ je wywa-
@@ -40,21 +38,11 @@ function EEG = onesecepoch(options)
 % fill    -  opcjonalne: je¿eli wartoœæ to prawda logiczna - dodaje do
 %            EEG pola oznaczaj¹ce opcje u¿yte do okienkowania
 %
-% ===dodatkowa opcja===
-% zamiast nazwy pliku mo¿na w miejsce 'filename' wrzuciæ sam¹
-% strkuturê EEG - wtedy wczytywanie pliku zostanie pominiête
-% nie trzeba wtedy te¿ dodawaæ do struktury z opcjami pola
-% 'filepath'
-%
 % ==za³o¿enie==
 % musz¹ byæ ju¿ wczytane œcie¿ki do eeglaba
 % funkcja nie uruchamia sama eeglaba
-% wczytuje pojedynczo pliki aby mo¿na by³o j¹
-% ³atwo dodaæ do dowolnej rutyny w ramach
-% pipeline_coordinate (patrz: folder coordination
-% w dropboxowym 'EEGlab scripts')
-%
-% coded by M. Magunski, march 2013
+
+% coded by M. Magnuski, march 2013
 % :)
 
 
@@ -63,11 +51,6 @@ load_set = true; isdist = false; evname = 'dummy';
 winlen = 1; leave_ev = true; fill = false;
 
 %% checks for optional parameters
-% opcjonalnie pomijamy wczytywanie
-if isfield(options, 'filename') && isstruct(options.filename) && ...
-        isfield(options.filename, 'data') && isfield(options.filename, 'srate')
-    load_set = false;
-end
 
 % sprawdzamy czy podana zosta³a d³ugoœæ okna:
 if isfield(options, 'winlen') && ~isempty(options.winlen) 
@@ -86,7 +69,7 @@ if isfield(options, 'distance') && ~isempty(options.distance)
 end
 
 % checking fill
-if isfield(options, 'fill') && ~isempty(options.fill) 
+if isfield(options, 'fill') && ~isempty(options.fill)
     fill = options.fill;
 end
 
@@ -97,22 +80,6 @@ end
 
 
 %% ~~WELCOME TO THE CODE~~
-
-%% loading (+filtering)
-% getting EEG structure
-if load_set
-    % wczytujemy plik
-    EEG = pop_loadset('filepath', options.filepath, 'filename',...
-        options.filename);
-else
-    EEG = options.filename;
-    options.filename = [];
-end
-
-% optional filtering
-if isfield(options, 'filter') && ~isempty(options.filter)
-    EEG = pop_eegfiltnew(EEG, options.filter(1), options.filter(2));
-end
 
 %% event checks
 % opcja zachowania oryginalnych eventów 
@@ -161,7 +128,7 @@ for i = evs(1):evs(2)
     
 end
 
-% czy checkset potrzebny?
+% CHECK CHANGE TODO czy checkset potrzebny?
 EEG = eeg_checkset(EEG);
 
 % epokujemy
@@ -355,9 +322,6 @@ if isdist
 end
 
 if fill
-    if isfield(options, 'filter')
-        EEG.onesecepoch.filter = options.filter;
-    end
     EEG.onesecepoch.initwins = ile_ev;
     EEG.onesecepoch.winlen = winlen;
     
