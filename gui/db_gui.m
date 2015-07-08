@@ -198,65 +198,7 @@ else
     currf = handles.db(handles.r).versions.current;
     handles.db = db_updateversion(handles.db, handles.r, currf);
     
-    % CHANGE - this is a mess
-    %        - whether r is recovered should be checked in a sepatate
-    %          function (the same with recover if not present)
-    %        - recovopts should be reworked
-    %        - comparing EEG and current r/version should be
-    %          smarter  
-    
-    % first - recover data if not present
-    if isempty(handles.EEG) || handles.r ~= handles.rEEG || ...
-            ~db_recov_compare(handles.EEG.etc.recov, handles.db(handles.r)) ...
-            || ~isequal(handles.recovopts, handles.last_recovered_opts)
-        
-        % save recovery options:
-        handles.last_recovered_opts = handles.recovopts;
-        
-        % TXT display
-        set(handles.addit_text, 'String', 'Recovering EEG...');
-        drawnow;
-        
-        % RECOVER EEG data
-        [handles.EEG, handles.db] = recoverEEG(handles.db, handles.r, ...
-            'local', 'tempsave', handles.recovopts{:});
-        handles.rEEG = handles.r;
-        rEEG = handles.rEEG;
-        
-        % update prerej field
-        f = db_checkfields(handles.EEG, 1,...
-            {'onesecepoch'}, 'subfields', true);
-        if f.fsubf(1)
-            isprerej = find(strcmp('prerej', f.subfields{1}));
-        end
-        
-        % CHECK - in case of prerej, postrej division
-        %          the following step is important because
-        %          it allows for some prerej-postrej-removed
-        %          calculations. However, it should not restric
-        %          usage of databases that do not use onesecepoch
-        %          Checking recov should be done only
-        %          for databases using onesecepoch
-        %
-        % set this file as elligible to some
-        % operations (apply rejections, multisel, etc.)
-        if f.fsubf(1) && ~isempty(isprerej) ...
-                && f.subfnonempt{1}(isprerej)
-            handles.db(handles.r).reject.pre = handles...
-                .EEG.onesecepoch.prerej;
-            handles.recov(handles.r) = true;
-        end
-        clear f isprerej
-        
-        % Update handles structure
-        guidata(hObject, handles);
-        
-        % file recovered
-        set(handles.addit_text, 'String', 'EEG recovered');
-        
-        % refresh gui (CHECK - do we need to?)
-        db_gui_refresh(handles);
-    end
+    handles = db_gui_recover(handles);
     
     % disable plotting
     set(hObject, 'Enable', 'off');
