@@ -106,7 +106,7 @@ if femp(db(r).datainfo, 'tempfiles')
 		% give tempdb
 		tempdb = struct();
 		tempdb.filename = temp(ind).filename;
-		if temp(idn).filepath(1) == '+'
+		if temp(ind).filepath(1) == '+'
 			tempdb.filepath = get_valid_path(temp(ind).filepath, ...
 				'file', temp(ind).filename, 'dir', temp(ind).filepath(2:end));
 		else
