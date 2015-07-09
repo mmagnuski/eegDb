@@ -32,10 +32,20 @@ if femp(db(r).datainfo, 'tempfiles')
 	temp = db(r).datainfo.tempfiles;
 	tempok = false(1, length(temp));
 	for t = 1:length(temp)
-		tempok(t) = ~isempty(get_valid_path(...
-			temp(t).filepath, ...
-			'file', temp(t).filename, ...
-			'noerror', true));
+		if temp(t).filepath(1) == '+'
+			% this uses a vild path from db(r).filepath
+			% and a subdir in it
+			tempok(t) = ~isempty(get_valid_path(...
+				db(r).filepath, ...
+				'file', temp(t).filename, ...
+				'dir', temp(t).filepath(2:end), ...
+				'noerror', true));
+		else
+			tempok(t) = ~isempty(get_valid_path(...
+				temp(t).filepath, ...
+				'file', temp(t).filename, ...
+				'noerror', true));
+		end
 	end
 	temp = temp(tempok);
 
@@ -96,7 +106,12 @@ if femp(db(r).datainfo, 'tempfiles')
 		% give tempdb
 		tempdb = struct();
 		tempdb.filename = temp(ind).filename;
-		tempdb.filepath = temp(ind).filepath;
+		if temp(idn).filepath(1) == '+'
+			tempdb.filepath = get_valid_path(temp(ind).filepath, ...
+				'file', temp(ind).filename, 'dir', temp(ind).filepath(2:end));
+		else
+			tempdb.filepath = temp(ind).filepath;
+		end
 		tempdb.filter = temp(ind).filter;
 		tempdb.epoch = temp(ind).epoch;
 		tempdb.cleanline = temp(ind).cleanline;
