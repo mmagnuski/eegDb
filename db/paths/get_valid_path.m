@@ -16,6 +16,10 @@ function pth = get_valid_path(PTH, varargin)
 % ---------------
 % 'file'    - *string*; filename that should be present
 %             in the valid path
+% 'dir'    - *string*; directory that should be present
+%             in the valid path. In conjunction with 'file'
+%             option - the file has to be in the directory
+%             denoted by 'dir'
 % 'noerror' - *logical*; whether NOT to throw an error when valid
 %             path was not found
 %             default: false (error is thrown)
@@ -34,11 +38,13 @@ function pth = get_valid_path(PTH, varargin)
 
 % additional args
 opt.file = [];
+opt.dir = [];
 opt.noerror = false;
 if nargin > 1
     opt = parse_arse(varargin, opt);
 end
 iffile = ~isempty(opt.file);
+ifdir = ~isempty(opt.dir);
 
 % if not cell - close in a cell
 if ~iscell(PTH)
@@ -49,16 +55,20 @@ end
 fnd = false;
 for p = 1:length(PTH)
     % and test isdir() on them
-    if isdir(PTH{p})
+    thispth = PTH{p};
+    if ifdir
+        thispth = fullfile(thispth, opt.dir);
+    end
+    if isdir(thispth)
         % if filecheck, check if file is present:
         if iffile
-            fls = dir(PTH{p});
+            fls = dir(thispth);
             fileok = any(strcmp(opt.file, {fls(~[fls.isdir]).name}));
         end
 
-        % if it is dir, stop looking
+        % if everything ok - stop looking
         if ~iffile || fileok
-            pth = PTH{p};
+            pth = thispth;
             fnd = true;
             break
         end
