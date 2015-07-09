@@ -51,7 +51,7 @@ if isempty(h.EEG) || h.r ~= h.rEEG || ...
     clear f isprerej
     
     % Update handles structure
-    guidata(hObject, h);
+    guidata(h.figure1, h);
     
     % file recovered
     set(h.addit_text, 'String', 'EEG recovered');
