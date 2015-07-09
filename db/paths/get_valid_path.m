@@ -37,6 +37,7 @@ function pth = get_valid_path(PTH, varargin)
 % see also: isdir
 
 % additional args
+pth = [];
 opt.file = [];
 opt.dir = [];
 opt.noerror = false;
