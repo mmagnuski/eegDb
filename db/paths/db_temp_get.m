@@ -1,4 +1,4 @@
-function [tempdb, match] = db_temp_get(db, r)
+function [tempdb, match, ind] = db_temp_get(db, r)
 
 % DB_TEMP_GET gives info on relevant tempfile for db
 % record r.
