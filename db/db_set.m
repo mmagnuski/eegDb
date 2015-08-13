@@ -1,4 +1,4 @@
-function ICAw_set(ICAw, fld, val, rs)
+function db_set(ICAw, fld, val, rs)
 
 % ICAw_set allows for introducing controlled (safe) changes to 
 % the ICAw structure
