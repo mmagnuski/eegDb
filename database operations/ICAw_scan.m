@@ -1,4 +1,4 @@
-function info = ICAw_scan(ICAw, rs)
+function info = db_scan(db, rs)
 
 % FIXHELPINFO
 % Helper function for getting info about properties 
@@ -21,7 +21,7 @@ function info = ICAw_scan(ICAw, rs)
 % -1 - option present both in .datainfo and core entry - may be an error
 
 if ~exist('rs', 'var')
-    rs = 1:length(ICAw);
+    rs = 1:length(db);
 end
 
 numR = length(rs);
@@ -29,66 +29,66 @@ info = zeros(5, numR);
 
 
 % FILTER
-info = simple_testfield(ICAw(rs), 'filter', [], info, 1);
+info = simple_testfield(db(rs), 'filter', [], info, 1);
 
 % CLEANLINE
 istrue = @(x) isequal(x, true);
-info = simple_testfield(ICAw(rs), 'cleanline', [], info, 2, istrue);
+info = simple_testfield(db(rs), 'cleanline', [], info, 2, istrue);
 
 % EPOCHING
 % just checking if the field is empty may not be enough...
-info = simple_testfield(ICAw(rs), 'epoch', [], info, 3);
+info = simple_testfield(db(rs), 'epoch', [], info, 3);
 
 % rem epochs
 % pre
-info = simple_testfield(ICAw(rs), 'reject', 'pre', info, 4);
+info = simple_testfield(db(rs), 'reject', 'pre', info, 4);
 % post
-info = simple_testfield(ICAw(rs), 'reject', 'post', info, 5);
+info = simple_testfield(db(rs), 'reject', 'post', info, 5);
 
 % ICA
-info = simple_testfield(ICAw(rs), 'ICA', 'icaweights', info, 6);
+info = simple_testfield(db(rs), 'ICA', 'icaweights', info, 6);
 
 % removed components
-info = simple_testfield(ICAw(rs), 'ICA', 'remove', info, 7);
+info = simple_testfield(db(rs), 'ICA', 'reject', info, 7);
 
 
-function vec = simple_testfield(ICAw, fname, subf, vec, n, varargin)
+function vec = simple_testfield(db, fname, subf, vec, n, varargin)
     if isempty(subf)
-        isf = isfield(ICAw, fname);
+        isf = isfield(db, fname);
         if isf
-            f = ~cellfun(@isempty, {ICAw.(fname)});
+            f = ~cellfun(@isempty, {db.(fname)});
         else
-            f = false(1, length(ICAw));
+            f = false(1, length(db));
         end
-        d = cellfun(@(x) femp(x, fname), {ICAw.datainfo});
+        d = cellfun(@(x) femp(x, fname), {db.datainfo});
 
         if ~isempty(varargin)
             for v = 1:length(varargin)
                 if isf
-                    f(f) = cellfun(varargin{v}, {ICAw(f).(fname)});
+                    f(f) = cellfun(varargin{v}, {db(f).(fname)});
                 end
-                d(d) = cellfun(@(x) feval(varargin{v}, x.(fname)), {ICAw(d).datainfo});
+                d(d) = cellfun(@(x) feval(varargin{v}, x.(fname)), {db(d).datainfo});
             end
         end
     else
-        isf = isfield(ICAw, fname);
+        isf = isfield(db, fname);
         if isf
-            getf = {ICAw.(fname)};
+            getf = {db.(fname)};
             f = cellfun(@(x) femp(x, subf), getf);
         else
             getf = [];
-            f = false(1, length(ICAw));
+            f = false(1, length(db));
         end
 
-        d    = cellfun(@(x) femp(x, fname), {ICAw.datainfo});
-        d(d) = cellfun(@(x) femp(x.fname, subf), {ICAw(d).datainfo});
+        d    = cellfun(@(x) femp(x, fname), {db.datainfo});
+        d(d) = cellfun(@(x) femp(x.fname, subf), {db(d).datainfo});
 
         if ~isempty(varargin)
             for v = 1:length(varargin)
                 if isf
                     f(f) = cellfun(@(x) feval(varargin{v}, x.(subf)), getf(f));
                 end
-                d(d) = cellfun(@(x) feval(varargin{v}, x.(fname).(subf)), {ICAw(d).datainfo});
+                d(d) = cellfun(@(x) feval(varargin{v}, x.(fname).(subf)), {db(d).datainfo});
             end
         end
     end
