@@ -596,7 +596,7 @@ classdef fastplot < handle
 
             % get mark names
             marknames = obj.marks.names;
-            opt.boxColor = obj.marks.colors;
+            opt.boxColor = obj.marks.colors; %#ok<*PROP>
 
             % ask for mark name:
             marknum = fuzzy_gui(marknames, opt);
