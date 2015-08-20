@@ -30,14 +30,16 @@ end
 for r = rs
     pth = db_path(db(r).filepath);
     
+    % get number of samples from EEG
+    % (could be later stored in datainfo)
     EEG = load([pth, db(r).filename], '-mat');
     EEG = EEG.EEG;
-    
-    % check windows it would be cut into:
     siglen = EEG.pnts;
     
-    if femp(db(r).onesecepoch, 'winlen')
-        wln = db(r).onesecepoch.winlen;
+    % FIX - not only from onesec
+    % check windows it would be cut into:
+    if femp(db(r).epoch, 'winlen')
+        wln = db(r).epoch.winlen;
     else
         wln = 1;
     end
@@ -50,11 +52,11 @@ for r = rs
     clear winlen wln numwin
     
     % now see which are prerejected (0)
-    win(:,db(r).prerej) = 0;
+    win(:,db(r).reject.pre) = 0;
     lft = find(win(1,:)); % left after prerej
     
     % and see which are rejected (-1)
-    win(:,lft(db(r).postrej)) = -1;
+    win(:,lft(db(r).reject.post)) = -1;
     
     % unroll:
     win = win(:)';
@@ -113,6 +115,7 @@ for r = rs
     perc_bad(~witih_data) = [];
     
     
+    % FIX - delete onesecepoch fields
     %% move rejections:
     db(r).onesecepoch = [];
     db(r).prerej = [];
@@ -125,6 +128,7 @@ for r = rs
         db(r).postrej = [];
     end
     
+    % FIX - these names are different now
     % clear reject fields
     fld = {'userreject', 'usermaybe', 'userdontknow'};
     for f = 1:length(fld)
