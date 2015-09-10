@@ -139,8 +139,6 @@ classdef fastplot < handle
     
     % TODOs:
     % [ ] - check profiling and then only worry about optimisation
-    % [ ] - think about adding time-pointers to events so that extensively
-    % comparing events latency with current time window happens only once
     % [ ] - think about making faster version unique - specifically for
     %       cell arrays of strings
     % [ ] - check plotting against graphics performance tips:
@@ -662,7 +660,6 @@ classdef fastplot < handle
                 obj.refresh();
             end
         end
-
     end
 
 
