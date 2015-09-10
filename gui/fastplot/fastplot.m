@@ -90,6 +90,25 @@ classdef fastplot < handle
     % mark
     % use_mark
     % ...
+    %
+    % keyboard shortcuts
+    % ------------------
+    %
+    % 1. movement-like commands:
+    % movement-like commands can be prepended with
+    % a numerical value to be evaluated that
+    % number of times
+    % left arrow - go one unit left
+    % right arrow - go one unit right
+    % b - move one window left
+    % w - move one window right
+    % = - scale signal up by one step
+    % - - scale signal down by one step
+    % e= - extend the view length by one epoch
+    % e- - shorten the view length by one epoch
+    %
+    % 2.
+    %
 
     % REMEMBER
     % opt could contain data_names field that could inform the
