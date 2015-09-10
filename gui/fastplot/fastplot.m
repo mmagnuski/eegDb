@@ -261,9 +261,10 @@ classdef fastplot < handle
             end
 
             if any(strcmp('all', elements))
-                refresh_elem = true(4, 1);
+                refresh_elem = true(5, 1);
             else
-                elem_order = {'signal', 'events', 'limits', 'marks'}';
+                elem_order = {'signal', 'events', 'limits', ...
+                    'marks', 'epochnum'}';
                 refresh_elem = cellfun(@(x) any(strcmp(x, elements)), ...
                     elem_order);
             end
@@ -293,6 +294,7 @@ classdef fastplot < handle
             if refresh_elem(2); obj.plotevents(); end;
             if refresh_elem(3); obj.plot_epochlimits(); end;
             if refresh_elem(4); obj.plot_marks(); end;
+            if refresh_elem(5); obj.plot_epoch_numbers(); end;
             % timetaken = toc;
             % fprintf('time taken: %f\n', timetaken);
         end
@@ -721,6 +723,7 @@ classdef fastplot < handle
             obj.h.eventlabels = [];
             obj.h.epochlimits = [];
             obj.h.backpatches = [];
+            obj.h.epochnumbers = [];
             
             % plot data
             % ---------
@@ -752,6 +755,8 @@ classdef fastplot < handle
             obj.plot_epochlimits();
             % plot events too
             obj.plot_marks();
+            % plot epoch numbers
+            obj.plot_epoch_numbers();
 
             % set keyboard shortcuts
             obj.init_keypress();
@@ -1163,11 +1168,84 @@ classdef fastplot < handle
                     uistack(obj.h.backpatches(ind), 'bottom');
                 end
             end
+
+        end
+
+        % draw epoch numbers
+        function plot_epoch_numbers(obj)
+
+            % get selected epochs
+            epoch_lims = obj.epoch.current_limits;
+            epoch_num = obj.epoch.current_nums;
+            epoch_num = epoch_num(1:end-1);
+            numep = length(epoch_num);
+
+            % reuse lines and labels
+            numeplab = length(obj.h.epochnumbers);
+
+            % check how many events to plot compared
+            % to those already present
+            plot_diff = numep - numeplab;
+
+            % hide unnecessary lines and tags
+            if plot_diff < 0
+                inds = numeplab:-1:numeplab + plot_diff + 1;
+                set(obj.h.epochnumbers(inds), ...
+                    'Visible', 'off'); % maybe set HitTest to 'off' ?
+                set(obj.h.epochnumbers(inds), ...
+                    'Visible', 'off');
+            end
+
+            if numep > 0
+                % get necessary info to plot:
+                labelX = mean([0, epoch_lims(1:end-1); ...
+                epoch_lims], 1)';
+                labelY = double(repmat(obj.spacing, [numep, 1]));
+                strVal = arrayfun(@num2str, epoch_num, 'UniformOutput', false)';
+
+                % how many elements to reuse, how many new to draw:
+                reuse = min([numeplab, numep]);
+                drawnew = max([0, plot_diff]);
+
+                if numeplab > 0
+                    % set available lines and labels
+
+                    % create indexer
+                    ind = 1:reuse;
+                    pos = mat2cell([labelX(ind), labelY(ind)], ones(reuse, 1), 2);
+
+                    % set labels (this takes the longest - maybe change)
+                    set(obj.h.epochnumbers(ind), {'Position', 'String'}, ...
+                        [pos, strVal(ind)], 'Visible', 'on');
+                end
+
+                if drawnew > 0
+                    % draw new lines and labels
+
+                    % create indexer
+                    ind = reuse+1:(reuse + drawnew);
+
+                    hold on; % change to myHoldOn later on
+
+                    % labels
+                    try
+                    obj.h.epochnumbers(ind) = text(labelX(ind), labelY(ind), ...
+                        strVal(ind), 'VerticalAlignment', 'bottom', ...
+                        'clipping', 'off');
+                    catch %#ok<CTCH>
+                        for i = ind
+                            obj.h.epochnumbers(i) = text(labelX(i), labelY(i), ...
+                                strVal(i), 'VerticalAlignment', 'bottom', ...
+                                'clipping', 'off');
+                        end
+                    end
+
+                    hold off; % change to myHoldOff later
+                end
+            end
         end
 
     end
-    
-    
 end
 
 
