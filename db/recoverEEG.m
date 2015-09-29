@@ -307,31 +307,13 @@ if ~loaded
         % optional filtering:
         if isfield(db(r), 'filter') && ...
                 ~isempty(db(r).filter)
-            
             % setting up filter:
             filt = db(r).filter;
-            
-            % addfilt is no longer supported
-            % its better to create another version
-            % entry then to use 'addfilt'
-            %
-            %             if ~isempty(addfilt)
-            %                 if ~(addfilt(1) == 0)
-            %                     filt(1) = max(db(r).filter(1),...
-            %                         addfilt(1));
-            %                 end
-            %
-            %                 if filt(2) == 0
-            %                     filt(2) = addfilt(2);
-            %                 elseif ~(addfilt(2) == 0)
-            %                     filt(2) = min(filt(2), addfilt(2));
-            %                 end
-            %             end
-            
-            % filtering
-            test_pop_eegfiltnew();
-            EEG = pop_eegfiltnew(EEG, filt(1,1), filt(1,2));
-            
+            if sum(filt(1,:)) > 0 
+                % filtering
+                test_pop_eegfiltnew();
+                EEG = pop_eegfiltnew(EEG, filt(1,1), filt(1,2));
+            end
             
             % ===============
             % notch filtering
