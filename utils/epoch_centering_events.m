@@ -5,6 +5,9 @@ function [isCenter, whichCenter, eventNames] = epoch_centering_events(EEG, event
 if ~exist('eventNames', 'var')
     eventNames = unique({EEG.event.type});
 end
+if ischar(eventNames)
+    eventNames = {eventNames};
+end
 
 % go through epochs and find epoch-centering event
 epN = length(EEG.epoch);
