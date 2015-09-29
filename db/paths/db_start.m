@@ -9,6 +9,10 @@ function db_start(PTH, varargin)
 % [ ] ! if output is specified do not evalin in base workspace !
 % [ ] add some more options?
 
+if ~exist('PTH', 'var')
+    PTH = pwd();
+end
+
 % TEMPORARY argument checks:
 opt.inname = {'ICAw', 'db '};
 if nargin > 1
