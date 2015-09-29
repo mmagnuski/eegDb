@@ -174,34 +174,6 @@ if loaded
     r = ans_adr(1);
 end
 
-%% checking path:
-% this is obsolete:
-% if ~loaded && ~overr_dir
-%     % create possible pre-paths and take the path
-%     % as stated in the database
-%     checkpre = {'D:\', '\\Swps-01143\e\'};
-%     path = db(r).filepath;
-%
-%     % look for 'Dropbox' in the path:
-%     postpath = [];
-%     pathterm = 'Dropbox';
-%     dr = regexp(path, pathterm, 'once');
-%     if ~isempty(dr)
-%         dr = dr(1);
-%         postpath = path(dr:end);
-%     end
-%
-%     % check prepaths:
-%     if ~isempty(postpath)
-%         for a = 1:length(checkpre)
-%             if isdir([checkpre{a}, postpath])
-%                 path = [checkpre{a}, postpath];
-%                 break
-%             end
-%         end
-%     end
-% end
-
 % ====================================
 % if user chooses to override filepath
 if overr_dir
@@ -211,20 +183,6 @@ end
 % ================================================
 % if multiple paths given, check which one applies
 if iscell(db(r).filepath)
-%     if length(db(r).filepath) > 1
-%         
-%         % loop through possible paths until you find
-%         % the correct one (one that exists - that is)
-%         for p = 1:length(db(r).filepath)
-%             if isdir(db(r).filepath{p})
-%                 db(r).filepath = db(r).filepath{p};
-%                 break
-%             end
-%         end
-%         clear p
-%     else
-%         db(r).filepath = db(r).filepath{1};
-%     end
     pth = db_path(db(r).filepath);
 else
     pth = db(r).filepath;
