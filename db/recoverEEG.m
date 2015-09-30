@@ -307,6 +307,13 @@ if ~loaded
     end
 end
 
+% % rereference if needed
+% if femp(db(r).chan, 'reref')
+%     if strcmp(db(r).chan.reref, 'avg')
+%         EEG = pop_reref( EEG, [], 'exclude', db(r).chan.bad, 'keepref', 'on');
+%     end
+% end
+
 
 %% adding ICA info
 add_comprej = false;
