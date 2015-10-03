@@ -55,6 +55,9 @@ for f = 1:size(rejCol, 1)
     foundadr = sum(TMPREJ(:, 3:5)...
         - rejcol, 2) == 0;
     clear rejcol
+    if foundadr < 1
+        continue
+    end
     
     newrej = TMPREJ(foundadr, 2) / EEG.pnts; %EEG.pnts instead of EEG.srate MZ
     zerovec = false(EEG.trials, 1);
