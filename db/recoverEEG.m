@@ -278,7 +278,7 @@ if ~loaded
             % add notch filering if db(r).filter has
             % two rows...
             if size(db(r).filter, 1) == 2
-                EEG = pop_eegfiltnew(EEG, filt(2,1), filt(2,2), [], 1, [], 0);
+                EEG = pop_eegfiltnew(EEG, filt(2,1), filt(2,2), [], 1);
             end
             
         elseif ~isempty(addfilt)
