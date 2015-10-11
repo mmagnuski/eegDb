@@ -6,7 +6,7 @@ The project is currently under construction, the documentation is upcoming
 :construction:
 
 ### Installation
-[See installation instructions](https://github.com/mmagnuski/eegDb/wiki/Installation)
+[See installation instructions](docs/Installation.md)
 
 ### Simple usage example
 
