@@ -22,7 +22,7 @@ If you do not have `eeglab` installed (or on your path) you can follow [these in
 ### Installation
 ***download the ZIP***  
 The easiest way to install is to copy the repository to your local drive is to grab the zip file provided on the lower right of the [front page](https://github.com/mmagnuski/eegDb). It looks like this:  
-[[pics/tutorials/install01.PNG]]  
+![downloadbutton](install01.PNG)  
 Just click the `Download ZIP` button and unpack the zip wherever you want.  
 
 ***clone with git***  
