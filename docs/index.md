@@ -5,8 +5,11 @@
 [See installation instructions](docs/Installation.md)
 
 ### Simple usage example
-
-### Something else
-* license info
-* links to wikis
-* links to feature-presenting videos
+You can construct a database using a simple database creation GUI:
+```matlab
+db_create
+```
+And then navigate and edit the database using `db_gui` function:
+```matlab
+db = db_gui(db);
+```
