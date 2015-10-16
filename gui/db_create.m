@@ -1,18 +1,18 @@
-function varargout = db_create_base(varargin)
+function varargout = db_create(varargin)
 
-% db_CREATE_BASE - GUI for creating db database
+% db_create - GUI for creating db database
 % The same can be performed using specific calls
 % to functions like db_buildbase etc.
 % FIXHELPINFO
 
-% Last Modified by GUIDE v2.5 05-Jun-2015 17:26:51
+% Last Modified by GUIDE v2.5 16-Oct-2015 01:42:41
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
 gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
-                   'gui_OpeningFcn', @db_create_base_OpeningFcn, ...
-                   'gui_OutputFcn',  @db_create_base_OutputFcn, ...
+                   'gui_OpeningFcn', @db_create_OpeningFcn, ...
+                   'gui_OutputFcn',  @db_create_OutputFcn, ...
                    'gui_LayoutFcn',  [] , ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
@@ -31,11 +31,11 @@ end
 %     that can narrow GUI usage
 % [ ] add choose by rule
 
-% --- Executes just before db_create_base is made visible.
-function db_create_base_OpeningFcn(hObject, ~, handles, varargin)
+% --- Executes just before db_create is made visible.
+function db_create_OpeningFcn(hObject, ~, handles, varargin)
 % This function has no output args, see OutputFcn.
 
-% Choose default command line output for db_create_base
+% Choose default command line output for db_create
 handles.output = [];
 handles.path = [];
 handles.GoodToGo = false;
@@ -50,16 +50,20 @@ handles.cancel = false;
 % Update handles structure
 guidata(hObject, handles);
 
-% UIWAIT makes db_create_base wait for user response (see UIRESUME)
+% UIWAIT makes db_create wait for user response (see UIRESUME)
 uiwait(handles.figure1);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = db_create_base_OutputFcn(a, b, handles)  %#ok<INUSL>
+function varargout = db_create_OutputFcn(a, b, handles)  %#ok<INUSL>
 % varargout  cell array for returning output args (see VARARGOUT);
 
 % Get default command line output from handles structure
 if nargout > 0
+    if ~femp(handles, 'output')
+        warning('database creation was cancelled, returning empty db.');
+        handles.output = [];
+    end
     varargout{1} = handles.output;
 else
     % save db with such a name that it 
@@ -307,6 +311,7 @@ if femp(h, 'db')
 end
 
 db_temp = db_epoch_gui(db_temp);
+
 if isstruct(db_temp)
     h.db = db_temp;
     set(h.OK, 'Enable', 'on');
@@ -353,6 +358,9 @@ function cancel_Callback(hObject, eventdata, handles)
 % hObject    handle to cancel (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+h = guidata(hObject);
+uiresume(h.figure1);
+close(h.figure1);
 
 function [strPth, flist] = get_path_and_files(h)
 

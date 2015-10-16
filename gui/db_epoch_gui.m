@@ -709,5 +709,8 @@ uiresume(h.figure1);
 
 % --- Executes on button press in cancel_button.
 function cancel_button_Callback(hObject, eventdata, h)
+h = guidata(h.figure1);
+h.output = [];
+uiresume(h.figure1);
 
 % Hint: get(hObject,'Value') returns toggle state of cancel_button
