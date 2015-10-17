@@ -63,7 +63,7 @@ for r = rs
     
     % look for epoching events:
     tps = {EEG.event.type};
-    ep_ev = epoch_info.epoch_events;
+    ep_ev = epoch_info.events;
     evn = [];
     
     for e = 1:length(ep_ev)
@@ -81,7 +81,7 @@ for r = rs
     
     % latencies
     lat = [EEG.event(evn).latency];
-    ep_lim = epoch_info.epoch_limits;
+    ep_lim = epoch_info.limits;
     
     % assume floor:
     ep_lim_smp = floor(ep_lim * EEG.srate);
@@ -103,10 +103,12 @@ for r = rs
         witih_data(e) = sum( ep_smp_adr(e,:) >= 1 & ...
             ep_smp_adr(e,:) <= siglen) == 2;
         
+        % CHANGE - < 0 does not move window preselection
+        %          in some cases we may want that
         if witih_data(e)
             ep(ep_smp_adr(e,1):ep_smp_adr(e,2)) = e;
             perc_bad(e) = length(find(win(ep_smp_adr(e,1):...
-                ep_smp_adr(e,2)) <= 0)) / diflim_smp;
+                ep_smp_adr(e,2)) < 0)) / diflim_smp;
         end
     end
     clear e ep ep_smp_adr
@@ -115,24 +117,31 @@ for r = rs
     perc_bad(~witih_data) = [];
     
     
-    % FIX - delete onesecepoch fields
     %% move rejections:
-    db(r).onesecepoch = [];
-    db(r).prerej = [];
+    flds = {'distance', 'eventname', 'winlen'};
+    db(r).epoch = rmfield(db(r).epoch, flds);
+    db(r).reject.pre = [];
     
     if ~addmarks
-        db(r).removed = find(perc_bad >= perc);
-        db(r).postrej = find(perc_bad >= perc);
+        db(r).reject.all = find(perc_bad >= perc);
+        db(r).reject.post = find(perc_bad >= perc);
+        db(r).reject.pre = [];
     else
-        db(r).removed = [];
-        db(r).postrej = [];
+        db(r).reject.all = [];
+        db(r).reject.pre = [];
+        db(r).reject.post = [];
     end
     
     % FIX - these names are different now
     % clear reject fields
-    fld = {'userreject', 'usermaybe', 'userdontknow'};
-    for f = 1:length(fld)
-        db(r).userrem.(fld{f}) = zeros(length(lat),1);
+    % fld = {'userreject', 'usermaybe', 'userdontknow'};
+    % for f = 1:length(fld)
+    %     db(r).reject.(fld{f}) = zeros(length(lat),1);
+    % end
+    
+    % clear marks
+    for m = 1:length(db(r).marks)
+        db(r).marks(m).value = [];
     end
     
     % add marks to userrem.userreject:
@@ -141,6 +150,9 @@ for r = rs
     db(r).userrem.userreject = ep_logic;
     
     % apply epoch events and limits:
-    db(r).epoch_events = ep_ev;
-    db(r).epoch_limits = ep_lim;
+    db(r).epoch.events = ep_ev;
+    db(r).epoch.limits = ep_lim;
+    if femp(epoch_info, 'locked')
+        db(r).epoch.locked = epoch_info.locked;
+    end
 end
