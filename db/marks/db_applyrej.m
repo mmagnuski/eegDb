@@ -1,5 +1,7 @@
 function db = db_applyrej(db, rs, varargin)
 
+% db = db_applyrej(db, rs, varargin)
+% 'byname', 'checksel', 'clear'
 % NOHELPINFO
 % function used to apply rejections to db database
 
@@ -19,6 +21,10 @@ if nargin > 2
             eval([tovar{i}, ' = varargin{', num2str(ind + 1), '};']);
         end
     end
+end
+
+if ~iscell(byname)
+    byname = {byname};
 end
 
 % checksel is a mode where rejections are only scanned
