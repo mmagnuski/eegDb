@@ -14,10 +14,16 @@ function opt = parse_arse(varin, varargin)
 if nargin > 1 && isstruct(varargin{1})
 	opt = varargin{1};
 	if iscell(varin)
-		varin = struct1d(varin{:});
+        if ~isstruct(varin{1})
+            varin = struct1d(varin{:});
+        else
+            varin = varin{1};
+        end
 	end
 else
-	opt = struct1d(varin{:});
+    if ~isstruct(varin)    
+        opt = struct1d(varin{:});
+    end
 	return
 end
 
