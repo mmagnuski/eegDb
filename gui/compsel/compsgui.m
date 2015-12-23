@@ -647,13 +647,21 @@ if ishandle(h.fig)
 end
 
 if ishandle(h.fig) && info.EEG_present
+    info = getappdata(h.fig, 'info');
+    EEG = getappdata(h.fig, 'EEG');
     EEG.reject.gcompreject(info.comps.state == 1) = 1;
+
     out_eeg = find(strcmp(varargout_ord, 'EEG'));
     if ~isempty(out_eeg) && nargout > 0
-        EEG = getappdata(h.fig, 'EEG');
         varargout{out_eeg} = EEG;
     end
     close(h.fig);
+else
+    out_eeg = find(strcmp(varargout_ord, 'EEG'));
+    if ~isempty(out_eeg) && nargout > 0
+        
+        varargout{out_eeg} = EEG;
+    end
 end
 
 % CHANGE
