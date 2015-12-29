@@ -79,9 +79,9 @@ classdef fastplot < handle
     %                   S - number of samples)
     % opt      -  various options, including:
     %    .step    - step values for different movement and scaling types:
-    %         .epoch_move
-    %         .epoch_scale
-    %         .signal_scale
+    %         .move
+    %         .move_unit
+    %         .signal_scale (?)
     % keys     -  a KeyboardManager instance - it is responsible for keyboard
     %             interactions with the gui including sequences of key presses
     %
@@ -158,6 +158,11 @@ classdef fastplot < handle
             obj.opt.step.move = 1;
             obj.opt.step.epoch_scale = 1;
 
+            % comp vs chan
+            % ------------
+            % this is not fully documented and not really clear
+            % fastplot checks whether it should plot components or channels signal
+
             % check varargin for 'comp' or 'chan'
             isind = false;
             show_signal = 'chan';
@@ -176,7 +181,7 @@ classdef fastplot < handle
                 end
             end
 
-            % check comp vs chan and inds
+            % check which channels/components to plot
             % eeg_getdataact
             if ~isind
                 signal_ind = 1:EEG.nbchan;
@@ -196,6 +201,10 @@ classdef fastplot < handle
             end
 
             orig_size = size(obj.data);
+
+            % check if signal is continuous or not:
+            if length(orig_size) == 2
+
             obj.opt.nbchan = orig_size(1);
             obj.data_size = [orig_size(1), orig_size(2) * orig_size(3)];
             obj.data = reshape(obj.data, obj.data_size)';
@@ -206,6 +215,7 @@ classdef fastplot < handle
 
             % default options
             obj.opt.num_epoch_per_window = 3; % this should be set via options
+            % CHANGE - readfield/readfrom mechanics are a little weird, worth considering
             obj.opt.readfield = {'data'}; % later - add support for multiple fields
             obj.opt.readfrom = 1;
 
@@ -213,15 +223,21 @@ classdef fastplot < handle
             obj.opt.chan_sd = std(obj.data, [], 1); % this kind of thing can be in info property
             obj.opt.step.signal_scale = 0.1;
             obj.opt.signal_scale = 1;
-            obj.spacing = 4.5 * mean(obj.opt.chan_sd);
+            obj.spacing_sd = 2.5;
+            obj.spacing =  obj.spacing_sd * mean(obj.opt.chan_sd);
             obj.arg_parser(varargin); % arg_parser should be used at the top
 
+            % CHANGE - there is some additional spacing (especially
+            %          visible in one-channel case)
             chan_pos = (0:obj.data_size(2)-1)*obj.spacing;
 
             % set y limits
             obj.h.ylim = [-(obj.data_size(2)+1) * obj.spacing,...
                 obj.spacing];
 
+            % CHANGE - get_epoch should probably be put back here
+            %          (it is not reused anywhere)
+            % CHANGE - remember about continuous signal
             % get event and epoch info
             obj.get_epoch(EEG, orig_size);
 
