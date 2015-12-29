@@ -74,6 +74,9 @@ classdef fastplot < handle
     %     selected    - M by E boolean matrix; informs which epochs are marked
     %                   with which mark types (M - number of marks, E - number
     %                   of epochs)
+    %     samples     - M by S boolean matrix; informs which samples of the signal
+    %                   are selected with given mark types (M - number of marks,
+    %                   S - number of samples)
     % opt      -  various options, including:
     %    .step    - step values for different movement and scaling types:
     %         .epoch_move
