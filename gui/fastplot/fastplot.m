@@ -210,11 +210,16 @@ classdef fastplot < handle
             obj.data = reshape(obj.data, obj.data_size)';
             obj.data_size = fliplr(obj.data_size);
 
+
+            % default options
+            % ---------------
+
             % default scroll method
             obj.scrollmethod = 'allset'; % how signal refresh is performed
 
-            % default options
             obj.opt.num_epoch_per_window = 3; % this should be set via options
+            obj.opt.seconds_per_window = 3; % this should be set via options
+
             % CHANGE - readfield/readfrom mechanics are a little weird, worth considering
             obj.opt.readfield = {'data'}; % later - add support for multiple fields
             obj.opt.readfrom = 1;
@@ -225,6 +230,9 @@ classdef fastplot < handle
             obj.opt.signal_scale = 1;
             obj.spacing_sd = 2.5;
             obj.spacing =  obj.spacing_sd * mean(obj.opt.chan_sd);
+
+            % parse additional arguments
+            % --------------------------
             obj.arg_parser(varargin); % arg_parser should be used at the top
 
             % CHANGE - there is some additional spacing (especially
@@ -690,6 +698,7 @@ classdef fastplot < handle
             % helper function that lets to parse matlab style arguments
             % (why oh why matlab doesn't have named function arguments?)
             
+            % defaults
             obj.opt.vim = false;
             obj.opt.show = true;
             obj.opt.data2 = [];
@@ -715,10 +724,11 @@ classdef fastplot < handle
                 end
             end
 
-            % now check for 'data2' argument
+            % parse arguments with parse_arse
             if ~isempty(first_char)
                 obj.opt = parse_arse(args(first_char:end), obj.opt);
             end
+            % now check for 'data2' argument
             if ~isempty(obj.opt.data2)
                 obj.data2 = obj.opt.data2;
                 obj.opt.data2 = true;
@@ -787,11 +797,15 @@ classdef fastplot < handle
             % plot events
             obj.plotevents();
             % plot epoch limits
-            obj.plot_epochlimits();
+            if obj.epoch.mode
+                obj.plot_epochlimits();
+            end
             % plot events too
             obj.plot_marks();
             % plot epoch numbers
-            obj.plot_epoch_numbers();
+            if obj.epoch.mode
+                obj.plot_epoch_numbers();
+            end
 
             % set keyboard shortcuts
             obj.init_keypress();
@@ -833,6 +847,14 @@ classdef fastplot < handle
             % event colors - random at the moment
             obj.event.color = rand(obj.event.numtypes,3);
 
+            % set default marks
+            if isempty(obj.marks)
+                obj.marks.names    = {'reject'};
+                obj.marks.colors   = [0.95, 0.73, 0.71];
+                obj.marks.current  = 1;
+                obj.marks.lastclick = 0;
+            end
+
             % get epoch info:
             obj.opt.srate = EEG.srate;
             obj.opt.stime = 1000 / EEG.srate;
@@ -845,20 +867,24 @@ classdef fastplot < handle
                 obj.epoch.limits     = orig_size(2):orig_size(2):...
                     obj.data_size(1) + obj.opt.stime / 2;
 
-                % set default marks
-                if isempty(obj.marks)
-                    obj.marks.names    = {'reject'};
-                    obj.marks.colors   = [0.95, 0.73, 0.71];
-                    obj.marks.current  = 1;
+
+                if ~femp(obj.marks, 'selected')
                     obj.marks.selected = false(1, obj.epoch.num);
-                    obj.marks.lastclick = 0;
                 end
 
-                % set mark limits
-                num_marks = length(obj.marks);
-                obj.marks.num2vertx = arrayfun(@(x) create_vert_y(x, obj.h.ylim), ...
-                    1:num_marks, 'UniformOutput', false);
+            else
+                obj.epoch.mode = false;
+                obj.opt.time = EEG.times;
+
+                if ~femp(obj.marks, 'selected')
+                    obj.marks.samples = false(1, orig_size(2));
+                end
             end
+
+            % set mark limits
+            num_marks = length(obj.marks);
+            obj.marks.num2vertx = arrayfun(@(x) create_vert_y(x, obj.h.ylim), ...
+                1:num_marks, 'UniformOutput', false);
         end
 
 
@@ -922,7 +948,7 @@ classdef fastplot < handle
                     % create indexer
                     ind = reuse+1:(reuse + drawnew);
 
-                    hold on; % change to myHoldOn later on
+                    hold on; % CHANGE to myHoldOn later on
 
                     % lines
                     obj.h.eventlines(ind) = line(lineX(:,ind), ...
