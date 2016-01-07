@@ -336,9 +336,9 @@ classdef fastplot < handle
                 end
             end
             if refresh_elem(2); obj.plotevents(); end;
-            if refresh_elem(3); obj.plot_epochlimits(); end;
+            if refresh_elem(3) && obj.epoch.mode; obj.plot_epochlimits(); end;
             if refresh_elem(4); obj.plot_marks(); end;
-            if refresh_elem(5); obj.plot_epoch_numbers(); end;
+            if refresh_elem(5) && obj.epoch.mode; obj.plot_epoch_numbers(); end;
             % timetaken = toc;
             % fprintf('time taken: %f\n', timetaken);
         end
@@ -404,8 +404,10 @@ classdef fastplot < handle
             % is given, the range of current fastplot
             % view is taken.
             %
-            % default - range in samples
-            % default - range from winlim
+            % default:
+            %   - range in samples
+            %   - range taken from current window limits
+            %     of fastplot
 
             if ~exist('rng', 'var')
                 rng = obj.window.lims;
