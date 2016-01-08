@@ -2,7 +2,7 @@
 **`eegDb`** is an egglab plugin that eases up managing preprocessing routines. It allows to create project databases for reproducible eeg preprocessing with eeglab.
 
 ### Installation
-[See installation instructions](docs/Installation.md)
+[See installation instructions](http://eegdb.readthedocs.org/en/latest/Installation/)
 
 ### Simple usage example
 You can construct a database using a simple database creation GUI:
