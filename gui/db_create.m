@@ -42,6 +42,8 @@ handles.GoodToGo = false;
 handles.CorrectPath = false;
 handles.ChosenFiles = [];
 handles.ChooseFilesMethod = 'all';
+handles.CorrectFilter_pass = true;
+handles.CorrectFilter_stop = true;
 handles.PassFilt = [];
 handles.StopFilt = [];
 
@@ -152,9 +154,18 @@ function CheckBands(hObject)
 % Check if band is ok
 str = get(hObject, 'String');
 numb = str2num(str); %#ok<ST2NM>
+objtag = get(hObject, 'Tag');
+h = guidata(hObject);
 
 if ~(length(numb) == 2) || sum(numb < 0) > 0
     set(hObject, 'ForegroundColor', 'r');
+    switch objtag
+        case 'PassBand'
+            h.CorrectFilter_pass = false;
+        case 'StopBand'
+            h.CorrectFilter_stop = false;
+    end
+    guidata(hObject, h);
 else
     % other checks?
     if sum(numb == 0) == 0
@@ -163,13 +174,13 @@ else
     set(hObject, 'String', num2str(numb));
     set(hObject, 'ForegroundColor', [0.2, 0.75, 0.4]);
     
-    objtag = get(hObject, 'Tag');
-    h = guidata(hObject);
     switch objtag
         case 'PassBand'
             h.PassFilt = numb;
+            h.CorrectFilter_pass = true;
         case 'StopBand'
             h.StopFilt = numb;
+            h.CorrectFilter_stop = true;
     end
     guidata(hObject, h);
 end
@@ -323,8 +334,16 @@ function OK_Callback(hObject, ~, h)
 
 h = guidata(hObject);
 
+if ~h.CorrectFilter_stop
+    warndlg(['Passband filter is incorrectly defined. You need to', ...
+        ' specify lower and higher edge of the passband filter.', ...
+        ' If you want to get a highpass filter - specify the higher ', ...
+        'edge as zero. If you want to get a lowpass filter - specify ', ...
+        'the lower edge as zero.']);
+    return
+end
+
 if femp(h, 'db')
-    % db = h.db;
     opt = [];
     if femp(h, 'PassFilt')
         opt.filter(1,:) = h.PassFilt;
