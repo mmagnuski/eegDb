@@ -60,40 +60,6 @@ function EEG = recoverEEG(db, r, varargin)
 %     covery.
 %
 
-% VERSION info:
-% 2014.01.27 --> compressed icaweights temp usage when
-%                interpolating
-% 2014.03.25 --> moved interpolation before epoching
-%                added postfilter between interpolation
-%                and epoching
-% 2014.06.22 --> changed path checking loop to db_path 
-%                function call
-
-% TODOs:
-% [ ] path availability and eeglab inteface presence
-%     should be distinguished and different actions
-%     taken.
-% [ ] Additional checks for newfilt availability
-%     Tries to add path to the function or toolbox
-%     error if not possible.
-%        (This is partially done:
-%         eeg_path adds path to firfilt by default)
-%
-% CONSIDER:
-% [ ] how to enable using different filters and
-%     enable better control over filtering parameters?
-% [ ] add option to recover multiple files?
-% [ ] far future - dealing with continuous rejections...
-% [ ] whether to 'cut out' from autorem and userrem
-%     rejection info about epochs in 'removed'
-%     this way markings not applied will still be
-%     visible
-% [ ] remove the paths to eeglab in 'local' or recover
-%     previous path?
-% [ ] CHANGE 'loaded' behavior - now it only adds ICA,
-%     should it perform other modifs (filtering, epoching,
-%     etc.)? How should 'loaded' generally work??
-
 
 %% defaults:
 prerej = false; cleanl = false;
@@ -123,13 +89,7 @@ if nargin > 2
             end
         end
     end
-    
-    % addfilter is obsolete and will not be maintained
-    %
-    %     reslt = strcmp('addfilt', varargin);
-    %     if sum(reslt)>0
-    %         addfilt = varargin{find(reslt) + 1};
-    %     end
+
     
     % give different directory
     reslt = strcmp('dir', varargin);
@@ -137,8 +97,7 @@ if nargin > 2
         overr_dir = true;
         path = varargin{find(reslt) + 1};
     end
-    
-    %zmienilam cos - tzn co? [Miko]
+
     % ADD - check for path override
 end
 
@@ -375,13 +334,7 @@ if interp
                 EEG.(f{1}) = temp.(f{1});
             end
         end
-        
-        % CHANGE - we shouldn't require icaact in
-        %          recoverEEG - it creates twice
-        %          as much data
-        %         if isempty(EEG.icaact)
-        %             EEG.icaact = eeg_getdatact(EEG, 'component', 1:size(EEG.icaweights,1));
-        %         end
+
     end
 end
 
