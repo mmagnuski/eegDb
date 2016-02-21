@@ -214,6 +214,9 @@ classdef fastplot < handle
             obj.arg_parser(varargin); % arg_parser should be used at the top
 
             chan_pos = (0:obj.data_size(2)-1)*obj.spacing;
+            
+            % get channel locations
+            obj.opt.chanloc = EEG.chanlocs;
 
             % set y limits
             obj.h.ylim = [-(obj.data_size(2)+1) * obj.spacing,...
@@ -740,6 +743,7 @@ classdef fastplot < handle
             obj.h.epochlimits = [];
             obj.h.backpatches = [];
             obj.h.epochnumbers = [];
+            obj.h.topofigure = [];
             
             % plot data
             % ---------
@@ -777,7 +781,7 @@ classdef fastplot < handle
             % set keyboard shortcuts
             obj.init_keypress();
             % set click callback
-            set(obj.h.ax, 'ButtonDownFcn', @(h, e) obj.testButtonPress());
+            set(obj.h.ax, 'ButtonDownFcn', @(h, e) obj.onButtonPress());
 
         end
         
@@ -1031,7 +1035,7 @@ classdef fastplot < handle
         end
 
 
-        function testButtonPress(obj)
+        function onButtonPress(obj)
             % axesHandle  = get(objectHandle,'Parent');
             coord = get(obj.h.ax,'CurrentPoint');
             coord = coord(1, 1:2);
@@ -1040,6 +1044,15 @@ classdef fastplot < handle
             % test where x is located relative to epoch.current_limits
             if obj.epoch.mode
                 x = coord(1);
+
+                % check selection type
+                selection_type = get(obj.h.fig, 'SelectionType');
+                % 'normal': left-click
+                % 'open': double-click
+                % 'alt': right-click
+                % 'extend': left and right together
+
+                if strcmp(selection_type, 'normal')
                 if ~(obj.epoch.current_limits(1) == 0)
                     epoch_lims = [0, obj.epoch.current_limits];
                 else
@@ -1074,6 +1087,21 @@ classdef fastplot < handle
 
                 % plot the change
                 obj.plot_marks();
+            elseif strcmp(selection_type, 'alt')
+            % check which datapoint this is:
+            data_ind = obj.window.span(round(x));
+            chan_data = obj.(obj.opt.readfield{obj.opt.readfrom})(data_ind, :);
+            if isempty(obj.h.topofigure) || ~ishandle(obj.h.topofigure)
+                obj.h.topofigure = figure('toolbar', 'none', ...
+                    'menubar', 'none', 'units', 'normalized', ...
+                    'Position', [0.05, 0.8, 0.11, 0.16], ...
+                    'WindowKeyPressFcn', @(o,e) figure(obj.h.fig));
+            end
+            figure(obj.h.topofigure);
+            cla;
+            topoplot(chan_data, obj.opt.chanloc);
+
+                end
             end
         end
 
