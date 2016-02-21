@@ -26,13 +26,10 @@ if strcmp(evnt.Key, 'c')
         EEG2 = pop_subcomp(EEG, remcmp, 0);
         fst = fastplot(EEG, EEG2);
         
-        % TODO:
         % 1. if options present - apply
         fst_opts = getappdata(h, 'fastplotopts');
         if femp(fst_opts, 'window')
-            fst.window = fst_opts.window;
-            fst.opt.num_epoch_per_window = fst_opts.num_epochs;
-            fst.opt.signal_scale = fst_opts.scale;
+            fst.set_window(fst_opts.window);
             fst.refresh();
         end
         % 2. attach a function to fastplot close action
