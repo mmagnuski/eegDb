@@ -1052,7 +1052,7 @@ classdef fastplot < handle
                 % 'alt': right-click
                 % 'extend': left and right together
 
-                if strcmp(selection_type, 'normal')
+                if any(strcmp(selection_type, {'normal', 'extend'}))
                 if ~(obj.epoch.current_limits(1) == 0)
                     epoch_lims = [0, obj.epoch.current_limits];
                 else
