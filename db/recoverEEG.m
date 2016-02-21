@@ -201,6 +201,9 @@ if ~loaded
     % CHANGE if there are problems to try-catch
     EEG = db_fastread(pth, db(r).filename);
     
+    % make sure event types are in string format
+    EEG = db_stringify_event_types(EEG);
+    
     % EEG = pop_loadset('filename', db(r).filename, ...
     %     'filepath', pth);
     

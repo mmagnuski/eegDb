@@ -94,7 +94,13 @@ EEG = ld.EEG;
 % when segmenting is used no events are
 % needed
 if femp(EEG, 'event') && femp(EEG.event(1), 'type')
+    if ~isnumeric(EEG.event(1).type)
     h.event_types = unique({EEG.event.type})';
+    else
+        h.event_types = unique([EEG.event.type]);
+        h.event_types = arrayfun(@num2str, h.event_types, ...
+            'UniformOutput', false);
+    end  
 else
     h.event_types = {};
 end
@@ -108,7 +114,9 @@ evlst = get(h.event_list, 'String');
 if ~iscell(evlst)
     evlst = {evlst};
 end
-
+if size(h.event_types, 2) > 1
+    h.event_types = h.event_types';
+end
 evlst = [evlst; h.event_types];
 set(h.event_list, 'String', evlst);
 set(h.event_list, 'Value', 1);
