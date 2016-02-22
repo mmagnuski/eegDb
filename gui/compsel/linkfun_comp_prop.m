@@ -49,7 +49,7 @@ set(h.fig, 'DeleteFcn', @(src, ev) snc.clear_h(h.fig) );
 set(h.ok, 'Callback', @(src, ev) close(h.fig) );
 
 % add callback for enter escape, 's' and 'c'
-set(h.fig, 'WindowKeyPressFcn', @prop_buttonpress);
+set(h.fig, 'WindowKeyPressFcn', @(o,e) prop_buttonpress(o, e, hfig));
 
 
 % CHANGE - use spec_opt in the future
@@ -57,7 +57,7 @@ set(h.fig, 'WindowKeyPressFcn', @prop_buttonpress);
 
 
 % button press function
-function prop_buttonpress(hObj, evnt)
+function prop_buttonpress(hObj, evnt, hfig)
 
 % get pressed character
 ch = evnt.Character;
@@ -71,6 +71,15 @@ if ~isempty(ch)
         EEG = getappdata(hObj, 'EEG');
         EEG2 = pop_subcomp(EEG, comp, 0);
         fst = fastplot(EEG, EEG2);
+        
+        % apply last used opts:
+        fst_opts = getappdata(hfig, 'fastplotopts');
+        if femp(fst_opts, 'window')
+            fst.set_window(fst_opts.window);
+            fst.refresh();
+        end
+        % get options on fastplot close
+        set(fst.h.fig, 'CloseRequestFcn', @(o, e) store_fastplotopts(fst, hfig));
     elseif strcmp(evnt.Key, 's')
         comp = getappdata(hObj, 'comp');
         EEG = getappdata(hObj, 'EEG');

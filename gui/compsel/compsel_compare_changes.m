@@ -25,6 +25,17 @@ if strcmp(evnt.Key, 'c')
         EEG = getappdata(h, 'EEG');
         EEG2 = pop_subcomp(EEG, remcmp, 0);
         fst = fastplot(EEG, EEG2);
+        
+        % 1. if options present - apply
+        fst_opts = getappdata(h, 'fastplotopts');
+        if femp(fst_opts, 'window')
+            fst.set_window(fst_opts.window);
+            fst.refresh();
+        end
+        % 2. attach a function to fastplot close action
+        %    (or add a listener to the close event)
+        set(fst.h.fig, 'CloseRequestFcn', @(o, e) store_fastplotopts(fst, h));
+        
         if warn
         	mh = msgbox(warntext, 'Some components have already been removed', ...
         		'warn');

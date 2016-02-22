@@ -568,6 +568,11 @@ end
 info.comps.invisible = zeros(1, info.perfig);
 info.drawfreq = DRAWFREQ;
 
+% fastplotopts
+fastplotopts = struct();
+fastplotopts.num_epochs = []; % get from main gui? obj.opt.num_epoch_per_window
+fastplotopts.window = []; % obj.window
+fastplotopts.scale = []; % obj.opt.signal_scale
 
 % APPDATA
 % -------
@@ -579,6 +584,7 @@ setappdata(h.fig, 'icawinv',  icawinv);
 setappdata(h.fig, 'chansind', chansind);
 setappdata(h.fig, 'chanlocs', chanlocs);
 setappdata(h.fig, 'topocache', topocache);
+setappdata(h.fig, 'fastplotopts', fastplotopts);
 
 % window callback(s)
 set(h.fig, 'WindowKeyPressFcn', @compsel_compare_changes);

@@ -467,6 +467,21 @@ classdef fastplot < handle
             obj.refresh();
         end
 
+        function set_window(obj, varargin)
+            if isstruct(varargin{1})
+
+            % this will need some safty checks etc.
+            % previous_window = obj.window;
+            obj.window = varargin{1};
+            % check number of epochs:
+            epoch_length = length(obj.epoch.time);
+            obj.opt.num_epoch_per_window = length(obj.window.span) / epoch_length;
+            if obj.opt.show
+                set(obj.h.ax, 'XLim', [1, length(obj.epoch.time) * ...
+                    obj.opt.num_epoch_per_window]);
+            end
+            end
+        end
 
         function add_mark(obj, mark)
             % allows to add new mark types to fastplot
