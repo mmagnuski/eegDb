@@ -18,6 +18,7 @@ function EEG = recoverEEG(db, r, varargin)
 % additional keys:
 % 'prerej'      - remove only the prerejected
 %                 epochs
+% 'noepoch'     - do not epoch or segment the file
 % 'loaded'      - the file is loaded - look for corresponding
 %                 modifications in the database and recover
 % 'dir'         - allows to pass the directory
@@ -68,7 +69,7 @@ loaded = false; addfilt = [];
 overr_dir = false; noICA = false;
 code_id = '\code:'; ICAnorem = false;
 interp = false; segment = false;
-nosegment = false;
+nosegment = false; noepoch = false;
 
 cidlen = length(code_id);
 
@@ -76,7 +77,8 @@ cidlen = length(code_id);
 if nargin > 2
     % optional arguments
     args = {'interp', 'ICAnorem', 'prerej', 'local',...
-        'loaded', 'nofilter', 'noICA', 'nosegment'};
+        'loaded', 'nofilter', 'noICA', 'nosegment', ...
+        'noepoch'};
     
     % simple argument checks
     for a = 1:length(args)
@@ -350,7 +352,7 @@ if femp(db(r), 'postfilter')
 end
 
 %% epoching
-if femp(db(r), 'epoch')
+if femp(db(r), 'epoch') && ~noepoch
     if femp(db(r).epoch, 'locked') && ~db(r).epoch.locked
         
         % ==============
@@ -440,7 +442,7 @@ if femp(db(r).epoch, 'locked') && ~db(r).epoch.locked
 end
 
 %% removing bad epochs
-if ~prerej && ~isempty(db(r).reject.all)
+if ~noepoch && ~prerej && ~isempty(db(r).reject.all)
     if segment
         EEG = eeg_rmepoch(EEG, db(r).reject.all(:)');
         
@@ -448,7 +450,7 @@ if ~prerej && ~isempty(db(r).reject.all)
         EEG = pop_selectevent( EEG, 'epoch', db(r).reject.all(:)' ,...
             'deleteevents','off','deleteepochs','on','invertepochs','on');
     end
-elseif ~isempty(db(r).reject.pre)
+elseif ~noepoch && ~isempty(db(r).reject.pre)
     if segment
         EEG = eeg_rmepoch(EEG, db(r).reject.pre(:)');
     else
