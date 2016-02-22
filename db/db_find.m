@@ -5,10 +5,9 @@ function r = db_find(db, fld, val, opt)
 % looks for a record that has field 'fld'
 % set to value 'val'.
 % Returns all indices that fulfill these
-% constaints.
+% constraints.
 
 % TODOs
-% [ ] PROFILE against cellfun
 % [ ] maybe add options to look deeper than one field
 %     (db_getfield or sth similar?)
 
@@ -23,7 +22,7 @@ end
 len = length(db);
 r = false(1, len);
 if strcmp(opt, 'substring')
-	testfun = @(s) length(strfind(s.(fld), val)) > 0;
+	testfun = @(s) isempty(strfind(s.(fld), val));
 else
 	testfun = @(s) isequal(s.(fld), val);
 end
