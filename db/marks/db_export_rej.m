@@ -1,5 +1,7 @@
 function db_export_rej(db, r, types, pth)
 
+% exports marks for given db record in a tab-separated dataframe format
+
 if ~exist('types', 'var') || isempty(types)
     types = {'reject'};
 end
