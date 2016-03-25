@@ -59,7 +59,7 @@ for f = 1:size(rejCol, 1)
         continue
     end
     
-    newrej = TMPREJ(foundadr, 2) / EEG.pnts; %EEG.pnts instead of EEG.srate MZ
+    newrej = TMPREJ(foundadr, 2) / double(EEG.pnts); %EEG.pnts instead of EEG.srate MZ
     zerovec = false(EEG.trials, 1);
     zerovec(newrej) = true;
 
