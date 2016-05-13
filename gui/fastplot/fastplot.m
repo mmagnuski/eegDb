@@ -371,6 +371,30 @@ classdef fastplot < handle
             obj.window.lims = wlims;
             obj.refresh();
         end
+
+        function move_to_mark(obj, mark, whichone)
+            % move view to specific (next/previous) mark
+            %
+            % plt = fastplot(EEG)
+            % plt.move_to_mark('badchan', 'next')
+
+            % check mark
+            if ~exist('mark', 'var') || isempty(mark)
+                % check current mark
+                mark = obj.marks.current;
+            end
+            if ischar(mark)
+                mark = find(strcmp(mark, obj.marks.current));
+                % error if mark not found
+            end
+
+            % check current epochs
+            ep = epochlimits_in_range(obj, rng);
+            current_epochs = ep.num;
+
+            % do not go further if move is not possible
+            obj.refresh();
+        end
             
         
         % maybe should be private? :
