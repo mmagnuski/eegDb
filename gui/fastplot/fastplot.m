@@ -389,14 +389,30 @@ classdef fastplot < handle
             end
 
             % check current epochs
-            ep = epochlimits_in_range(obj, rng);
-            current_epochs = ep.num;
+            ep = obj.epochlimits_in_range();
+            current_epochs = ep.nums;
+            mid = round(length(current_epochs) / 2);
+            central_epoch = current_epochs(mid);
 
-            % do not go further if move is not possible
-            obj.refresh();
+            switch whichone
+                case 'next'
+                    ind1 = min([size(obj.marks.selected, 2), central_epoch+1]);
+                    move = find(obj.marks.selected(mark, ind1:end), 1, 'first');
+                case 'previous'
+                    ind1 = max([1, central_epoch - 1]);
+                    move = find(obj.marks.selected(mark, 1:ind1), 1, 'last')
+                    if ~isempty(move)
+                        move = move - central_epoch;
+                    end
+            end
+
+            if ~isempty(move)
+                obj.move(move);
+                obj.refresh();
+            end
         end
-            
-        
+
+
         % maybe should be private? :
         function ev = events_in_range(obj, rng)
             % gives latency of events that are
@@ -1052,17 +1068,22 @@ classdef fastplot < handle
             pattern{9,2} = {@obj.windowsize, 1};
             pattern{10,1} = {'num', 'e', 'hyphen'};
             pattern{10,2} = {@obj.windowsize, -1};
+            pattern{11,1} = {'n', 'm'};
+            pattern{11,2} = {@obj.move_to_mark, [], 'next'};
+            pattern{12,1} = {'p', 'm'};
+            pattern{12,2} = {@obj.move_to_mark, [], 'previous'};
+
 
             % vim-like:
             if obj.opt.vim
-                pattern{11,1} = {'num', 'h'};
-                pattern{11,2} = {@obj.move, -1, []};
-                pattern{12,1} = {'num', 'l'};
-                pattern{12,2} = {@obj.move, 1, []};
-                pattern{13,1} = {'num', 'w'};
-                pattern{13,2} = {@obj.move, 1, 'window'};
-                pattern{14,1} = {'num', 'b'};
-                pattern{14,2} = {@obj.move, -1, 'window'};
+                pattern{13,1} = {'num', 'h'};
+                pattern{13,2} = {@obj.move, -1, []};
+                pattern{14,1} = {'num', 'l'};
+                pattern{14,2} = {@obj.move, 1, []};
+                pattern{15,1} = {'num', 'w'};
+                pattern{15,2} = {@obj.move, 1, 'window'};
+                pattern{16,1} = {'num', 'b'};
+                pattern{16,2} = {@obj.move, -1, 'window'};
             end
 
             % initialize 
