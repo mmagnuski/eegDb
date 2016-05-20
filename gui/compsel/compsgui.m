@@ -45,7 +45,7 @@ function varargout = compsgui( varargin )
 % [ ] clear up help
 % FUTURE:
 % [ ] work on broadcast? - notify and addlistener for GUIs?
-% [ ] cached topos should have info on plot options
+% [ ] should cached topos have info on plot options?
 
 
 % info for hackers (or future self)
@@ -55,7 +55,7 @@ function varargout = compsgui( varargin )
 %     .db_present      - boolean; whether eegDb was passed
 %     .compnum (?)
 %     .topopts (?)
-%     .r                  
+%     .r
 %     .ver
 %     .comps
 %           .all   - all selected components
@@ -69,10 +69,10 @@ function varargout = compsgui( varargin )
 % 'info'      - struct; see in previous section
 % 'eegDb'     - eegDb structure (database of preprocessing steps)
 % 'topopts'   - structure of options for compo plotting
-% 
+%
 % TAGS:
 % buttons     -> 'comp10' denotes button corresponding to 10th component
-% axes        -> 
+% axes        ->
 
 
 % INPUT CHECKS
@@ -113,7 +113,7 @@ fig_h_passed = false;
 % ============
 % other checks
 
-% check first two arguments, one of these might be 
+% check first two arguments, one of these might be
 % EEG and/or eegDb
 takefirst = min(arg_in, 2);
 isdb = cellfun(@iseegDb, varargin(takefirst));
@@ -275,7 +275,7 @@ if length(compnum) > PLOTPERFIG
 else
     info.block_navig = true;
     info.comps.all = compnum;
-    
+
     NumOfComp = length(compnum);
     params.column = ceil(sqrt( NumOfComp ))+1;
     params.rows = ceil(NumOfComp/params.column);
@@ -300,7 +300,7 @@ currentfigtag = ['selcomp' num2str(rand)];
 % for compatibility it is still used if no eegDb was passed
 if ~info.db_present
     try %#ok<*TRYNC>
-        icadefs;        
+        icadefs;
     end
 end
 
@@ -312,7 +312,7 @@ end
 % evetything is in relevant appdata fields
 
 if ~fig_h_passed
-    
+
     % CHANGE figure name
 
     % compute figure position - currently do not care about
@@ -330,7 +330,7 @@ if ~fig_h_passed
         'pop_selectcomps_new() (dataset: ', EEG.setname ')'], 'tag', ...
         currentfigtag, 'numbertitle', 'off', 'color', FIGBACKCOLOR, ...
         'Position', pos, 'MenuBar', 'none');
-    
+
     % CHECK - later this should be checked and compared
     %         against options
     % CHANGE - manipulate the pos(1) and pos(2) to
@@ -339,7 +339,7 @@ if ~fig_h_passed
     % incx and incy are used to compute button coordinates
     % (increment in x, increment in y)
     incx = 120; incy = 110;
-    
+
     % sizewx and sizewy control the size of buttons
     % as well as axes coordinates
     sizewx = 100/params.column;
@@ -348,12 +348,12 @@ if ~fig_h_passed
     else
         sizewy = 80/params.rows;
     end
-    
+
     % get current axis position to plot
     % relative to current axes
     pos = get(gca,'position');
     % hh = gca;
-    
+
     % CHECK - q and s seem to be scaling factors
     % CHANGE - does it make sense to use these
     %          scaling and moving factors?
@@ -400,11 +400,11 @@ end
 %                rejected...
 % CHANGE       - currently only eegDb-level
 % CONSIDER     - may be better when state is only for those comps
-%                present in comps.all 
+%                present in comps.all
 info.comps.colorcycle = [GUIBUTTONCOLOR; eval(COLREJ); ...
                             eval(COLACC); [1, 0.65, 0]];
 info.comps.stateNames = {'', 'reject', 'select', 'maybe'};
-if info.db_present 
+if info.db_present
 
     % compstate
     info.comps.state = zeros(1, info.eegDbcompN);
@@ -450,7 +450,7 @@ end
 if ~fig_h_passed
     % CHANGE callbacks
     % CHECK  pop_icathresh(EEG)
-    % CHANGE - some descriptions are reused - put 
+    % CHANGE - some descriptions are reused - put
     %          these in a cell array and reuse
 
     common_opts = {'Style', 'pushbutton', 'Units','Normalized', ...
@@ -464,7 +464,7 @@ if ~fig_h_passed
         'string', 'Set threhsolds', ...
         'Position',[10 -10  15 sizewy*0.25].*s+q, ...
         'callback', 'pop_icathresh(EEG); pop_selectcomps( EEG, gcbf);' );
-    
+
     h.seecompstats = uicontrol(h.fig, common_opts{:}, ...
         'string', 'See comp. stats', ...
         'Position',[30 -10  15 sizewy*0.25].*s+q, ...
@@ -472,17 +472,17 @@ if ~fig_h_passed
 
     % check if component statistics have been computed:
     if isempty( EEG.stats.compenta	)
-        set(h.setthresholds, 'enable', 'off'); 
-        set(h.seecompstats, 'enable', 'off'); 
+        set(h.setthresholds, 'enable', 'off');
+        set(h.seecompstats, 'enable', 'off');
     end
-    
+
     % CHANGE - maybe better use a handles structure rather
     %          than later findobj...
     h.seeproj = uicontrol(h.fig, common_opts{:},...
         'string', 'See projection', ...
         'Position',[50 -10  15 sizewy*0.25].*s+q, ...
         'callback', ' ', 'enable', 'off'  );
-    
+
     % we've deleted the help button and added a button for plot
     % refreshing (left right arrows)
     h.prev = uicontrol(h.fig, common_opts{:}, ...
@@ -496,10 +496,10 @@ if ~fig_h_passed
         'Position', [78 -10  9 sizewy*0.25].*s+q,...
         'callback', @(src, ev) linkfun_selcomps_dir_update(h.fig, '>'), ...
         'Enable', onoff{2 - info.block_navig});
-    
+
     % CHANGE - use function handles
     % here the command for OK button is created:
-    
+
     h.ok = uicontrol(h.fig, common_opts{:}, ...
         'string', 'OK', ...
         'Position',[90 -10  15 sizewy*0.25].*s+q, ...
@@ -517,7 +517,7 @@ end
 % count is used to find position of given axis
 count = 1;
 for i = 1:length(compnum)
-    
+
     ri = compnum(i);
 
     % ===
@@ -529,7 +529,7 @@ for i = 1:length(compnum)
 
         % find the button of a present figure:
         button = findobj('parent', h.fig, 'tag', ['comp' num2str(ri)]); %#ok<UNRCH>
-        
+
         % no such button was found, whoops!
         if isempty(button)
             error( 'pop_selectcomps(): figure does not contain the component button');
@@ -537,9 +537,9 @@ for i = 1:length(compnum)
     else
         button = [];
     end
-    
+
     if isempty( button )
-        
+
         % compute coordinates
         % -------------------
         % CHECK why -10 if units are set to normalized?
@@ -547,35 +547,35 @@ for i = 1:length(compnum)
         %       uses this strange scaling approach...
         X = mod(count-1, params.column)/params.column * incx - 10;
         Y = (params.rows-floor((count-1)/params.column))/params.rows * incy - sizewy*1.3;
-        
+
         % plot the head
         % -------------
         % instead - selcomps_update() later
-        
+
         % CHANGE this to checking whether
         % the figure is still alive
         if ~strcmp(get(gcf, 'tag'), currentfigtag);
             disp('Aborting plot');
             return;
         end
-        
+
         % create axes
         % CONSIDER - move axes out of the loop?
         h.ax(i) = axes('Units','Normalized', 'Position',[X Y sizewx sizewy].*s+q,...
             'tag', ['topoaxis', num2str(ri)], 'Visible', 'off'); %#ok<LAXES>
-        
-        
+
+
         % axis should be square
         % (so that component plots look OK)
         axis square;
-        
+
         % plot the button above
         % ---------------------
         button_pos = [X, Y+sizewy, sizewx, sizewy*0.25] .* s+q;
         h.button(i) = uicontrol(h.fig, 'Style', 'pushbutton', 'Units','Normalized',...
             'Position', button_pos, 'tag', ['comp' num2str(ri)]);
     end
-    
+
     % go to the next component
     count = count +1;
 end
@@ -659,7 +659,7 @@ if ishandle(h.fig) && info.EEG_present
 else
     out_eeg = find(strcmp(varargout_ord, 'EEG'));
     if ~isempty(out_eeg) && nargout > 0
-        
+
         varargout{out_eeg} = EEG;
     end
 end
