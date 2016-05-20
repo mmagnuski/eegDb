@@ -158,7 +158,6 @@ else
     % put title at top of erpimage
     EI_TITLE = 'Continous data';
     axis off
-    hh = axes('Units','Normalized', 'Position',[45 62 48 38].*s+q);
     ERPIMAGELINES = 200; % show 200-line erpimage
     while size(EEG.data,2) < ERPIMAGELINES*EEG.srate
        ERPIMAGELINES = 0.9 * ERPIMAGELINES;
@@ -172,7 +171,7 @@ else
         end
       erpimageframes = floor(size(EEG.data,2)/ERPIMAGELINES);
       erpimageframestot = erpimageframes*ERPIMAGELINES;
-      eegtimes = linspace(0, erpimageframes-1, EEG.srate/1000);
+      eegtimes = (1:erpimageframes) * (1000/EEG.srate);
 
      icaacttmp = eeg_getdatact(EEG, 'component', comp);
      offset = nan_mean(icaacttmp(:));
@@ -182,7 +181,10 @@ else
             axis off;
             text(0.1, 0.3, [ 'No erpimage plotted' 10 'for small continuous data']);
     end
-    axes(hhh);
+    if ~ishandle(h.erpim)
+        h.erpim = gca;
+    end
+    axes(h.erpim);
 end
 
 % plotting spectrum
