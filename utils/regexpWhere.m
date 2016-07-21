@@ -19,6 +19,10 @@ if ~exist('match', 'var')
     match = false;
 end
 
+% check for empty cells of cellArray and fill with ''
+empt = cellfun(@isempty, cellArray);
+cellArray(empt) = '';
+
 if ~match
     ind = find(...
         ~cellfun(@isempty, ...

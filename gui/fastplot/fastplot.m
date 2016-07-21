@@ -181,6 +181,11 @@ classdef fastplot < handle
                 signal_ind = varargin{where + 1};
             end
 
+            % segment if continuous
+            if size(EEG, 3) > 1
+                EEG = segment_eeg(EEG);
+            end
+
             % define some of the class properties
             if strcmp(show_signal, 'comp')
                 obj.opt.electrode_names = arrayfun(@(x) ...
@@ -214,7 +219,7 @@ classdef fastplot < handle
             obj.arg_parser(varargin); % arg_parser should be used at the top
 
             chan_pos = (0:obj.data_size(2)-1)*obj.spacing;
-            
+
             % get channel locations
             obj.opt.chanloc = EEG.chanlocs;
 
@@ -275,7 +280,7 @@ classdef fastplot < handle
             elseif ~iscell(elements)
                 elements = {elements};
             end
-            
+
             if ~exist('mthd', 'var')
                 mthd = obj.scrollmethod;
             end

@@ -42,10 +42,13 @@ else
     segnum = floor(segnum);
     EEG.data = EEG.data(:,1:enough,:);
 end
-    
-EEG.data = reshape(EEG.data, [size(EEG.data,1), segs, size(EEG.data,3)*segnum]);
+
+if size(EEG.data, 3) > 1
+    segnum = size(EEG.data, 3) * segnum;
+end
+EEG.data = reshape(EEG.data, [size(EEG.data,1), segs, segnum]);
 if ~isempty(EEG.icaact)
-EEG.icaact = reshape(EEG.icaact, [size(EEG.icaact,1), segs, size(EEG.icaact,3)*segnum]);
+    EEG.icaact = reshape(EEG.icaact, [size(EEG.icaact,1), segs, segnum]);
 end
 
 % later, for moving events across epochs:

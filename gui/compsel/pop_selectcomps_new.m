@@ -117,7 +117,7 @@ COLACC           = '[0.75 1 0.75]';
 FIGBACKCOLOR     = [0.93, 0.93, 0.93];
 GUIBUTTONCOLOR   = [0.85 0.85 0.85];
 
-NOTPLOTCHANS = 65;
+NOTPLOTCHANS = 100;
 PLOTPERFIG   = 25;
 DRAWFREQ     = 1;
 onoff = {'off', 'on'};

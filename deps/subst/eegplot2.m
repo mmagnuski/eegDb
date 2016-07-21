@@ -1177,7 +1177,7 @@ if ~isempty(g.events)
   if isfield(g.events, 'duration')
        durations = { g.events.duration };
        durations(cellfun(@isempty, durations)) = { NaN };
-       g.eventlatencyend   = g.eventlatencies + [durations{:}]+1;
+       g.eventlatencyend   = double(g.eventlatencies) + [durations{:}]+1;
   else g.eventlatencyend   = [];
   end;
   g.plotevent       = 'on';
