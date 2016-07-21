@@ -328,8 +328,10 @@ end
 
 %% interpolating bad channels
 if interp
+    nchan1 = size(EEG.data, 1);
     EEG = eeg_interp2(EEG, db(r).chan.bad, 'spherical');
-    if ~isempty(EEG.icaweights)
+    nchan2 = size(EEG.data, 1);
+    if nchan1 == nchan2 && ~isempty(EEG.icaweights)
         
         % add weights etc. after interpolation
         % due to interpolaion bug
@@ -469,26 +471,30 @@ end
 % type for a given registry - should this be
 % allowed, should it be corrected for if
 % there are filled rejectons?
-EEG.reject.db = db_getrej(db, r);
 
-% CONSIDER:
-% for now we assume correction, but should
-% be rather done in db_getrej or something...
-
-% ln = cellfun(@length, EEG.reject.db.value);
-% maxlen = max(ln);
-
-maxlen = EEG.etc.orig_numep;
-
-if ~(prerej || isempty(db(r).reject.all))
-    % we have to correct for removed epochs:
-    for f = 1:length(EEG.reject.db.value)
-        if isempty(EEG.reject.db.value{f})
-            EEG.reject.db.value{f} = zeros(maxlen,1);
+% currently only epoch-marks are supported
+if ~noepoch
+    EEG.reject.db = db_getrej(db, r);
+    
+    % CONSIDER:
+    % for now we assume correction, but should
+    % be rather done in db_getrej or something...
+    
+    % ln = cellfun(@length, EEG.reject.db.value);
+    % maxlen = max(ln);
+    
+    maxlen = EEG.etc.orig_numep;
+    
+    if ~(prerej || isempty(db(r).reject.all))
+        % we have to correct for removed epochs:
+        for f = 1:length(EEG.reject.db.value)
+            if isempty(EEG.reject.db.value{f})
+                EEG.reject.db.value{f} = zeros(maxlen,1);
+            end
+            
+            % remove postrej
+            EEG.reject.db.value{f}(db(r).reject.post) = [];
         end
-        
-        % remove postrej
-        EEG.reject.db.value{f}(db(r).reject.post) = [];
     end
 end
 
