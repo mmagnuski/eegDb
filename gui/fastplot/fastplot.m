@@ -182,7 +182,7 @@ classdef fastplot < handle
             end
 
             % segment if continuous
-            if size(EEG, 3) > 1
+            if length(size(EEG.data)) < 3
                 EEG = segment_eeg(EEG);
             end
 
@@ -199,7 +199,13 @@ classdef fastplot < handle
 
             orig_size = size(obj.data);
             obj.opt.nbchan = orig_size(1);
-            obj.data_size = [orig_size(1), orig_size(2) * orig_size(3)];
+            obj.opt.badchan = false(obj.opt.nbchan, 1);
+            if length(orig_size) > 2
+                obj.data_size = [orig_size(1), orig_size(2) * orig_size(3)];
+            else
+                obj.data_size = orig_size;
+                orig_size = size(EEG.data);
+            end
             obj.data = reshape(obj.data, obj.data_size)';
             obj.data_size = fliplr(obj.data_size);
 
