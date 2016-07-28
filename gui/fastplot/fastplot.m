@@ -224,14 +224,13 @@ classdef fastplot < handle
             obj.spacing = 4.5 * mean(obj.opt.chan_sd);
             obj.arg_parser(varargin); % arg_parser should be used at the top
 
-            chan_pos = (0:obj.data_size(2)-1)*obj.spacing;
+            chan_pos = (1:obj.data_size(2))*obj.spacing;
 
             % get channel locations
             obj.opt.chanloc = EEG.chanlocs;
 
             % set y limits
-            obj.h.ylim = [-(obj.data_size(2)+1) * obj.spacing,...
-                obj.spacing];
+            obj.h.ylim = [-(obj.data_size(2)+1) * obj.spacing, 0];
 
             % get event and epoch info
             obj.get_epoch(EEG, orig_size);
@@ -302,7 +301,8 @@ classdef fastplot < handle
             
             % tic;
             if refresh_elem(1)
-                chan_pos = (0:obj.data_size(2)-1)*obj.spacing;
+                % FIX chan_pos should be held in the obj
+                chan_pos = (1:obj.data_size(2))*obj.spacing;
 
                 dat = obj.(obj.opt.readfield{obj.opt.readfrom}) * ...
                     obj.opt.signal_scale;
@@ -815,9 +815,9 @@ classdef fastplot < handle
             % ---------
             % CHANGE
             % use 'ColorOrder' to set color of electrodes
-            chan_pos = (0:obj.data_size(2)-1)*obj.spacing;
             dat = obj.(obj.opt.readfield{obj.opt.readfrom}) * ...
                 obj.opt.signal_scale;
+            chan_pos = (1:obj.data_size(2))*obj.spacing;
             dat = bsxfun(@minus, dat(obj.window.span, :), chan_pos);
             hold on; % hold is set so that plot uses ColorOrder
             obj.h.lines = plot(dat, 'HitTest', 'off', ...
