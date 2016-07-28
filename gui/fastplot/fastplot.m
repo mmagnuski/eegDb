@@ -79,6 +79,7 @@ classdef fastplot < handle
     %         .epoch_move
     %         .epoch_scale
     %         .signal_scale
+    %    .
     % keys     -  a KeyboardManager instance - it is responsible for keyboard
     %             interactions with the gui including sequences of key presses
     %
@@ -411,7 +412,7 @@ classdef fastplot < handle
                     move = find(obj.marks.selected(mark, ind1:end), 1, 'first');
                 case 'previous'
                     ind1 = max([1, central_epoch - 1]);
-                    move = find(obj.marks.selected(mark, 1:ind1), 1, 'last')
+                    move = find(obj.marks.selected(mark, 1:ind1), 1, 'last');
                     if ~isempty(move)
                         move = move - central_epoch;
                     end
@@ -1127,7 +1128,7 @@ classdef fastplot < handle
 
         function onButtonPress(obj)
             % axesHandle  = get(objectHandle,'Parent');
-            coord = get(obj.h.ax,'CurrentPoint');
+            coord = get(obj.h.ax, 'CurrentPoint');
             coord = coord(1, 1:2);
             % fprintf('x: %1.2f, y: %1.2f\n', coord(1), coord(2));
 
