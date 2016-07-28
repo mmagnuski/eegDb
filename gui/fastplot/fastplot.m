@@ -852,37 +852,45 @@ classdef fastplot < handle
             obj.init_keypress();
             % set click callback
             set(obj.h.ax, 'ButtonDownFcn', @(h, e) obj.onButtonPress());
-
+            set(obj.h.fig, 'ButtonDownFcn', @(h, e) obj.onButtonPress());
         end
         
         
         function get_epoch(obj, EEG, orig_size)
-            obj.event.latency = [EEG.event.latency];
-            % later add compressed lat for example by:
-            % obj.event.latency(25:25:end);
-            % also latency limits would be nice to have:
-            % obj.event.latlims = obj.event.latency([1, end]);
+            has_events = ~isempty(EEG.event);
+            if has_events
+                obj.event.latency = [EEG.event.latency];
+            else
+                obj.event.latency = [];
+            end
 
             % code event types with integers
-            temptype = {EEG.event.type};
-            obj.event.alltypes = unique(temptype);
-            sz = size(obj.event.alltypes);
-            if sz(2) > sz(1)
-                obj.event.alltypes = obj.event.alltypes';
-            end
-            obj.event.numtypes = length(obj.event.alltypes);
-            type2ind = cellfun(@(x) find(strcmp(x, temptype)), ...
-                obj.event.alltypes, 'UniformOutput', false);
-            obj.event.type = zeros(length(temptype),1);
-            for i = 1:obj.event.numtypes
-                obj.event.type(type2ind{i}) = i;
-            end
+            
+            if has_events
+                temptype = {EEG.event.type};
+                obj.event.alltypes = unique(temptype);
+                sz = size(obj.event.alltypes);
+                if sz(2) > sz(1)
+                    obj.event.alltypes = obj.event.alltypes';
+                end
+                obj.event.numtypes = length(obj.event.alltypes);
+                type2ind = cellfun(@(x) find(strcmp(x, temptype)), ...
+                    obj.event.alltypes, 'UniformOutput', false);
+                obj.event.type = zeros(length(temptype),1);
+                for i = 1:obj.event.numtypes
+                    obj.event.type(type2ind{i}) = i;
+                end
 
-            % make sure that event names have \_ in place 
-            % of _ because matlab renders it as lower index
-            % CONSIDER - alltypes (rawtypes) vs disptypes
-            obj.event.alltypes = cellfun(@(x) strrep(x, '_', '\_'), ...
-                obj.event.alltypes, 'UniformOutput', false);
+                % make sure that event names have \_ in place 
+                % of _ because matlab renders it as lower index
+                % CONSIDER - alltypes (rawtypes) vs disptypes
+                obj.event.alltypes = cellfun(@(x) strrep(x, '_', '\_'), ...
+                    obj.event.alltypes, 'UniformOutput', false);
+            else
+                obj.event.alltypes = {};
+                obj.event.numtypes = [];
+                obj.event.type = [];
+            end
 
             % CHANGE
             % event colors - random at the moment
