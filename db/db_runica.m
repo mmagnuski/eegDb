@@ -1,6 +1,13 @@
 function db = db_runica(db, rs)
 
-% NOHLEPINFO
+% run extended infomax ICA on given records of the database
+%
+% db = db_runica(db, rs)
+%
+% parameters
+% ----------
+% db - eegDb database
+% rs - vecotr of record indices
 
 if ~exist('rs', 'var')
 	rs = 1:length(db);
