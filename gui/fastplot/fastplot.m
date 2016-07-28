@@ -821,7 +821,11 @@ classdef fastplot < handle
             dat = bsxfun(@minus, dat(obj.window.span, :), chan_pos);
             hold on; % hold is set so that plot uses ColorOrder
             obj.h.lines = plot(dat, 'HitTest', 'off', ...
-                'Parent', obj.h.ax);
+                'Parent', obj.h.ax, 'LineWidth', 1);
+            if any(obj.opt.badchan)
+                set(obj.h.lines(obj.opt.badchan), 'LineWidth', 2, ...
+                    'Color', [1, 0, 0]);
+            end
             hold off;
 
             % set y limits and y lim mode (for faster replotting)
@@ -977,7 +981,7 @@ classdef fastplot < handle
 
                     % lines
                     obj.h.eventlines(ind) = line(lineX(:,ind), ...
-                        lineY(:,ind), 'LineWidth', 2.5);
+                        lineY(:,ind), 'LineWidth', 2);
                     set(obj.h.eventlines(ind), {'Color'},...
                         colors(ind));
 
@@ -1045,8 +1049,8 @@ classdef fastplot < handle
                 if drawnew > 0
                     ind = reuse+1:newlims;
                     obj.h.epochlimits(ind) = line(xDat(:,ind), ...
-                        yDat(:, ind), 'Color', [0, 0, 0], ...
-                        'LineWidth', 3);
+                        yDat(:, ind), 'Color', [0.7, 0.7, 0.7], ...
+                        'LineWidth', 1);
                 end
             end
 
