@@ -78,21 +78,26 @@ elseif strcmp(plotopt.plotter, 'fastplot')
 
 	% - add mark types from db to fastplot
 	mark_types = {h.db(h.r).marks.name};
-	for m = 1:length(mark_types)
-		if ~strcmp('reject', mark_types{m})
-			plt.add_mark(h.db(h.r).marks(m));
-		end
+    for m = 1:length(mark_types)
+        if ~strcmp('reject', mark_types{m})
+            plt.add_mark(h.db(h.r).marks(m));
+        end
 
-		mrks = h.db(h.r).marks(m).value;
-		if islogical(mrks)
+        mrks = h.db(h.r).marks(m).value;
+        if islogical(mrks)
             mrks(h.db(h.r).reject.post) = [];
-			mrks = find(mrks);
-		end
-		if ~isempty(mrks)
-			plt.mark(mark_types{m}, mrks);
-		end
-	end
-
+            mrks = find(mrks);
+        end
+        if ~isempty(mrks)
+            plt.mark(mark_types{m}, mrks);
+        end
+    end
+    
+    % set bad channels
+    if ~isempty(h.db(h.r).chan.bad)
+        plt.opt.badchan(h.db(h.r)...
+            .chan.bad) = true;
+    end
 
 	plt.plot();
 	uiwait(plt.h.fig);
@@ -118,28 +123,30 @@ elseif strcmp(plotopt.plotter, 'fastplot')
     end
 
     for f = 1:length(mrk_names)
-    	mrk_in_db = find(strcmp(mrk_names{f}, db_rej.name));
-    	if isempty(mrk_in_db)
-    		mrk_in_db = length(h.db(h.r).marks) + 1;
-	    end
-    	h.db(h.r).marks(mrk_in_db).name = mrk_names{f};
-    	h.db(h.r).marks(mrk_in_db).color = mrks.colors(f,:);
+        mrk_in_db = find(strcmp(mrk_names{f}, db_rej.name));
+        if isempty(mrk_in_db)
+            mrk_in_db = length(h.db(h.r).marks) + 1;
+        end
+        h.db(h.r).marks(mrk_in_db).name = mrk_names{f};
+        h.db(h.r).marks(mrk_in_db).color = mrks.colors(f,:);
 
-    	if isempty(h.db(h.r).marks(mrk_in_db).value)
-	        h.db(h.r).marks(mrk_in_db).value = false(h.EEG.etc.orig_numep, 1);
-	    end
+        if isempty(h.db(h.r).marks(mrk_in_db).value)
+            h.db(h.r).marks(mrk_in_db).value = false(h.EEG.etc.orig_numep, 1);
+        end
 
-	    h.db(h.r).marks(mrk_in_db).value(adr) = mrks.selected(f,:)';
-	end
+        h.db(h.r).marks(mrk_in_db).value(adr) = mrks.selected(f,:)';
+    end
 
 	% update EEG:
 	h.EEG.reject.db = db_getrej(h.db, h.r);
 
 	% cut out postrej (prerej are not in
 	% removed):
-	for v = 1:length(h.EEG.reject.db.value)
-	    h.EEG.reject.db.value{v}(h.db(h.r).reject.post) = [];
-	end
+    for v = 1:length(h.EEG.reject.db.value)
+        h.EEG.reject.db.value{v}(h.db(h.r).reject.post) = [];
+    end
+
+    h.db(h.r).chan.bad = find(plt.opt.badchan);
 
 	guidata(h.figure1, h);
 end

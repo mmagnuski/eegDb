@@ -798,11 +798,18 @@ classdef fastplot < handle
                 'Parent', obj.h.fig);
 
             % set color cycle
-            if ~isempty(obj.opt.ecol)
-                set(obj.h.ax, 'ColorOrder', obj.opt.ecol);
-                % could set the NextPlot property to 'replacechildren'
-                % instead of using hold on
+            if isempty(obj.opt.ecol)
+                obj.opt.ecol = [1. 1. 1.];
             end
+            
+            % if ecol is < n_chan, rep it
+            numrep = ceil(obj.opt.nbchan / size(obj.opt.ecol, 1));
+            obj.opt.ecol = repmat(obj.opt.ecol, [numrep, 1]);
+            obj.opt.ecol = obj.opt.ecol(1:obj.opt.nbchan, :);
+
+            set(obj.h.ax, 'ColorOrder', obj.opt.ecol);
+            % could set the NextPlot property to 'replacechildren'
+            % instead of using hold on
 
             obj.h.eventlines = [];
             obj.h.eventlabels = [];
@@ -1135,55 +1142,77 @@ classdef fastplot < handle
                 % 'alt': right-click
                 % 'extend': left and right together
 
-                if any(strcmp(selection_type, {'normal', 'extend'}))
-                if ~(obj.epoch.current_limits(1) == 0)
-                    epoch_lims = [0, obj.epoch.current_limits];
-                else
-                    epoch_lims = obj.epoch.current_limits;
-                end
+                if x > 0
+                    % epoch clicking
+                    if any(strcmp(selection_type, {'normal', 'extend'}))
+                        if ~(obj.epoch.current_limits(1) == 0)
+                            epoch_lims = [0, obj.epoch.current_limits];
+                        else
+                            epoch_lims = obj.epoch.current_limits;
+                        end
 
-                % check which epoch was clicked
-                selected = obj.epoch.current_nums(...
-                    find(x > epoch_lims, 1, 'last'));
+                        % check which epoch was clicked
+                        selected = obj.epoch.current_nums(...
+                            find(x > epoch_lims, 1, 'last'));
 
-                c = obj.marks.current;
+                        c = obj.marks.current;
 
-                modifiers = get(obj.h.fig, 'currentModifier');
-                if length(modifiers) == 1 && strcmp(modifiers{1}, 'shift') ...
-                    && obj.marks.lastclick(c) > 0 && ~(obj.marks.lastclick(c) ...
-                    == selected)
-                    if obj.marks.lastclick(c) > selected
-                        ind = selected:(obj.marks.lastclick(c) - 1);
-                    else
-                        ind = (obj.marks.lastclick(c) + 1):selected;
+                        modifiers = get(obj.h.fig, 'currentModifier');
+                        if length(modifiers) == 1 && strcmp(modifiers{1}, 'shift') ...
+                            && obj.marks.lastclick(c) > 0 && ~(obj.marks.lastclick(c) ...
+                            == selected)
+                            if obj.marks.lastclick(c) > selected
+                                ind = selected:(obj.marks.lastclick(c) - 1);
+                            else
+                                ind = (obj.marks.lastclick(c) + 1):selected;
+                            end
+                        else
+                            ind = selected;
+                        end
+
+                        % update lastclick
+                        obj.marks.lastclick(c) = selected;
+
+                        % revert activated windows
+                        obj.marks.selected(c, ind) = ...
+                            logical(1 - obj.marks.selected(c, ind));
+
+                        % plot the change
+                        obj.plot_marks();
+                    elseif strcmp(selection_type, 'alt')
+                        % check which datapoint this is:
+                        data_ind = obj.window.span(round(x));
+                        chan_data = obj.(obj.opt.readfield{obj.opt.readfrom})(data_ind, :);
+                        if isempty(obj.h.topofigure) || ~ishandle(obj.h.topofigure)
+                            obj.h.topofigure = figure('toolbar', 'none', ...
+                                'menubar', 'none', 'units', 'normalized', ...
+                                'Position', [0.05, 0.8, 0.11, 0.16], ...
+                                'WindowKeyPressFcn', @(o,e) figure(obj.h.fig));
+                        end
+                        figure(obj.h.topofigure);
+                        cla;
+                        topoplot(chan_data, obj.opt.chanloc);
                     end
                 else
-                    ind = selected;
-                end
-
-                % update lastclick
-                obj.marks.lastclick(c) = selected;
-
-                % revert activated windows
-                obj.marks.selected(c, ind) = ...
-                    logical(1 - obj.marks.selected(c, ind));
-
-                % plot the change
-                obj.plot_marks();
-            elseif strcmp(selection_type, 'alt')
-            % check which datapoint this is:
-            data_ind = obj.window.span(round(x));
-            chan_data = obj.(obj.opt.readfield{obj.opt.readfrom})(data_ind, :);
-            if isempty(obj.h.topofigure) || ~ishandle(obj.h.topofigure)
-                obj.h.topofigure = figure('toolbar', 'none', ...
-                    'menubar', 'none', 'units', 'normalized', ...
-                    'Position', [0.05, 0.8, 0.11, 0.16], ...
-                    'WindowKeyPressFcn', @(o,e) figure(obj.h.fig));
-            end
-            figure(obj.h.topofigure);
-            cla;
-            topoplot(chan_data, obj.opt.chanloc);
-
+                    % click on the left side
+                    y = coord(2);
+                    ylm = obj.h.ylim;
+                    fromtop = 1 - abs(ylm(1) - y) / diff(ylm);
+                    clicked_chan = round(fromtop * obj.opt.nbchan);
+                    if obj.opt.badchan(clicked_chan)
+                        obj.opt.badchan(clicked_chan) = false;
+                        set(obj.h.lines(clicked_chan), 'color', ...
+                            obj.opt.ecol(clicked_chan, :), ...
+                            'LineWidth', 1);
+                    else
+                        obj.opt.badchan(clicked_chan) = true;
+%                         newcol = sum([...
+%                             obj.opt.ecol(clicked_chan, :) * 0.3; ...
+%                             [0.7, 0.7, 0.7] * 0.7], 1);
+                        newcol = [1, 0, 0];
+                        set(obj.h.lines(clicked_chan), 'color', newcol, ...
+                            'LineWidth', 2);
+                    end
                 end
             end
         end
