@@ -63,7 +63,7 @@ else
   real_comp = comp;
 end
 
-if nargin < 5
+if nargin < 4
 	spec_opt = {};
 end
 if nargin == 1

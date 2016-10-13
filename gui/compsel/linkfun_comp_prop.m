@@ -33,7 +33,9 @@ EEG = getappdata(hfig, 'EEG');
 snc = getappdata(hfig, 'syncer');
 
 % generate figure:
-h = pop_prop2(EEG, [eegcmp, cmp], hfig);
+max_freq = min(65, EEG.srate / 2);
+spect_opts = {'freqrange', [0, max_freq]};
+h = pop_prop2(EEG, [eegcmp, cmp], hfig, spect_opts);
 
 % add subgui
 add(snc, h.fig, cmp);
