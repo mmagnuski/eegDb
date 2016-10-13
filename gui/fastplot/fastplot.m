@@ -120,7 +120,6 @@ classdef fastplot < handle
     % --------------------
     properties (SetAccess = private, GetAccess = public)
         h      % handles to the graphical objects
-        opt    % options (what goes here?)
         epoch  % info about epochs
         event  % info about events
         marks  % info about marks
@@ -136,6 +135,7 @@ classdef fastplot < handle
     % -------------------
     properties (SetAccess = public, GetAccess = public)
         scrollmethod
+        opt    % options (what goes here?)
     end
     
     % TODOs:
