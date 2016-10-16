@@ -12,24 +12,29 @@ This is because `fastplot` focuses on keybord-driven operation with mouse being 
 
 ### movement
 Navigation is available through keybord arrows:  
-:arrow_right: - go one unit (one epoch) further in time  
-:arrow_left:  - go one unit (one epoch) back in time (yes, `fastplot` allows for time-travel! :smile:)
+<img src="http://icons.iconarchive.com/icons/chromatix/keyboard-keys/128/arrow-right-icon.png" alt="right arrow" width="30" height="30"/> - go one unit (one epoch) further in time  
+<img src="http://icons.iconarchive.com/icons/chromatix/keyboard-keys/128/arrow-left-icon.png" alt="left arrow" width="30" height="30"/> - go one unit (one epoch) back in time (yes, `fastplot` allows for time-travel!)
 
 You can also navigate the signal vim-like:  
-`h` - go back one unit 
-`l` - go one unit forward  
-`w` - go one window forward  
-`b` - one window back  
+<kbd>h</kbd> - go back one unit  
+<kbd>l</kbd> - go one unit forward  
+<kbd>w</kbd> - go one window forward  
+<kbd>b</kbd> - one window back  
 
 Prefixing the movement with a number executes the movement command this many times.
 For example `4w` will move you four windows forward.
 
+<kbd>=</kbd> - scale signal one unit up (this is the same key as <kbd>+</kbd>  
+<kbd>-</kbd> - scale signal one unit down  
+<kbd>e=</kbd> - add one epoch to the window view  
+<kbd>e-</kbd> - remove one epoch from the window view  
+
 ### selection
 `fastplot` allows you to mark signal in a variety of ways:  
-`m` - choose currently used mark type  
-`am` - add mark type  
+<kbd>m</kbd> - choose currently used mark type  
+<kbd>am</kbd> - add mark type  
 `left mouse button` - clicking an epoch marks it with current mark type (note that you can mark one epoch with several marks)  
-`shift + left mouse button` - mark all epochs since last mouse click with the current mark type (more precisely - all epochs since but not including last clicked epoch are inverted with respect to currently selected mark type).
+<kbd>shift</kbd> + `left mouse button` - mark all epochs since last mouse click with the current mark type (more precisely - all epochs since but not including last clicked epoch are inverted with respect to currently selected mark type).
 
 ## API
 `fastplot` allows for easy control through its object oriented interface. 
