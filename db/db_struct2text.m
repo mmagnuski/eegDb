@@ -124,6 +124,7 @@ elseif eptp == 2
     % format event types
     evtp = ep.events;
     if ~iscell(evtp); evtp = {evtp}; end
+    evtp = cellfun(@deblank, evtp, 'UniformOutput', false);
     evtp = lincellstring(evtp);
     
     % add event types to text
