@@ -105,6 +105,13 @@ evs = [1 ile_ev]; urs = [1 ile_ev];
 else
     evs = [length(EEG.event)+1, length(EEG.event) + ile_ev];
     urs = [length(EEG.urevent)+1, length(EEG.urevent) + ile_ev];
+
+    % turn event types to string
+    for event_ind = 1:length(EEG.event)
+        if isnumeric(EEG.event(event_ind).type)
+            EEG.event(event_ind).type = num2str(EEG.event(event_ind).type);
+        end
+    end   
 end
 
 
@@ -112,22 +119,22 @@ lat = 1;
 
 %% adding fake events ('dummy'):
 for i = evs(1):evs(2)
-    
+
     % event creation:
     EEG.event(i).type = evname;
     EEG.event(i).latency = lat;
     EEG.event(i).duration = 0;
     EEG.event(i).urevent = i;
     EEG.event(i).win_num = (i - evs(1)) + 1;
-    
+
     % urevent creation:
     uradr = urs(1) + (i-1);
     EEG.urevent(uradr).type = evname;
     EEG.urevent(uradr).latency = EEG.event(i).latency;
     EEG.urevent(uradr).win_num = EEG.event(i).win_num;
-    
+
     lat = lat + window;
-    
+
 end
 
 % czy checkset potrzebny?
@@ -150,10 +157,10 @@ lats = [EEG.event(dumev).latency];
 indx = length(dumev); evdel = false(size(EEG.event));
 while indx >= 1
     current_lat = EEG.event(dumev(indx)).latency;
-    
+
     % looking for same latencies:
     samelat = find(lats == current_lat);
-    
+
     % there will be obviously one the same (which
     % is the current event), any additional are
     % removed
@@ -163,7 +170,7 @@ while indx >= 1
         evdel(del_ev) = true;
         lats(del) = []; dumev(del) = [];
     end
-    
+
     indx = indx - 1;
 end
 
@@ -187,7 +194,7 @@ if isdist
     wins = false(1, length(EEG.epoch));
     winlim = 1:window:(ile_ev*window);
     rules = options.distance;
-    
+
     % going through all the rules:
     for r = 1:size(rules,1);
         %% checking rule type:
@@ -205,15 +212,15 @@ if isdist
         % {[-2 3]}, to have the pattern window extend-
         % ded by 2 seconds before and 3 seconds after
         % the given event pattern.
-        
+
         if ~iscell(rules{r,2})       
         %% normal rule, checking event type:
-        
+
         % if any event else specific event:
         if isempty(rules{r,1})
             % any nondummy event:
             ev_ind = ~strcmp(evname,{EEG.event.type});
-            
+
             % if previous rules present, 
             % do not include their event types:
             if r >= 2
@@ -235,10 +242,10 @@ if isdist
                 ev_ind = unique([ev_ind{:}]);
             end
         end
-        
+
         % once we have event indices, we extract their latencies:
         ev_lats = [EEG.event(ev_ind).latency];
-        
+
         %% distance
         % then we set acceptable distances:
         dists = rules{r,2};
@@ -247,7 +254,7 @@ if isdist
         end
         dists = dists(1:2); % just for sure
         dists = sort(dists)*onesec;
-        
+
         %% window loop
         % now we loop only through those epochs that
         % have not yet been decided upon:
@@ -255,7 +262,7 @@ if isdist
         for un = 1:length(undecid)
             ep_n = undecid(un);
             ep_lims = [window*(ep_n-1)+1, window*(ep_n)];
-            
+
             %~~~~( - )~~~~%
             % checking distance on the 'minus side':
             before = find(ev_lats >= ep_lims(1)  & ...
@@ -265,7 +272,7 @@ if isdist
                 wins(ep_n) = true;
                 continue
             end
-            
+
             %~~~~( + )~~~~%
             % minus side did not pass checks, checking
             % the 'plus side':
@@ -276,18 +283,18 @@ if isdist
                 wins(ep_n) = true;
                 continue
             end
-            
+
             % CHANGE - ADD oversight - not checking windows
             % that are bound to fulfill the rule (because
             % of previous check results)
-            
+
         end
-        
+
         else
             %% event_pattern_search required!
             pattern = rules{r,1};
             edges = rules{r,2}{1};
-            
+
             % be sure to set 'ignore' to 'dummy':
             if length(pattern) <= 3
                 pattern{3} = 'ignore';
@@ -296,36 +303,36 @@ if isdist
                 pattern{3} = 'ignore';
                 pattern{4} = [pattern{4}, evname];
             end
-            
+
             % setting edges
             if isempty(edges)
                 edges = [0, 0];
             else
                 edges = round(edges * onesec);
             end
-            
+
             % using event_pattern_search:
             locate_pattern = event_pattern_search(EEG, pattern);
-            
+
             % extracting event numbers:
             event_inds = locate_pattern.(pattern{1});
-            
+
             %% for each pattern sequence:
             for pat = 1:length(event_inds)
                 lats(1) = EEG.event(event_inds{pat}(1)).latency;
                 lats(2) = EEG.event(event_inds{pat}(end)).latency;
                 latrange = lats + edges;
-                
+
                 % now checking which windows are within latrange:
                 low_e = find(winlim<=latrange(1),1,'last');
                 high_e = find(winlim<=latrange(2),1,'last');
-                
+
                 % setting these windows to true
                 wins(low_e:high_e) = true;
             end
         end
     end
-    
+
     % deleting events not fulfilling any distance condition:
     EEG = pop_selectevent( EEG, 'epoch', find(wins) ,'deleteevents','off',...
     'deleteepochs','on','invertepochs','off');
@@ -337,10 +344,10 @@ if fill
     end
     EEG.onesecepoch.initwins = ile_ev;
     EEG.onesecepoch.winlen = winlen;
-    
+
     if isdist; EEG.onesecepoch.prerej = find(~wins); 
         EEG.onesecepoch.distopt = rules; end
-    
+
     % winlen is not neccessary - it can be calculated from:
     % EEG.pnts/EEG.srate
 end
