@@ -325,6 +325,12 @@ if ~noICA && hasica
     end
 end
 
+%% channel location
+db_hasloc = ~isempty(db(r).datainfo.chanlocs) && ...
+    ~isempty([db(r).datainfo.chanlocs.X]);
+if db_hasloc
+    EEG.chanlocs = db(r).datainfo.chanlocs;
+end
 
 %% interpolating bad channels
 if interp
