@@ -213,10 +213,11 @@ clear del del_ev dumev evdel lats samelat current_lat
 
 
 if isdist
-    % prealloc vector marking epochs to
-    % leave (true = fulfills some rule, leave)
+    % preallocate vector marking which epochs
+    % should be left alone ie. not pre-rejected
+    % (true = fulfills some rule, do not reject)
     wins = false(1, length(EEG.epoch));
-    winlim = 1:window:(ile_ev*window);
+    winlim = 1:window:(ile_ev * window);
     rules = options.distance;
     
     % going through all the rules:
@@ -248,8 +249,8 @@ if isdist
             % if previous rules present, 
             % do not include their event types:
             if r >= 2
-                for pt = 1:r-1
-                    rem_ev = strcmp(rules{pt,1},{EEG.event.type});
+                for pt = 1 : r - 1
+                    rem_ev = strcmp(rules{pt,1}, {EEG.event.type});
                     ev_ind(rem_ev) = false;
                 end
             end
@@ -272,12 +273,12 @@ if isdist
         
         %% distance
         % then we set acceptable distances:
-        dists = rules{r,2};
+        dists = rules{r, 2};
         if length(dists) == 1
             dists = [dists, -dists]; %#ok<AGROW>
         end
         dists = dists(1:2); % just for sure
-        dists = sort(dists)*onesec;
+        dists = sort(dists) * onesec;
         
         %% window loop
         % now we loop only through those epochs that
@@ -285,12 +286,13 @@ if isdist
         undecid = find(~wins);
         for un = 1:length(undecid)
             ep_n = undecid(un);
-            ep_lims = [window*(ep_n-1)+1, window*(ep_n)];
+            ep_lims = [window * (ep_n - 1) + 1, window * (ep_n)];
             
             %~~~~( - )~~~~%
             % checking distance on the 'minus side':
             before = find(ev_lats >= ep_lims(1)  & ...
-                ev_lats <= (ep_lims(2)-dists(1)), 1, 'first');
+                ev_lats <= (ep_lims(2) - dists(1)), 1, 'first');
+
             % if fullfilled, continue:
             if ~isempty(before)
                 wins(ep_n) = true;
@@ -301,7 +303,7 @@ if isdist
             % minus side did not pass checks, checking
             % the 'plus side':
             after = find(ev_lats <= ep_lims(2)  & ...
-                ev_lats >= (ep_lims(1)-dists(2)), 1, 'first');
+                ev_lats >= (ep_lims(1) - dists(2)), 1, 'first');
             % if fullfilled, continue:
             if ~isempty(after)
                 wins(ep_n) = true;

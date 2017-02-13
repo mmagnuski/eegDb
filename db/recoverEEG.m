@@ -402,7 +402,7 @@ if femp(db(r), 'epoch') && ~noepoch
         if ischar(epoc) && length(epoc) > cidlen && ...
                 strcmp(epoc(1:cidlen), code_id)
             
-            epoc = eval(epoc(cidlen+1:end));
+            epoc = eval(epoc(cidlen + 1:end));
         end
         
         EEG = db_fastepoch(EEG, epoc, db(r).epoch.limits);
@@ -455,15 +455,17 @@ if ~noepoch && ~prerej && ~isempty(db(r).reject.all)
         EEG = eeg_rmepoch(EEG, db(r).reject.all(:)');
         
     else
-        EEG = pop_selectevent( EEG, 'epoch', db(r).reject.all(:)' ,...
-            'deleteevents','off','deleteepochs','on','invertepochs','on');
+        EEG = pop_selectevent(EEG, 'epoch', db(r).reject.all(:)', ...
+            'deleteevents', 'off', 'deleteepochs', 'on', ...
+            'invertepochs', 'on');
     end
 elseif ~noepoch && ~isempty(db(r).reject.pre)
     if segment
         EEG = eeg_rmepoch(EEG, db(r).reject.pre(:)');
     else
-        EEG = pop_selectevent( EEG, 'epoch', db(r).reject.pre(:)' ,...
-            'deleteevents','off','deleteepochs','on','invertepochs','on');
+        EEG = pop_selectevent(EEG, 'epoch', db(r).reject.pre(:)', ...
+            'deleteevents', 'off', 'deleteepochs', 'on', ...
+            'invertepochs', 'on');
     end
 end
 
