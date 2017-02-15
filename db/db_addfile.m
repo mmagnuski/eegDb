@@ -18,7 +18,7 @@ if ~exist('r', 'var')
 end
 
 add_rec = db(r);
-for m = 1:2
+for m = 1:length(add_rec.marks)
     add_rec.marks(m).value = [];
 end
 if length(add_rec.marks) > 3
@@ -31,10 +31,9 @@ add_rec.reject.pre = [];
 add_rec.reject.post = [];
 add_rec.reject.all = [];
 
-add_rec.chan = [];
 add_rec.chan.labels = [];
-add_rec.chan.bad = [48 64];
-add_rec.chan.badlab = {'Cz'  'O2'};
+add_rec.chan.bad = [];
+
 
 add_rec.versions = [];
 add_rec = db_mainversion(add_rec, 1);
