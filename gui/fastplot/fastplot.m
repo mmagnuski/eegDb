@@ -139,6 +139,14 @@ classdef fastplot < handle
     end
     
     % TODOs:
+    % USABILITY:
+    % [ ] - continuous mode
+    % [ ] - remove ticks for epochs (or set epoch-relevant ticks)
+    % [ ] - time scroll bar at the bottom (turn on and off)
+    % [ ] - turn off specific event labels/lines
+    % [ ] - channel scroll?
+    % PERFORMANCE-RELATED:
+    % [ ] - downsampled mode?
     % [ ] - check profiling and then only worry about optimisation
     % [ ] - think about making faster version unique - specifically for
     %       cell arrays of strings

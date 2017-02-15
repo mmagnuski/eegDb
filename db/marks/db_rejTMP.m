@@ -99,7 +99,7 @@ for f = 1:size(rejCol, 1)
         
         % CHANGE
         % this is some quick bugfix, that could 
-        % not work / have much sens / etc.
+        % not work / have much sense / etc.
         % it seems to be used to work for adding selections 
         % even when some epochs have been rejected
         if femp(db(r).reject, 'post') || ~(length(adr) == ...
