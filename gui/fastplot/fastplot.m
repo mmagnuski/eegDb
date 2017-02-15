@@ -229,6 +229,7 @@ classdef fastplot < handle
 
             % get channel locations
             obj.opt.chanloc = EEG.chanlocs;
+            obj.opt.has_locs = ~isempty([EEG.chanlocs.X]);
 
             % set y limits
             obj.h.ylim = [-(obj.data_size(2)+1) * obj.spacing, 0];
@@ -1192,7 +1193,9 @@ classdef fastplot < handle
                         end
                         figure(obj.h.topofigure);
                         cla;
-                        topoplot(chan_data, obj.opt.chanloc);
+                        if obj.opt.has_locs
+                            topoplot(chan_data, obj.opt.chanloc);
+                        end
                     end
                 else
                     % click on the left side
