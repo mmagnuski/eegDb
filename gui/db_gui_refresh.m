@@ -68,7 +68,7 @@ else
 end
 
 
-% 
+%
 % trim text and show:
 % -------------------
 infotext = infotext(current_slider_pos:lastlin);
@@ -102,26 +102,5 @@ else
     set(handles.addit_text, 'String', 'EEG recovered');
 end
 
-% === version checks ===
-
-% --- if versions ---
-% check if this record has versions
-f = db_checkfields(handles.db, handles.r, {'versions'});
-
-% no versions whatsoever (no subfields in 'versions'):
-if ~f.fsubf
-    % add main version
-    handles.db = db_mainversion(handles.db, handles.r);
-end
-
 guidata(handles.figure1, handles);
 clear f
-
-% --- version names ---
-versions = db_getversions(handles.db, handles.r);
-set(handles.versions_pop, 'String', versions(:,2));
-
-% --- current version ---
-curr = handles.db(handles.r).versions.current;
-curr = find(strcmp(curr, versions(:,1)));
-set(handles.versions_pop, 'Value', curr);
