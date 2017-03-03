@@ -609,6 +609,9 @@ if ~isempty(seltypes)
     % update versions
     for c = cansel(:)'
         % current version
+        if isempty(handles.db(c).versions)
+            handles.db = db_mainversion(handles.db, c);
+        end
         origcurrent_f = handles.db(c).versions.current;
         
         % update current
