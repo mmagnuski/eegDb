@@ -139,6 +139,14 @@ classdef fastplot < handle
     end
     
     % TODOs:
+    % USABILITY:
+    % [ ] - continuous mode
+    % [ ] - remove ticks for epochs (or set epoch-relevant ticks)
+    % [ ] - time scroll bar at the bottom (turn on and off)
+    % [ ] - turn off specific event labels/lines
+    % [ ] - channel scroll?
+    % PERFORMANCE-RELATED:
+    % [ ] - downsampled mode?
     % [ ] - check profiling and then only worry about optimisation
     % [ ] - think about making faster version unique - specifically for
     %       cell arrays of strings
@@ -229,6 +237,7 @@ classdef fastplot < handle
 
             % get channel locations
             obj.opt.chanloc = EEG.chanlocs;
+            obj.opt.has_locs = ~isempty([EEG.chanlocs.X]);
 
             % set y limits
             obj.h.ylim = [-(obj.data_size(2)+1) * obj.spacing, 0];
@@ -1192,7 +1201,9 @@ classdef fastplot < handle
                         end
                         figure(obj.h.topofigure);
                         cla;
-                        topoplot(chan_data, obj.opt.chanloc);
+                        if obj.opt.has_locs
+                            topoplot(chan_data, obj.opt.chanloc);
+                        end
                     end
                 else
                     % click on the left side

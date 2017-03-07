@@ -193,8 +193,12 @@ if handles.figure2
 else
     
     % just to be sure - update version
-    currf = handles.db(handles.r).versions.current;
-    handles.db = db_updateversion(handles.db, handles.r, currf);
+    if ~isempty(handles.db(handles.r).versions)
+        currf = handles.db(handles.r).versions.current;
+        handles.db = db_updateversion(handles.db, handles.r, currf);
+    else
+        handles.db = db_mainversion(handles.db, handles.r);
+    end
     
     % CHANGE - this is a mess
     %        - whether r is recovered should be checked in a sepatate
@@ -605,6 +609,9 @@ if ~isempty(seltypes)
     % update versions
     for c = cansel(:)'
         % current version
+        if isempty(handles.db(c).versions)
+            handles.db = db_mainversion(handles.db, c);
+        end
         origcurrent_f = handles.db(c).versions.current;
         
         % update current

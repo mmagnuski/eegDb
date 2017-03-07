@@ -44,35 +44,35 @@ fls = all_fls(sum(em, 2) > 0);
 
 %% decipher dates and choose the current database
 if length(fls) > 1
-pat = ['[0-9]{4}\.[0-9]{2}\.[0-9]{2} ',...
-    '[0-9]{2}\.[0-9]{2}\.[0-9]{2}\.[0-9]{3}'];
-
-i = regexp(fls, pat, 'once');
-
-% remove empty ones
-emp = cellfun(@isempty, i);
-i(emp) = [];
-fls(emp) = [];
-
-dts = zeros(length(fls), 7);
-
-for a = 1:length(i)
-    dt = cellfun(@str2num, strsep(fls{a}(i{a}:i{a}+9), '.'));
-    tm = cellfun(@str2num, strsep(fls{a}(i{a}+11:i{a}+22), '.'));
-    dts(a,:) = [dt', tm'];
-end
-
-% iterative maxing:
-for d = 1:size(dts, 2)
-    win = dts(:,d) == max(dts(:,d));
-    if sum(win) == 1
-        winner = fls{win};
-        break
-    else
-        dts(~win,:) = 0;
+    pat = ['[0-9]{4}\.[0-9]{2}\.[0-9]{2} ',...
+        '[0-9]{2}\.[0-9]{2}\.[0-9]{2}\.[0-9]{3}'];
+    
+    i = regexp(fls, pat, 'once');
+    
+    % remove empty ones
+    emp = cellfun(@isempty, i);
+    i(emp) = [];
+    fls(emp) = [];
+    
+    dts = zeros(length(fls), 7);
+    
+    for a = 1:length(i)
+        dt = cellfun(@str2num, strsep(fls{a}(i{a}:i{a}+9), '.'));
+        tm = cellfun(@str2num, strsep(fls{a}(i{a}+11:i{a}+22), '.'));
+        dts(a,:) = [dt', tm'];
     end
-end
-clear d a win dts dt tm a i pat em fls
+    
+    % iterative maxing:
+    for d = 1:size(dts, 2)
+        win = dts(:,d) == max(dts(:,d));
+        if sum(win) == 1
+            winner = fls{win};
+            break
+        else
+            dts(~win,:) = 0;
+        end
+    end
+    clear d a win dts dt tm a i pat em fls
 else
     winner = fls{1};
 end

@@ -4,6 +4,10 @@ function EEG = db_fastread(pth, fnm)
 % does not read option files, does not use eeg_checkset
 % just reads the data in
 
+% TODOs:
+% - [ ] set relevant filepath? (checkset does it)
+% - [ ] set 'saved' field to 'justloaded'
+
 % load .set metadata
 ld = load(fullfile(pth, fnm), '-mat');
 EEG = ld.EEG;

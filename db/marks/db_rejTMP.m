@@ -99,7 +99,7 @@ for f = 1:size(rejCol, 1)
         
         % CHANGE
         % this is some quick bugfix, that could 
-        % not work / have much sens / etc.
+        % not work / have much sense / etc.
         % it seems to be used to work for adding selections 
         % even when some epochs have been rejected
         if femp(db(r).reject, 'post') || ~(length(adr) == ...
@@ -107,7 +107,20 @@ for f = 1:size(rejCol, 1)
             adr(db(r).reject.post) = [];
         end
         
-        db(r).marks(f).value(adr) = rejected;
+        if isempty(db(r).marks(f).value)
+            % no previous rejections - create
+            % a little weird because they should (?) be added during
+            % cutting into segments / epoching...
+            if all(diff(adr) == 1) % adr is 1:length(adr)
+                db(r).marks(f).value = rejected;
+            else
+                error(['I don''t know what to do if db(r).marks(f).value', ...
+                       ' is empty and adr is not 1:length(adr)']);
+            end
+        else
+            % standard case - modify existing marks
+            db(r).marks(f).value(adr) = rejected;
+        end
         
         clear rejected
     end
