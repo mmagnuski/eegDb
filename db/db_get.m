@@ -1,11 +1,14 @@
 function info = db_get(db, rs, prop)
 
-% NOHELPINFO
+% danger! THIS FUNCTION SEEMS TO BE NOT FINISHED...
+%
 % Helper function for getting info about properties 
 % of database entries - it is mostly used for checking 
 % safty of chnges that user wants to introduce
-
-% returns vector of information where:
+%
+% info = db_get(db, rs, prop)
+%
+% info is a matrix of information where:
 %  0 - given option is unspecified
 %  1 - given option is specified but not saved in file (only introduced when recovering)
 %  2 - option is specified and saved in EEG file (present in .datainfo of the database)
