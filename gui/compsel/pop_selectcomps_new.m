@@ -211,7 +211,7 @@ if info.db_present
     info.eegDbcompN = size(eegDb(info.r).ICA.icaweights, 1);
 
     % check mapping between EEG and eegDb comps:
-    info.mapping = db_get_ica_ind(EEG, eegDb(info.r));
+    info.mapping = db_compare_ICA(EEG, eegDb(info.r));
 
     % CHANGE
     % test for problems - when EEG does not have the same num

@@ -1,6 +1,6 @@
-function mapping = db_get_ica_ind(dt1, dt2, corr_thres)
+function mapping = db_compare_ICA(dt1, dt2, corr_thres)
 
-% correlates icawinv from two dataset to find the 
+% correlates icawinv from two datasets to find the 
 % correspondence.
 %
 % mapping = db_compare_ICA(dt1, dt2, corr_thres)
@@ -10,6 +10,11 @@ function mapping = db_get_ica_ind(dt1, dt2, corr_thres)
 % first dataset corresponds to i'th component
 % from second dataset. No correspondence is marked
 % with zeros.
+%
+% dt1 and dt2 can be icawinv matrices or eegDb databases
+% corr_thres is correlation treshold above which components
+% are concerned identical, default treshold is 0.9
+
 % 
 % see also: corr
 % FIXHELPINFO
