@@ -1,7 +1,11 @@
 function db_export_rej(db, r, types, pth)
 
 % exports marks for given db record in a tab-separated dataframe format
-% uses db(r).epoch.winlen - to check window length
+% assumes segmented (consecutive epochs) data by using db(r).epoch.winlen
+% to check segment length, not well suited for event-related epochs
+
+% FIX!: needs to cope with the fact that some segments can be pre-rejected
+% ADD option to export in samples or s
 
 if ~exist('types', 'var') || isempty(types)
     types = {'reject'};
@@ -23,11 +27,11 @@ end
 num_rej = zeros(1, n_tps);
 groups = cell(1, n_tps);
 for t = 1:n_tps
-    sm = sum(db(r).marks(which_type(1)).value);
+    sm = sum(db(r).marks(which_type(t)).value);
     if sm > 0
-    grp = group(db(r).marks(which_type(1)).value);
-    groups{t} = grp(grp(:,1) == 1, 2:3);
-    num_rej(t) = size(groups{t}, 1);
+        grp = group(db(r).marks(which_type(t)).value);
+        groups{t} = grp(grp(:,1) == 1, 2:3);
+        num_rej(t) = size(groups{t}, 1);
     else
         num_rej(t) = 0;
     end
@@ -45,13 +49,13 @@ n_tps = length(types);
 max_rej = max(num_rej);
 all_rej = zeros(max_rej, n_tps*2);
 
+% translate segment number to time range in samples
 for t = 1:n_tps
     all_rej(1:num_rej(t), t*2-1) = (groups{t}(:,1)-1) * ...
         db(r).epoch.winlen * db(r).datainfo.srate + 1;
     all_rej(1:num_rej(t), t*2) = groups{t}(:,2) * ...
         db(r).epoch.winlen * db(r).datainfo.srate;
 end
-
 
 
 if isdir(pth)
