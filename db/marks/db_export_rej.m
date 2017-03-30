@@ -7,27 +7,69 @@ if ~exist('types', 'var') || isempty(types)
     types = {'reject'};
 end
 
+if ~exist('pth', 'var') || isempty(pth)
+    pth = pwd;
+end
+
 if ~iscell(types)
     types = {types};
 end
 
-ev_nm = {db(r).marks.name};
-n_tps = length(types);
+mark_names = {db(r).marks.name};
+n_types = length(types);
 
 try
-    which_type = cellfun(@(x) find(strcmp(x, ev_nm)), types);
+    which_type = cellfun(@(x) find(strcmp(x, mark_names)), types);
 catch %#ok<CTCH>
     error('Could not find some of the mark types');
 end
 
-num_rej = zeros(1, n_tps);
-groups = cell(1, n_tps);
-for t = 1:n_tps
+% max marks length:
+max_marks_len = max(cellfun(@length, {db(r).marks.value}));
+
+
+% check post window numbering
+% ---------------------------
+prerej = db(r).reject.pre;
+if ~isempty(prerej)
+
+    % check how many were not removed (at least)
+    spared = prerej(end) - length(prerej);
+
+    % some windows extend beyond prerej
+    if max_marks_len > 0
+        tooshort = max_marks_len - spared;
+    end
+
+    if max_marks_len == 0 || tooshort < 0
+        tooshort = 0;
+    end
+
+    % constuct pre and post window numbering
+    % the bracket is not needed but makes it more comprehensible
+    full_pre_size = prerej(end) + tooshort;
+    pre_win_nums = 1:full_pre_size;
+    post_win_nums = pre_win_nums;
+    post_win_nums(prerej) = [];
+else
+    full_pre_size = max_marks_len;
+    post_win_nums = 1:max_marks_len;
+end
+
+
+num_rej = zeros(1, n_types);
+groups = cell(1, n_types);
+for t = 1:n_types
     sm = sum(db(r).marks(which_type(1)).value);
     if sm > 0
-    grp = group(db(r).marks(which_type(1)).value);
-    groups{t} = grp(grp(:,1) == 1, 2:3);
-    num_rej(t) = size(groups{t}, 1);
+        current_marks = false(full_pre_size, 1);
+        marks_placement_post = db(r).marks(which_type(1)).value;
+        marks_placement_pre = post_win_nums(...
+            find(marks_placement_post)); %#ok<FNDSB>
+        current_marks(marks_placement_pre) = true;
+        grp = group(current_marks);
+        groups{t} = grp(grp(:, 1) == 1, 2:3);
+        num_rej(t) = size(groups{t}, 1);
     else
         num_rej(t) = 0;
     end
@@ -40,15 +82,15 @@ end
 types = types(use_types);
 groups = groups(use_types);
 num_rej = num_rej(use_types);
-n_tps = length(types);
+n_types = length(types);
 
 max_rej = max(num_rej);
-all_rej = zeros(max_rej, n_tps*2);
+all_rej = zeros(max_rej, n_types * 2);
 
-for t = 1:n_tps
-    all_rej(1:num_rej(t), t*2-1) = (groups{t}(:,1)-1) * ...
+for t = 1:n_types
+    all_rej(1:num_rej(t), t * 2 - 1) = (groups{t}(:, 1) - 1) * ...
         db(r).epoch.winlen * db(r).datainfo.srate + 1;
-    all_rej(1:num_rej(t), t*2) = groups{t}(:,2) * ...
+    all_rej(1:num_rej(t), t * 2) = groups{t}(:, 2) * ...
         db(r).epoch.winlen * db(r).datainfo.srate;
 end
 
@@ -59,16 +101,15 @@ if isdir(pth)
     % open file
     f = fopen(fullfile(pth, [fnm, '.rej']), 'w');
     % write header
-    fprintf(f, 'start\tend\ttype');
-    
-    fprintf(f, '\n');
-        for t = 1:n_tps
-            rej = all_rej(:, t*2-1:t*2);
-            rej = rej(rej(:,1) > 0, :);
-            for i = 1:size(rej, 1)
-                fprintf(f, '%d\t%d\t%s\n', rej(i,1), rej(i,2), types{t});
-            end
+    fprintf(f, 'start\tend\ttype\n');
+
+    for t = 1:n_types
+        rej = all_rej(:, t * 2 - 1:t * 2);
+        rej = rej(rej(:,1) > 0, :);
+        for i = 1:size(rej, 1)
+            fprintf(f, '%d\t%d\t%s\n', rej(i,1), rej(i,2), types{t});
         end
+    end
     fclose(f);
 else
     error('Specified directory does not exist');
