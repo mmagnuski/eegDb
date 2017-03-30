@@ -6,6 +6,10 @@ function r = db_find(db, fld, val, opt)
 % set to value 'val'.
 % Returns all indices that fulfill these
 % constraints.
+%
+% if you are looking for a string value and do not
+% a complete but rather a partial match use as following:
+% rs = db_find(db, fld, val, 'substring');
 
 % TODOs
 % [ ] maybe add options to look deeper than one field
@@ -22,7 +26,7 @@ end
 len = length(db);
 r = false(1, len);
 if strcmp(opt, 'substring')
-	testfun = @(s) isempty(strfind(s.(fld), val));
+	testfun = @(s) ~isempty(strfind(s.(fld), val));
 else
 	testfun = @(s) isequal(s.(fld), val);
 end
