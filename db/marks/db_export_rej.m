@@ -1,7 +1,11 @@
 function db_export_rej(db, r, types, pth)
 
 % exports marks for given db record in a tab-separated dataframe format
-% uses db(r).epoch.winlen - to check window length
+% assumes segmented (consecutive epochs) data by using db(r).epoch.winlen
+% to check segment length, not well suited for event-related epochs
+
+% FIX!: needs to cope with the fact that some segments can be pre-rejected
+% ADD option to export in samples or s
 
 if ~exist('types', 'var') || isempty(types)
     types = {'reject'};
@@ -93,7 +97,6 @@ for t = 1:n_types
     all_rej(1:num_rej(t), t * 2) = groups{t}(:, 2) * ...
         db(r).epoch.winlen * db(r).datainfo.srate;
 end
-
 
 
 if isdir(pth)
