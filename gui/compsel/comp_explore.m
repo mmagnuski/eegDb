@@ -35,7 +35,7 @@ function varargout = comp_explore(varargin)
 
 %% Variable info:
 % h is the main structre that keeps all variables
-%   and handles. It is refreshed and shared among 
+%   and handles. It is refreshed and shared among
 %   functions/callbacks with guidata()
 %
 % ===========
@@ -45,13 +45,13 @@ function varargout = comp_explore(varargin)
 %   db      - used as global and declared as global
 %               in workspace too - this way workspace
 %               and comp_explore's db are in sync
-%   r         - index of db record that corresponds 
+%   r         - index of db record that corresponds
 %               to the EEG used
 %   ncomp     - number of components
 %   spect     - holds spectra for components
 %   varia     - (?) need to CHECK this
 %   button_ID - used in refreshing, ID of current button
-%               click (on prev/next), if not identical 
+%               click (on prev/next), if not identical
 %               to the one that caused refresh, refresh
 %               is interrupted (so that another refresh in
 %               action queue could be processed)
@@ -76,7 +76,7 @@ function varargout = comp_explore(varargin)
 % [ ] - checks for components that are present in EEG.
 %       first component in EEG may be number 3 if some
 %       components were removed
-% [ ] - repair refresh bugs (sometimes r is wrong and 
+% [ ] - repair refresh bugs (sometimes r is wrong and
 %       going forward from IC25 lands you on IC23)
 %       [this is probably related to the problem above]
 % [ ] - add/repair click-zoom property for topo, tri etc.
@@ -163,7 +163,7 @@ h.button_ID = 1;
 if evalin('base', 'exist(''db'', ''var'');');
     % CHANGE - to avoid warning and incompatibility with
     % future MATLAB versions - additional function here
-    % is needed that deals with 
+    % is needed that deals with
     % take care of additional arguments
     evalin('base', 'global db;');
     global db %#ok<TLEV>
@@ -181,13 +181,10 @@ end
         error('EEG in workspace does not match the given record number!');
     end
     else
-        % CONSIDER - for now the filenames are assumed to be the
-        %            same across versions, but this may change in
-        %            the future...
         % ADD      - recoverEEG adds (should add at least) some db
         %            recovery info to EEG.etc - this can be used to
-        %            determine the record AND the version fitting
-        %
+        %            determine the record fitting
+
         % look for record number
         r = db_find_r(db, 'filename', h.EEG.filename);
         if isempty(r)
@@ -201,7 +198,7 @@ end
             disp(['Relevant db entry:  ', num2str(r)]);
             h.r = r;
         end
-            
+
     end
 
 % additional arguments:
@@ -308,32 +305,32 @@ set(h.uipanel1, 'Title', db(h.r).filename);
 %  =============
 if h.opt.dipf.plot
     % CHECK 'gui'' 'off' option
-    
+
     pop_dipplot( h.EEG, 1:h.ncomp ,'mri',...
         h.EEG.dipfit.mrifile,...
         'cornermri','on','axistight','on','projimg','on',...
         'projlines','on','normlen','on', 'view', [0.5 -0.5 0.5]);
     h.dipfig = gcf;
-    
+
     % set size and position of both figure1
     % (main comp_explore GUI and dipplot figure)
     uni = get(0, 'units');
     set(0, 'units', 'pixels');
     screen = get(0, 'ScreenSize');
     set(0, 'units', uni);
-    
+
     % width of compexp:
     set(h.figure1, 'units', 'pixels');
     pos = get(h.figure1, 'Position');
-    
+
     screen_left = screen(3) - pos(3);
     left_onright = screen_left - pos(1);
-    
+
     % size of dipplot figure:
     uni = get(h.dipfig, 'units');
     set(h.dipfig, 'units', 'pixels');
     posdip = get(h.dipfig, 'Position');
-    
+
     if left_onright >= posdip(3) + 10
         posdip(1) = pos(1) + pos(3) + 5;
         posdip(2) = pos(2) + (pos(4) - posdip(4) - 10);
@@ -343,7 +340,7 @@ if h.opt.dipf.plot
         % either enough place on screen:
         if screen_left >= posdip(3) + 10
             need_screen_onright = posdip(3) - left_onright;
-            
+
             pos(1) = pos(1) - need_screen_onright - 10;
             posdip(1) = pos(1) + pos(3) + 5;
             posdip(2) = pos(2) + (pos(4) - posdip(4) - 10);
@@ -359,22 +356,22 @@ if h.opt.dipf.plot
             posdip(3) = newposdip;
             posdip(4) = round(posdip(4) * rescaleby);
             posdip(2) = pos(2) + (pos(4) - posdip(4) - 10);
-            
+
             set(h.dipfig, 'Position', posdip);
             set(h.figure1, 'Position', pos);
             clear newposdip pos posdip rescaleby
         end
     end
-    
+
     % return units to dipplot fig
     set(h.dipfig, 'units', uni);
-    
+
     % look for main axis of dipplot
     chldrn = get(h.dipfig, 'Children');
     tps = get(chldrn, 'Type');
     h.dipaxis = chldrn(strcmp('axes', tps));
     clear tps chldrn
-    
+
     % hide all dipoles
     for tmpi = 1:length(h.EEG.dipfit.model)
         dips = findobj('parent', h.dipaxis, ...
@@ -448,38 +445,38 @@ end
 
 %% === component info ===
 if sum(strcmp('compinfo', refr)) > 0
-    
+
     % comp number
     set(h.ICnb, 'String', ['IC ', num2str(h.comp)]);
-    
+
     % type of comp:
     compt = db(h.r).ICA.desc(h.comp).type;
     alltps = h.opt.ICA.types;
     compi = find(strcmp(compt, alltps));
-    
+
     if isempty(compi)
         db(h.r).ICA.desc(h.comp).type = '?';
         compi = 3;
     end
-    
+
     ht = [h.artif; h.brain; h.dontknow];
     set(ht(compi), 'Value', 1);
-    
+
     % component subtype:
     compt = db(h.r).ICA.desc(h.comp).subtype;
     alltps = h.opt.ICA.subtypes{compi};
-    
+
     compiyou = find(strcmp(compt, alltps));
     if isempty(compiyou)
         alltps = [alltps(:); compt]; %why so?
         h.opt.ICA.subtypes{compi} = alltps;
         compiyou = length(alltps);
     end
-    
+
     %set(h.compsubtype, 'String', alltps,'Value', compiyou);
     set(h.compsubtype, 'String',alltps);
     set(h.compsubtype,'Value', compiyou);
-    
+
     % reject button
     if db(h.r).ICA.desc(h.comp).reject
         db(h.r).ICA.desc(h.comp).ifreject = false;
@@ -492,7 +489,7 @@ if sum(strcmp('compinfo', refr)) > 0
         set(h.rejbut, 'BackGroundColor', h.opt.ICA.rejcol(1,:), ...
             'String', h.opt.ICA.rejs{1});
     end
-    
+
     % ========================
     % test for button presses:
     h_test = guidata(h.freq);
@@ -500,31 +497,31 @@ if sum(strcmp('compinfo', refr)) > 0
         return
     end
     % ========================
-    
+
     % notes
     set(h.componotes, 'String', db(h.r).ICA.desc(h.comp).notes);
-    
+
     %sum of rejected components
     if ~isempty(sum([db(h.r).ICA.desc.reject]))
         set(h.sumrej, 'String', num2str(sum([db(h.r).ICA.desc.reject])));
     else
         set(h.sumrej, 'String','None');
     end
-    
+
     % ========================
     % test for button presses:
     h_test = guidata(h.freq);
     if ~isequal(bID, h_test.button_ID)
         return
     end
-    
+
 end
 
 % ============
 % refresh rank
 
 if sum(strcmp('rank', refr)) > 0
-    
+
     rnk = db(h.r).ICA.desc(h.comp).rank;
     valr = find(strcmp(rnk, h.opt.ICA.ranks));
     if ~isempty(valr) && valr > 0
@@ -542,7 +539,7 @@ if sum(strcmp('topo', refr)) > 0
     topoplot( h.EEG.icawinv(:,h.comp), h.EEG.chanlocs, 'chaninfo', h.EEG.chaninfo, ...
         'shading', 'interp', 'numcontour', h.opt.topo.numcont);
     axis square;
-    
+
     % ========================
     % test for button presses:
     h_test = guidata(h.freq);
@@ -556,10 +553,10 @@ if sum(strcmp('scatter', refr)) > 0
     if isempty(h.varia{h.comp})
         h.varia{h.comp} = var(squeeze(h.EEG.icaact(h.comp,:,:)), 1)';
     end
-    
+
     varscatter(h.scatter, h.varia{h.comp}, 'sd', 2.5,...
         'outm', 'jackknife');
-    
+
     % ========================
     % test for button presses:
     h_test = guidata(h.freq);
@@ -579,27 +576,27 @@ if sum(strcmp('spect', refr)) > 0
         opt.verbose = false;
         opt.overlap = 0;
         opt.padto = 2^nextpow2(h.EEG.pnts);
-        
+
         % ========================
         % test for button presses:
         h_test = guidata(h.freq);
         if ~isequal(bID, h_test.button_ID)
             return
         end
-        
+
         % compute spectrum
         h.spect{h.comp} = SpectPwelch(h.EEG, opt);
-        
+
         % scale spectrum (RMS - root mean square)
         h.spect{h.comp}.powspctrm = sqrt(mean(...
             h.EEG.icawinv(:,h.comp).^4)) * h.spect{h.comp}.powspctrm;
-        
+
         % turn power to 10*log10(power)
         h.spect{h.comp}.powspctrm = 10*log10(h.spect{h.comp}.powspctrm);
-        
+
         % update GUI data:
         guidata(h.freq, h);
-        
+
         % ========================
         % test for button presses:
         h_test = guidata(h.freq);
@@ -608,7 +605,7 @@ if sum(strcmp('spect', refr)) > 0
         end
 
     end
-    
+
     %% plot spectrum
     % [ ] ADD - check for replot
     hold off
@@ -618,30 +615,30 @@ if sum(strcmp('spect', refr)) > 0
     if ~isempty(h.opt.spect.freqlim)
         set(h.freq, 'XLim', h.opt.spect.freqlim);
     end
-    
+
     h.spct.XLim = get(h.freq, 'XLim');
     h.spct.YLim = get(h.freq, 'YLim');
-    
+
     xlabel('Frequency (Hz)');
     % [ ] ADD - options to plot power or log power etc.
     ylabel('Log-power');
     set(h.freq, 'ButtonDownFcn',@start_getrange);
-    
+
     % ========================
     % test for button presses:
     h_test = guidata(h.freq);
     if ~isequal(bID, h_test.button_ID)
         return
     end
-    
+
 end
 
 %% plot erpimage
 if sum(strcmp('tri', refr)) > 0
-    
+
     % clear tri
     cla(h.tri);
-    
+
     if ~isempty(h.triaxhndls)
         % delete tri co-occuring axes
         delh = h.triaxhndls(2:end);
@@ -649,22 +646,22 @@ if sum(strcmp('tri', refr)) > 0
         delh = delh(ishandle(delh));
         delete(delh);
     end
-    
+
     axes(h.tri);
     if isempty(h.EEG.times)
         h.EEG.times = linspace(h.EEG.xmin,...
             h.EEG.xmax, h.EEG.pnts);
     end
-    
+
     ei_smooth = h.opt.tri.smooth;
-    
+
     % ========================
     % test for button presses:
     h_test = guidata(h.freq);
     if ~isequal(bID, h_test.button_ID)
         return
     end
-    
+
     offset = nan_mean(h.EEG.icaact(h.comp,:));
     era = nan_mean(squeeze(h.EEG.icaact(h.comp,:,:))')-offset;
     era_limits=get_era_limits(era);
@@ -682,30 +679,30 @@ if sum(strcmp('tri', refr)) > 0
             'yerplabel', '','erp_vltg_ticks', era_limits, 'filt', ...
             h.spct.freqsel, 'srate', h.EEG.srate);
     end
-    
+
     % ========================
     % test for button presses:
     h_test = guidata(h.freq);
     if ~isequal(bID, h_test.button_ID)
         return
     end
-    
+
 end
 
 %% ===dipfit===
 if sum(strcmp('dip', refr)) > 0 && h.opt.dipf.plot
     if ishandle(h.dipfig)
-        
+
         % ========================
         % test for button presses:
         h_test = guidata(h.freq);
         if ~isequal(bID, h_test.button_ID)
             return
         end
-        
+
         % make dipaxis globaly current (eh...)
         axes(h.dipaxis); %#ok<MAXES>
-        
+
         editobj = findobj('parent', h.dipfig, 'userdata', 'editor');
         set(editobj, 'string', num2str(h.comp));
         dipplot(h.dipfig);
@@ -728,65 +725,65 @@ if isempty(h.spct.startpoint)
         del_ptch(h.spct.patch, []);
         h.spct.endpoint = [];
     end
-    
+
     % get cursor position
     h.spct.startpoint = get(h.freq, 'CurrentPoint');
     h.spct.startpoint = h.spct.startpoint(1, 1);
-    
+
     % plot line there
     Xpos = h.spct.startpoint;
     hold on
     h.spct.line = plot([Xpos, Xpos], h.spct.YLim, 'LineWidth', 2, ...
         'Color', [0.68, 0.42, 0.12]);
     hold off
-    
+
     % retaining axis limits (should be updatedb in
     % a different way)
     set(h.freq, 'XLim', h.spct.XLim);
     set(h.freq, 'YLim', h.spct.YLim);
-    
+
     guidata(hObject, h);
 else
     h.spct.endpoint = get(h.freq, 'CurrentPoint');
     h.spct.endpoint = h.spct.endpoint(1, 1);
-    
+
     % delete line
     if ~isempty(h.spct.line)
         delete(h.spct.line);
         h.spct.line = [];
     end
-    
+
     % find the points
     lowX = min([h.spct.endpoint(1,1), h.spct.startpoint(1,1)]);
     hiX = max([h.spct.endpoint(1,1), h.spct.startpoint(1,1)]);
     h.spct.freqsel = [lowX, hiX];
-    
+
     % plot the patch
     h.spct.patch = patch('Vertices', [lowX, h.spct.YLim(1); hiX, h.spct.YLim(1);...
         hiX, h.spct.YLim(2); lowX, h.spct.YLim(2)], 'Faces', 1:4, 'HitTest', ...
         'on', 'FaceAlpha', 0.3, 'ButtonDownFcn', @del_ptch, ...
         'EdgeColor', 'none', 'FaceColor', h.spct.patchcolor);
-    
+
     % set it below the line?
     % children = get(h.ax, 'Children');
-    
+
     % retaining axis limits (should be updatedb in
     % a different way)
     set(h.freq, 'XLim', h.spct.XLim);
     set(h.freq, 'YLim', h.spct.YLim);
-    
-    
+
+
     % update the other window
     figscatt(h);
-    
+
     h.spct.startpoint = [];
     h.spct.endpoint = [];
-    
+
     % update erpimage if necessary
     if h.opt.tri.filt
         refresh_comp_explore(h, 'tri');
     end
-    
+
 end
 
 % disp(h.startpoint);
@@ -802,20 +799,20 @@ if ~isempty(h.spct.freqsel)
         [~, freqadr(fr)] = min((abs(h.spect{h.comp}.freq - h.spct.freqsel(fr)))); %#ok<AGROW>
         % frq(fr) = h.spect.freq(freqadr);
     end
-    
+
     % take average power in freq range across epochs
     h.scattdat = squeeze(mean(h.spect{h.comp}.powspctrm(:,1, ...
         freqadr(1):freqadr(2)), 3));
-    
+
     % CHANGE
     % This should change so that varscatter is updated only through
     % refresh_comp_explore
     varscatter(h.scatter, h.scattdat, 'sd', 2.5, 'label', 'Power', ...
         'outm', 'jackknife');
-    
+
     % update gui data
     guidata(h.scatter, h);
-    
+
 end
 
 
@@ -847,12 +844,12 @@ h = guidata(hObject);
 
 if h.comp > 1
     cla(h.topo);
-    
+
     if ishandle(h.spct.patch)
         delete(h.spct.patch);
         h.spct.patch = [];
     end
-    
+
     h.comp = h.comp - 1;
     h.button_ID = h.button_ID + 1;
     guidata(hObject, h);
@@ -887,7 +884,7 @@ end
 
 if ~isequal(prevcomp, nowcomp)
     guidata(hObject, h)
-    
+
     % clear topoplot - should be later performed
     % just before drawing in refresh_comp_explore
     cla(h.topo);
@@ -902,7 +899,7 @@ h = guidata(hObject);
 
 if h.comp < size(h.EEG.icaweights,1)
     cla(h.topo);
-    
+
     % delete patch object?
     % [ ] - other option - save info
     %       to recover when back to this
@@ -911,7 +908,7 @@ if h.comp < size(h.EEG.icaweights,1)
         delete(h.spct.patch);
         h.spct.patch = [];
     end
-    
+
     h.comp = h.comp + 1;
     h.button_ID = h.button_ID + 1;
     guidata(hObject, h);
@@ -1249,7 +1246,7 @@ refresh_comp_explore(h, 'compinfo');
 % % eventdata  reserved - to be defined in a future version of MATLAB
 % % handles    structure with handles and user data (see GUIDATA)
 % % Update handles structure
-% 
+%
 % h = guidata(hObject);
 % global db
 % assignin('base', 'db', db);
@@ -1282,9 +1279,9 @@ refresh_comp_explore(h, 'compinfo');
 
 % --- Executes during object creation, after setting all properties.
 function compotype_panel_CreateFcn(hObject, eventdata, handles) %#ok<DEFNU,INUSD>
-% ta funkcja jest referowana przez GUI, albo nale¿y
-% j¹ zostawiæ, albo ustawiæ w GUIDE aby nie urucha-
-% mia³ tej funkcji
+% ta funkcja jest referowana przez GUI, albo naleï¿½y
+% jï¿½ zostawiï¿½, albo ustawiï¿½ w GUIDE aby nie urucha-
+% miaï¿½ tej funkcji
 
 
 % --- Executes on button press in preview.
@@ -1359,4 +1356,4 @@ allelecs = 1:size(h.EEG.data,1);
 goodelecs = allelecs;
 goodelecs(db(h.r).chan.bad) = [];
 
-headplot2(h.EEG.icawinv(:,h.comp), splinefile, 'meshfile', 'mheadnew.mat', 'elecs', goodelecs); 
+headplot2(h.EEG.icawinv(:,h.comp), splinefile, 'meshfile', 'mheadnew.mat', 'elecs', goodelecs);
