@@ -50,7 +50,6 @@ if ~isempty(prerej)
     end
 
     % constuct pre and post window numbering
-    % the bracket is not needed but makes it more comprehensible
     full_pre_size = prerej(end) + tooshort;
     pre_win_nums = 1:full_pre_size;
     post_win_nums = pre_win_nums;
@@ -60,7 +59,8 @@ else
     post_win_nums = 1:max_marks_len;
 end
 
-
+% step through mark types, apply prerej window numbering
+% and group marked windows into longer chunks
 num_rej = zeros(1, n_types);
 groups = cell(1, n_types);
 for t = 1:n_types
@@ -79,10 +79,13 @@ for t = 1:n_types
     end
 end
 
+% finish early if no active marks were found
 use_types = num_rej > 0;
 if sum(use_types) == 0
     return
 end
+
+% select only active marks
 types = types(use_types);
 groups = groups(use_types);
 num_rej = num_rej(use_types);
@@ -91,6 +94,7 @@ n_types = length(types);
 max_rej = max(num_rej);
 all_rej = zeros(max_rej, n_types * 2);
 
+% turn units in windows to samples
 for t = 1:n_types
     all_rej(1:num_rej(t), t * 2 - 1) = (groups{t}(:, 1) - 1) * ...
         db(r).epoch.winlen * db(r).datainfo.srate + 1;
@@ -99,6 +103,7 @@ for t = 1:n_types
 end
 
 
+% save in dataframe format
 if isdir(pth)
     [~, fnm, ~] = fileparts(db(r).filename);
     % open file
