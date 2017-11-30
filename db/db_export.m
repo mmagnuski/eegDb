@@ -48,8 +48,12 @@ end
 % export marks
 if ~isequal(opt.export_marks, false)
     if iscell(opt.export_marks) || ischar(opt.export_marks)
-        db_export_marks(db, 1:length(db), opt.export_marks, path_out);
+        for r = 1:length(db)
+            db_export_rej(db, r, opt.export_marks, path_out);
+        end
     else
-        db_export_marks(db, 1:length(db), 'reject', path_out);
+        for r = 1:length(db)
+            db_export_rej(db, r, 'reject', path_out);
+        end
     end
 end
