@@ -12,9 +12,9 @@ function db = db_updatetonewformat(db)
 % Copyright 2014 Mikołaj Magnuski (mmagnuski@swps.edu.pl)
 
 % TODOs:
-% [ ] - add a new function db_checkbase that checks 
-%       if base is correct, ensures marks.value is logical 
-%       and same length etc. 
+% [ ] - add a new function db_checkbase that checks
+%       if base is correct, ensures marks.value is logical
+%       and same length etc.
 %       currently db_checkbase is doing something else
 %       -that function should be renamed to searchbase
 %       for example
@@ -78,11 +78,11 @@ for r = 1:length(db)
 end
 
 
-
 % REFIELD usecleanline to cleanline
 % ---------------------------------
-db = db_refield(db, 'usecleanline', 'cleanline');
-
+if isfield(db, 'usecleanline')
+    db = db_refield(db, 'usecleanline', 'cleanline');
+end
 
 
 % RECODE (USER/AUTO)REM to MARKS
@@ -128,7 +128,6 @@ for r = 1:length(db)
                 db(r).marks(ff).desc = [];
                 db(r).marks(ff).auto = [];
                 db(r).marks(ff).more = [];
-
             end
         end
     end
@@ -136,7 +135,6 @@ end
 
 % remove fields
 db = rmfield(db, flds(hasFields));
-
 end
 
 
@@ -170,7 +168,6 @@ end
 
 % remove fields
 db = rmfield(db, flds(hasFields));
-
 end
 
 
@@ -184,14 +181,12 @@ hasFields = isfield(db, flds);
 if any(hasFields)
 for r = 1:length(db)
 
-    % check onesec 
+    % check onesec
     % -------------
     copyEp = true;
-    if femp(db(r), flds{1}) 
-        % only cases where it is logical
-        % then - after this loop we merge
-        % onesecepoch with epoch so other
-        % cases are taken care of
+    if femp(db(r), flds{1})
+        % only cases where it is logical then - after this loop we merge
+        % onesecepoch with epoch so other cases are taken care of
         if islogical(db(r).(flds{1}))
             if db(r).(flds{1})
 
@@ -204,23 +199,18 @@ for r = 1:length(db)
                 % apply default onesec options:
                 db(r).epoch.winlen = 1;
 
-
                 % do not copy epoching even if present
                 copyEp = false;
             end
-                
         end
     end
 
     if copyEp
-
         for f = 2:length(flds)
-
             % simply copy the contents if present
             if femp(db(r), flds{f})
                 db(r).epoch.(toFlds{f}) = db(r).(flds{f});
             end
-
         end
     end
 end
@@ -228,10 +218,10 @@ end
 
 % merge onesecepoch and epoch if onesec present
 if hasFields(1)
-    % force merge, because db.epoch could not be 
+    % force merge, because db.epoch could not be
     % trully present if db.onesecepoch is
     db = db_mergefields(db, flds{1}, 'epoch', true);
-    
+
     flds = flds(2:end);
     hasFields = hasFields(2:end);
 end
@@ -247,10 +237,10 @@ flds = {'chansind', 'tasktype', 'subjectcode', 'session', 'prefun'};
 
 for f = 1:length(flds)
     if isfield(db, flds{f})
-        
+
         % look for nonempty fields
         em = ~cellfun(@isempty, {db.(flds{f})});
-        
+
         % if no nonempty - delete field
         if ~any(em)
             db = rmfield(db, flds{f});
@@ -259,7 +249,13 @@ for f = 1:length(flds)
 end
 
 
-
 % SORT fileds as the last step
 % ----------------------------
 db = db_sorter(db);
+
+
+% if versions field is present - remove
+% -------------------------------------
+if isfield(db, 'versions')
+    db = rmfield(db, 'versions');
+end

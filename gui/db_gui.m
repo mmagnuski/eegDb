@@ -3,11 +3,7 @@ function varargout = db_gui(varargin)
 % DB_GUI - GUI that allows for basic operations on db.`
 %             Adding notes, marking epochs in different ways
 %             as well as listing bad channels is easy with
-%             db_gui GUI. It is also possible to create
-%             multiple versions of a given db record and
-%             perform ICA for each of these versions (to
-%             compare later)
-%
+%             db_gui GUI.
 %  use as:
 %      db = DB_GUI(db);
 %  or:
@@ -19,10 +15,6 @@ function varargout = db_gui(varargin)
 % See also: db_buildbase, db_create_base
 
 % TODOs:
-% [ ] resolve removed marks but no recover bug
-% [ ] delete current version from versions field
-%     when saving or closing db_gui? This would
-%     save some memory... (!)
 % [ ] universal mechanism for mark types:
 %         - [X] adding user-defined types
 %         - [X] name field that defines how the
@@ -31,9 +23,6 @@ function varargout = db_gui(varargin)
 %               in EEG.reject
 %         - [ ] universal adding rejection types
 %               in recoverEEG and cooleegplot
-% [ ] multisel working on multiple versions too (?) - 
-%     does work for ICA but not yet for other options 
-% [ ] ...
 
 % Last Modified by GUIDE v2.5 05-Jun-2015 17:20:21
 
@@ -70,8 +59,8 @@ handles.output = hObject;
 handles.UniOrig = get(0, 'Units');
 
 % CHECK
-% why are the lines below commented out?
-% why setting figure1 to visible if units are not pixels?
+% [?] why are the lines below commented out?
+% [?] why setting figure1 to visible if units are not pixels?
 if ~strcmp(handles.UniOrig, 'pixels')
     set(handles.figure1, 'Visible', 'on');
     %     set(0, 'Units', 'pixels');
@@ -91,7 +80,7 @@ end
 % h.db - self-explanatory
 % h.db_start - initial db structure passed
 %                back to the user if he aborts
-% h.EEG        - last recovered EEG 
+% h.EEG        - last recovered EEG
 % h.EEGr       - registry of last recovered EEG
 % h.ecol = color options for electrode display
 %          CHECK - h.ecol not used?
@@ -191,46 +180,40 @@ if handles.figure2
     %          and do not check for handles.figure2 here
     figure(handles.figure2); % this is not used yet
 else
-    
-    % just to be sure - update version
-    if ~isempty(handles.db(handles.r).versions)
-        currf = handles.db(handles.r).versions.current;
-        handles.db = db_updateversion(handles.db, handles.r, currf);
-    else
-        handles.db = db_mainversion(handles.db, handles.r);
-    end
-    
+
+
     % CHANGE - this is a mess
     %        - whether r is recovered should be checked in a sepatate
     %          function (the same with recover if not present)
     %        - recovopts should be reworked
     %        - comparing EEG and current r/version should be
-    %          smarter  
-    
+    %          smarter
+
     % first - recover data if not present
     if isempty(handles.EEG) || handles.r ~= handles.rEEG || ...
             ~db_recov_compare(handles.EEG.etc.recov, handles.db(handles.r)) ...
             || ~isequal(handles.recovopts, handles.last_recovered_opts)
-        
+
         % save recovery options:
         handles.last_recovered_opts = handles.recovopts;
-        
+
         % TXT display
         set(handles.addit_text, 'String', 'Recovering EEG...');
         drawnow;
-        
+
         % RECOVER EEG data
-        handles.EEG = recoverEEG(handles.db, handles.r, 'local', handles.recovopts{:});
+        handles.EEG = recoverEEG(handles.db, handles.r, 'local', ...
+                                 handles.recovopts{:});
         handles.rEEG = handles.r;
         rEEG = handles.rEEG;
-        
+
         % update prerej field
         f = db_checkfields(handles.EEG, 1,...
             {'onesecepoch'}, 'subfields', true);
         if f.fsubf(1)
             isprerej = find(strcmp('prerej', f.subfields{1}));
         end
-        
+
         % CHECK - in case of prerej, postrej division
         %          the following step is important because
         %          it allows for some prerej-postrej-removed
@@ -248,37 +231,33 @@ else
             handles.recov(handles.r) = true;
         end
         clear f isprerej
-        
+
         % Update handles structure
         guidata(hObject, handles);
-        
+
         % file recovered
         set(handles.addit_text, 'String', 'EEG recovered');
-        
+
         % refresh gui (CHECK - do we need to?)
         db_gui_refresh(handles);
     end
-    
+
     % disable plotting
     set(hObject, 'Enable', 'off');
-    
+
     % ADD warining if removed is filled and
     % userrem or autorem too ?
-    
+
     linkfun_eegplot(handles);
-    
+
     % enable plotting
     set(hObject, 'Enable', 'on');
 
     % get updated handles
     handles = guidata(hObject);
-    
+
     % Refresh GUI:
     db_gui_refresh(handles);
-    
-    % just to be sure - update version
-    currf = handles.db(handles.r).versions.current;
-    handles.db = db_updateversion(handles.db, handles.r, currf);
 end
 
 
@@ -331,13 +310,13 @@ if ishandle(f_cha)
     selchan = get(f_cha, 'UserData');
     handles.db(handles.r).chan.bad = selchan{1};
     handles.db(handles.r).chan.badlab = selchan{2};
-    
+
     close(f_cha);
-    
-    
+
+
     % Update handles structure
     guidata(hObject, handles);
-    
+
     % Refresh GUI:
     db_gui_refresh(handles);
 end
@@ -355,10 +334,10 @@ function next_butt_Callback(hObject, eventdata, handles)
 
 if handles.r < length(handles.db)
     handles.r = handles.r + 1;
-    
+
     % Update handles structure
     guidata(hObject, handles);
-    
+
     % refresh
     db_gui_refresh(handles);
 end
@@ -369,10 +348,10 @@ function prev_butt_Callback(hObject, eventdata, handles)
 
 if handles.r > 1
     handles.r = handles.r - 1;
-    
+
     % Update handles structure
     guidata(hObject, handles);
-    
+
     % refresh
     db_gui_refresh(handles);
 end
@@ -405,14 +384,14 @@ if isequal(get(hObject, 'waitstatus'), 'waiting')
     % output is unmodified, modified output
     % is generated base in workspace as ans
     assignin('base', 'ans', handles.db);
-    
+
     % main output is unchanged
     handles.db = handles.db_start;
     handles.CloseReq = true;
-    
+
     % Update handles structure
     guidata(hObject, handles);
-    
+
     % Resume GUI
     uiresume(hObject);
 else
@@ -451,7 +430,7 @@ end
 
 for c = 1:length(cansel)
     r = cansel(c);
-    
+
     % CHANGE - it should work both ways:
     % now we remove by prerej, not distance
     % CHANGE - previous comment not clear,
@@ -466,24 +445,24 @@ for c = 1:length(cansel)
     if femp(handles.db(r).epoch, 'locked') && ...
         ~handles.db(r).epoch.locked && ...
         femp(handles.db(r).epoch, 'distance')
-        
+
         % CHANGE ??
         % clear distance option
         handles.db(r).epoch.distance = [];
         % Update handles structure
         guidata(hObject, handles);
     end
-    
+
     str = get(handles.addit_text, 'String');
     str{2,1} = ['record ', num2str(c), ' of ',...
         num2str(length(cansel))];
     set(handles.addit_text, 'String', str);
     drawnow;
-    
+
     % nonlocal call to recoverEEG
     % ADD - in some cases 'interp' may be wanted (?)
     handles.EEG = recoverEEG(handles.db, r, handles.recovopts{:});
-    
+
     % add version info to EEG
     handles.EEG = db_ver2EEG(handles.db, handles.r, handles.EEG);
 end
@@ -539,7 +518,7 @@ seltypes = (rej.name)';
 
 
 % ===============================
-% if some have applied rejections 
+% if some have applied rejections
 % - allow for removal
 remopt =false;
 remhas = ~cellfun(@(x) isempty(x.all), {handles.db(cansel).reject});
@@ -578,20 +557,10 @@ if remopt && isequal(sel, length(seltypes))
     % apply rejections
     handles.db = db_applyrej(handles.db, cansel,...
         'clear', true);
-    
-    % update versions
-    for c = cansel(:)'
-        % current version
-        origcurrent_f = handles.db(c).versions.current;
-        
-        % update current
-        handles.db = db_updateversion(handles.db, ...
-            c, origcurrent_f);
-    end
-    
+
     % Update handles structure
     guidata(hObject, handles);
-    
+
     % refresh
     db_gui_refresh(handles);
     return
@@ -600,28 +569,14 @@ end
 seltypes = rej.name(sel);
 
 if ~isempty(seltypes)
-    
+
     % apply rejections
     handles.db = db_applyrej(handles.db, cansel,...
         'byname', seltypes);
-    
-    % ADD - we need a function for mass update versions
-    % update versions
-    for c = cansel(:)'
-        % current version
-        if isempty(handles.db(c).versions)
-            handles.db = db_mainversion(handles.db, c);
-        end
-        origcurrent_f = handles.db(c).versions.current;
-        
-        % update current
-        handles.db = db_updateversion(handles.db, ...
-            c, origcurrent_f);
-    end
-    
+
     % Update handles structure
     guidata(hObject, handles);
-    
+
     % refresh
     db_gui_refresh(handles);
 end
@@ -666,7 +621,6 @@ if femp(handles.db(handles.r).ICA, 'icaweights')
     linkfun_compexplore(handles.figure1);
 else
 %% run ica
-% for all versions and all selections that do not have ICA
 
 % text update
 set(handles.addit_text, 'String', {'computing ICA'});
@@ -674,59 +628,31 @@ drawnow;
 
 for c = 1:length(cansel)
     s = cansel(c);
-    
-    % get versions:
-    vers = db_getversions(handles.db, s);
-    origcurrent_f = handles.db(s).versions.current;
-    %origcurrent_n = handles.db(s).versions.(origcurrent_f).version_name;
-    
-    % update current
-    handles.db = db_updateversion(handles.db, ...
-        s, origcurrent_f);
-    
+
     % update text display
     str = get(handles.addit_text, 'String');
-    str{2,1} = ['registry ', num2str(c), ' of ',...
+    str{2,1} = ['record ', num2str(c), ' of ',...
         num2str(length(cansel))];
     set(handles.addit_text, 'String', str);
     drawnow
-    
-    for v = 1:size(vers,1)
-        strv = vers{v,2};
-        %     fv = vers{v,1};
-        
-        % update text display
-        str = get(handles.addit_text, 'String');
-        str{3,1} = ['version ', num2str(v), ' of ',...
-            num2str(size(vers, 1))];
-        set(handles.addit_text, 'String', str);
-        drawnow
-        
-        % recover the other
-        handles.db = db_bringversion(handles.db, s, strv);
-        
-        if isempty(handles.db(s).ICA.icaweights)
-            EEG = recoverEEG(handles.db, s, 'local');
-            % good channels:
-            allchan = 1:size(EEG.data,1);
-            allchan(handles.db(s).chan.bad) = [];
-            
-            %ICA
-            EEG = pop_runica(EEG, 'extended', 1, 'interupt',...
-                'off', 'verbose', 'on', 'chanind', allchan);
-            
-            % apply weights
-            handles.db = db_addw(handles.db, s, EEG);
-            
-            % update current version
-            handles.db = db_updateversion(handles.db, ...
-                s, vers{v,1});
-            
-            % Update handles structure
-            guidata(hObject, handles);
-        end
+
+    if isempty(handles.db(s).ICA.icaweights)
+        EEG = recoverEEG(handles.db, s, 'local');
+        % good channels:
+        allchan = 1:size(EEG.data,1);
+        allchan(handles.db(s).chan.bad) = [];
+
+        %ICA
+        EEG = pop_runica(EEG, 'extended', 1, 'interupt',...
+            'off', 'verbose', 'on', 'chanind', allchan);
+
+        % apply weights
+        handles.db = db_addw(handles.db, s, EEG);
+
+        % Update handles structure
+        guidata(hObject, handles);
     end
-    end
+end
 end
 
 % update text display
@@ -739,76 +665,6 @@ guidata(hObject, handles);
 % refresh GUI
 db_gui_refresh(handles);
 
-% --------------------------------------------------------------------
-function vers_Callback(hObject, eventdata, handles)
-% hObject    handle to vers (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-function appvers_Callback(hObject, eventdata, handles)
-% hObject    handle to appvers (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --------------------------------------------------------------------
-function movevers_Callback(hObject, eventdata, handles)
-
-vn = gui_editbox('', {'Type version name'; 'here:'});
-if ~isempty(vn)
-    opt = handles.db(handles.r);
-    opt.version_name = vn;
-    handles.db = db_addversion(handles.db, handles.r, opt);
-    
-    % update handles
-    guidata(hObject, handles);
-    % refresh interface
-    db_gui_refresh(handles);
-end
-
-% --------------------------------------------------------------------
-function creavers_Callback(hObject, eventdata, handles)
-% hObject    handle to creavers (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --- Executes on selection change in versions_pop.
-function versions_pop_Callback(hObject, eventdata, handles)
-
-strv = get(hObject,'String');
-strv = strv{get(hObject,'Value')};
-
-% if current selection is not == current, update current version
-currf = handles.db(handles.r).versions.current;
-curr = handles.db(handles.r).versions.(currf).version_name;
-if ~strcmp(strv, curr)
-    % update current
-    handles.db = db_updateversion(handles.db, ...
-        handles.r, currf);
-    
-    % recover the other
-    handles.db = db_bringversion(handles.db, handles.r, strv);
-    
-    % refresh etc.
-    guidata(hObject, handles);
-    db_gui_refresh(handles);
-end
-%
-
-% --- Executes during object creation, after setting all properties.
-function versions_pop_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to versions_pop (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
-end
 
 
 % --- Executes on button press in save2file.
@@ -831,7 +687,7 @@ end
 
 if femp(handles, 'savepath')
     db = handles.db; %#ok<NASGU>
-    
+
     time = gettime('full');
     time1 = regexprep(time, ':', '.');
     time2 = regexp(time, '[0-9]{2}:[0-9]{2}:[0-9]{2}',...
@@ -880,7 +736,7 @@ h = guidata(hObject);
 hs = gui_multiedit('Plotting options', ...
     {'plotter', 'electrode colors', 'show this many epochs',...
     'plot bad channels in', 'line smoothing'},...
-    {'eegplot', 'select colors', '4', 'ba³watkowy', 'on'});
+    {'eegplot', 'select colors', '4', 'baï¿½watkowy', 'on'});
 
 % ============
 % plotter type
@@ -909,7 +765,7 @@ if isnumeric(coldef)
 elseif ischar(coldef)
     tovar = {'grey'; ''; 'plot'; 'hide'};
     val = find(strcmp(coldef, tovar));
-        
+
     if isempty(val) || val == 2
         val = 1;
         coldef = 'grey';
@@ -997,12 +853,6 @@ end
 delete(hwin.hf);
 
 
-% --------------------------------------------------------------------
-function manage_versions_Callback(hObject, eventdata, handles)
-% hObject    handle to manage_versions (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
 % ====PROFILE=====
 function handles = test_profile(handles, opt)
 % tests whether:
@@ -1016,16 +866,16 @@ switch opt
         % testing whether there already is a profile in the workspace
         is_base_profile = evalin('base', ['exist(''db_winrej_current_profile''',...
             ', ''var'');']);
-        
+
         if is_base_profile
             base_profile = evalin('base', 'db_winrej_current_profile;');
         end
-        
+
         if is_base_profile
-            
+
             % use the profile from workspace
             flds = fields(base_profile);
-            
+
             for f = 1:length(flds)
                 if strcmp('plotopts', flds{f})
                     base_plotopts = fields(base_profile.(flds{f}));
@@ -1043,21 +893,21 @@ switch opt
             guidata(handles.figure1, handles);
         else
             % the default settings have already been set:
-            
+
         end
-        
+
     case 'update'
         % updating profile
-        
+
         profile = [];
         if ~isempty(handles.plotopts)
             profile.plotopts = handles.plotopts;
         end
-        
+
         if isfield(handles, 'savepath') && ~isempty(handles.savepath)
             profile.savepath = handles.savepath;
         end
-        
+
         % save profile to workspace
         assignin('base', 'db_winrej_current_profile',...
             profile);
@@ -1066,27 +916,18 @@ end
 
 % --------------------------------------------------------------------
 function clearica_Callback(hObject, eventdata, handles)
-% clearing ica weights for given version
+% clearing ica weights for given record
 
 % get guidata:
 h = guidata(hObject);
 
-% check if multiple versions:
-f = db_checkfields(h.db(h.r).versions, 1, {}, 'ignore', ...
-    {'current'});
-nver = length(f.fields);
-drawnow;
+% ask if user is sure:
+choice = questdlg({'Are you sure you want to clear the ICA weights?'}, ...
+                   'Are you sure?', 'Yes', 'No', 'No');
 
-if nver < 2
-    % if only one version present - ask if user is sure:
-    choice = questdlg({'Only one version present. Are you sure you'; ...
-        ' want to clear the ICA weights?'}, 'Are you sure?', 'Yes', ...
-        'No', 'No');
-    
-    % if they are not sure, do not proceed:
-    if strcmp(choice, 'No')
-        return
-    end
+% if they are not sure, do not proceed:
+if strcmp(choice, 'No')
+    return
 end
 
 % clear ICA weights:
@@ -1096,15 +937,16 @@ guidata(h.figure1, h);
 % refresh GUI:
 db_gui_refresh(h);
 
+
 function plot_opt_fun(h)
 
-colol = selcol_GUI; 
+colol = selcol_GUI;
 set(h.edit(2), 'userdata', colol);
 
 function some_other_callback(hnd)
 
-st = get(hnd, 'string'); 
-vl = get(hnd, 'value'); 
+st = get(hnd, 'string');
+vl = get(hnd, 'value');
 set(hnd, 'userdata', st{vl});
 
 function myclosefun(h)

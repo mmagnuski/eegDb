@@ -35,9 +35,6 @@ add_rec.chan.labels = [];
 add_rec.chan.bad = [];
 
 
-add_rec.versions = [];
-add_rec = db_mainversion(add_rec, 1);
-
 add_rec.filename = fname;
 
 flds = fields(add_rec.ICA);
