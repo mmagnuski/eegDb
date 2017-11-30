@@ -20,6 +20,7 @@ function db_export(db, path_out, varargin)
 opt.export_marks = false;
 opt.epoch = true;
 opt.remove_components = true;
+opt.interpolate = true;
 
 opt = parse_arse(varargin, opt);
 
@@ -33,6 +34,9 @@ if ~opt.epoch
 end
 if ~opt.remove_components
     args{end + 1} = 'ICAnorem';
+end
+if opt.interpolate
+    args{end + 1} = 'interp';
 end
 
 % export files
