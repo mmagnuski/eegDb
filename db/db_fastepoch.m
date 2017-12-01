@@ -55,6 +55,16 @@ reallim(2) = round(lim(2)*EEG.srate-1); % do not include the last sample (as pop
 % get epoch ranges:
 epoch_lats = uint32([lats + reallim(1); lats + reallim(2)]);
 
+% do not include epochs that are out of limits:
+good_epochs = all(epoch_lats > 0 & epoch_lats < EEG.pnts, 1);
+
+% seelct only good epochs (within the limits of data)
+if ~all(good_epochs)
+    epoch_lats = epoch_lats(:, good_epochs);
+    ev = ev(good_epochs);
+    epoch_num = sum(good_epochs);
+end
+
 % check trial length
 epoch_length = uint32(reallim(2)-reallim(1)+1);
 
@@ -115,7 +125,7 @@ for e = 1:epoch_num
     % cut out a portion of the data
     epdt(:, :, e) = EEG.data(:, epoch_lats(1,e) : epoch_lats(2,e));
     
-    % increment effective event
+    % increment effective epoch
     ee = ee + 1;
 end
 
