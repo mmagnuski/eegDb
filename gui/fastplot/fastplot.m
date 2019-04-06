@@ -138,6 +138,7 @@ classdef fastplot < handle
         epoch  % info about epochs
         event  % info about events
         marks  % info about marks
+        samplemarks % info about marks at below-epoch precision
         spacing  % should be in opts?
         data
         data2
@@ -219,14 +220,20 @@ classdef fastplot < handle
                     ['IC', num2str(x)], signal_ind, 'Uni', false);
                 obj.data = get_ica_data(EEG, signal_ind);
             else
-                obj.opt.electrode_names = { ...
-                    EEG.chanlocs(signal_ind).labels};
+                if isfield(EEG, 'chanlocs')
+                    obj.opt.electrode_names = { ...
+                        EEG.chanlocs(signal_ind).labels};
+                else
+                    obj.opt.electrode_names = arrayfun(@(x) ...
+                        num2str(x), signal_ind, 'Uni', false);
+                end
                 obj.data = EEG.data(signal_ind, :, :);
             end
 
             orig_size = size(obj.data);
             obj.opt.nbchan = orig_size(1);
             obj.opt.badchan = false(obj.opt.nbchan, 1);
+            obj.opt.badchan_color = [0.8, 0.8, 0.8];
             if length(orig_size) > 2
                 obj.data_size = [orig_size(1), orig_size(2) * orig_size(3)];
             else
@@ -239,29 +246,47 @@ classdef fastplot < handle
             % default scroll method
             obj.scrollmethod = 'allset'; % how signal refresh is performed
 
-            % default options
+            % default options (FIXME - move)
             obj.opt.num_epoch_per_window = 3; % this should be set via options
             obj.opt.readfield = {'data'}; % later - add support for multiple fields
             obj.opt.readfrom = 1;
 
             % calculate spacing and scale step
-            obj.opt.chan_sd = std(obj.data, [], 1); % this kind of thing can be in info property
+            obj.opt.chan_sd = nanstd(obj.data, [], 1); % this kind of thing can be in info property
             obj.opt.step.signal_scale = 0.1;
             obj.opt.signal_scale = 1;
             obj.spacing = 4.5 * mean(obj.opt.chan_sd);
             obj.arg_parser(varargin); % arg_parser should be used at the top
 
-            chan_pos = (1:obj.data_size(2))*obj.spacing;
+            chan_pos = (1:obj.data_size(2)) * obj.spacing;
 
             % get channel locations
-            obj.opt.chanloc = EEG.chanlocs;
-            obj.opt.has_locs = ~isempty([EEG.chanlocs.X]);
+            if isfield(EEG, 'chanlocs')
+                obj.opt.chanloc = EEG.chanlocs;
+                obj.opt.has_locs = ~isempty([EEG.chanlocs.X]);
+            else
+                obj.opt.has_locs = false;
+            end
 
             % set y limits
             obj.h.ylim = [-(obj.data_size(2)+1) * obj.spacing, 0];
 
             % get event and epoch info
             obj.get_epoch(EEG, orig_size);
+            obj.opt.badchan_inepoch = false(obj.opt.nbchan, obj.epoch.num);
+            obj.opt.click_mode = 'epoch';
+            obj.epoch.n_samples = length(obj.epoch.time);
+
+            % sampleinfo
+            has_samp_info = strcmp('sampleinfo', varargin);
+            if any(has_samp_info)
+                obj.epoch.sampleinfo = varargin{find(has_samp_info) + 1};
+            else
+                n_epochs = obj.epoch.num;
+                n_samples = obj.epoch.n_samples;
+                epoch_ends = (n_samples:n_samples:(n_samples * n_epochs))';
+                obj.epoch.sampleinfo = [epoch_ends - (n_samples - 1), epoch_ends];
+            end
 
             % electrode position
             obj.opt.electrode_positions = -chan_pos;
@@ -341,22 +366,26 @@ classdef fastplot < handle
                 refresh_elem = cellfun(@(x) any(strcmp(x, elements)), ...
                     elem_order);
             end
-            
+
             % tic;
             if refresh_elem(1)
-                % FIX chan_pos should be held in the obj
+                % FIXME - move this to a separate function refresh_signal
+                % FIXME - chan_pos should be held in the obj
                 chan_pos = (1:obj.data_size(2))*obj.spacing;
 
-                dat = obj.(obj.opt.readfield{obj.opt.readfrom}) * ...
-                    obj.opt.signal_scale;
-                dat = bsxfun(@minus, dat(obj.window.span, :), chan_pos);
+                dat = obj.(obj.opt.readfield{obj.opt.readfrom});
+                dat = bsxfun(@minus, dat(obj.window.span, :) * ...
+                             obj.opt.signal_scale, chan_pos);
                 switch mthd
                     case 'replot'
                         delete(obj.h.lines);
                         obj.h.lines = plot(dat);
                     case 'allset'
                         dat = mat2cell(dat, diff(obj.window.lims) + 1, ...
-                            ones(1, obj.data_size(2)))';
+                                       ones(1, obj.data_size(2)))';
+                        % FIXME - channel hit test could be set only during
+                        %         launch or set on/off when switching from
+                        %         epoch to channel mode
                         set(obj.h.lines, {'YData'}, dat, 'HitTest', 'off');
                     case 'loopset'
                         for i = 1:length(obj.h.lines)
@@ -431,6 +460,15 @@ classdef fastplot < handle
                     wlims(1) + obj.window.size - 1]);
             end
             obj.window.lims = wlims;
+
+            % update epoch limits
+            % FIXME - separate function
+            ep = epochlimits_in_range(obj);
+            ep.latency = ep.latency - obj.window.lims(1);
+            obj.epoch.current_limits = ep.latency;
+            obj.epoch.current_nums = ep.nums;
+
+            % refresh view
             obj.refresh();
         end
 
@@ -554,9 +592,9 @@ classdef fastplot < handle
                 % return event latency and type
                 ep.latency = obj.epoch.limits(lookfor);
                 ep.nums = find(lookfor);
-                if ~(ep.nums(end) == obj.epoch.num)
-                    ep.nums = [ep.nums, ep.nums(end)+1];
-                end
+%                 if ~(ep.nums(end) == obj.epoch.num)
+%                     ep.nums = [ep.nums, ep.nums(end)+1];
+%                 end
             end
         end
 
@@ -570,11 +608,18 @@ classdef fastplot < handle
                 num = 1;
             end
 
-            % ADD !!! check limits, safty checks !!!
+            % FIXME - ADD !!! check limits, safty checks !!!
             obj.opt.num_epoch_per_window = obj.opt.num_epoch_per_window + (val*num);
             obj.window.size = length(obj.epoch.time) * obj.opt.num_epoch_per_window;
             obj.window.lims = [obj.window.lims(1), obj.window.lims(1) + obj.window.size - 1];
             obj.window.span = obj.window.lims(1):obj.window.lims(2);
+
+            % check what epoch limits are in range
+            % FIXME - specialized function for this
+            ep = epochlimits_in_range(obj);
+            ep.latency = ep.latency - obj.window.lims(1);
+            obj.epoch.current_limits = ep.latency;
+            obj.epoch.current_nums = ep.nums;
 
             if obj.opt.show
                 set(obj.h.ax, 'XLim', [1, length(obj.epoch.time) * ...
@@ -657,6 +702,50 @@ classdef fastplot < handle
             obj.marks.num2vertx = arrayfun(@(x) create_vert_y(x, obj.h.ylim), ...
                 1:num_marks, 'UniformOutput', false);
 
+        end
+
+
+        function add_samplemark(obj, mark_name, mark_color)
+            % ADD_SAMPLEMARK - FIXME
+            n_marktypes = length(obj.samplemarks.name);
+            obj.samplemarks.name{n_marktypes + 1} = mark_name;
+            obj.samplemarks.color(n_marktypes + 1, :) = mark_color;
+        end
+
+        function samplemark(obj, mark_name, sample_range)
+            % SAMPLEMARK - FIXME
+            n_added_marks = size(sample_range, 1);
+            marktype_idx = find(strcmp(mark_name, obj.samplemarks.name));
+            if isempty(marktype_idx)
+                error('Could not find mark %s, available marks: %s.', ...
+                      mark_name, strjoin(obj.samplemarks.name, ', '));
+            end
+            % FIXME - could also check sample_range size
+
+            % concat types and selected
+            obj.samplemarks.type = [obj.samplemarks.type; ...
+                                    ones(n_added_marks, 1) * marktype_idx];
+            obj.samplemarks.selected = [obj.samplemarks.selected; sample_range];
+
+            add_relinfo = zeros(n_added_marks, 3);
+            add_indata = false(n_added_marks, 1);
+            for idx = 1:n_added_marks
+                this_mrk = sample_range(idx, :);
+                overlap = (this_mrk(1) <= obj.epoch.sampleinfo(:, 2)) & ...
+                          (this_mrk(2) >= obj.epoch.sampleinfo(:, 1));
+                epoch_idx = find(overlap);
+                % currenly ignore muli-epoch spanning artifacts...
+                if ~isempty(epoch_idx)
+                    epoch_idx = epoch_idx(1);
+                end
+                add_indata(idx) = ~isempty(epoch_idx);
+                if add_indata(idx)
+                    add_relinfo(idx, :) = [...
+                      this_mrk - obj.epoch.sampleinfo(epoch_idx, 1), epoch_idx];
+                end
+            end
+            obj.samplemarks.indata = [obj.samplemarks.indata; add_indata];
+            obj.samplemarks.reldata = [obj.samplemarks.reldata; add_relinfo];
         end
 
 
@@ -816,21 +905,15 @@ classdef fastplot < handle
     % PRIVATE METHODS
     % ---------------
     methods (Access = private)
-        
+
         function arg_parser(obj, args)
             % helper function that lets to parse matlab style arguments
             % (why oh why matlab doesn't have named function arguments?)
-            
+
             obj.opt.vim = false;
             obj.opt.show = true;
             obj.opt.data2 = [];
-            obj.opt.ecol =[    0         0.4470    0.7410; ...
-                               0.8500    0.3250    0.0980; ...
-                               0.9290    0.6940    0.1250; ...
-                               0.4940    0.1840    0.5560; ...
-                               0.4660    0.6740    0.1880; ...
-                               0.3010    0.7450    0.9330; ...
-                               0.6350    0.0780    0.1840];
+            obj.opt.ecol =[0, 0, 0];
 
             if isempty(args)
                 return
@@ -899,21 +982,29 @@ classdef fastplot < handle
             obj.h.backpatches = [];
             obj.h.epochnumbers = [];
             obj.h.topofigure = [];
-            
+
+            % FIXME - this is already in one place else - a function for
+            %         such updates?
+            % check what epoch limits are in range
+            ep = epochlimits_in_range(obj);
+            ep.latency = ep.latency - obj.window.lims(1);
+            obj.epoch.current_limits = ep.latency;
+            obj.epoch.current_nums = ep.nums;
+
             % plot data
             % ---------
             % CHANGE
             % use 'ColorOrder' to set color of electrodes
-            dat = obj.(obj.opt.readfield{obj.opt.readfrom}) * ...
-                obj.opt.signal_scale;
-            chan_pos = (1:obj.data_size(2))*obj.spacing;
-            dat = bsxfun(@minus, dat(obj.window.span, :), chan_pos);
+            dat = obj.(obj.opt.readfield{obj.opt.readfrom});
+            chan_pos = (1:obj.data_size(2)) * obj.spacing;
+            dat = bsxfun(@minus, dat(obj.window.span, :) * ...
+                         obj.opt.signal_scale, chan_pos);
             hold on; % hold is set so that plot uses ColorOrder
             obj.h.lines = plot(dat, 'HitTest', 'off', ...
                 'Parent', obj.h.ax, 'LineWidth', 1);
             if any(obj.opt.badchan)
-                set(obj.h.lines(obj.opt.badchan), 'LineWidth', 2, ...
-                    'Color', [1, 0, 0]);
+                set(obj.h.lines(obj.opt.badchan), 'LineWidth', 0.25, ...
+                    'Color', obj.opt.badchan_color);
             end
             hold off;
 
@@ -1007,6 +1098,16 @@ classdef fastplot < handle
                     obj.marks.current  = 1;
                     obj.marks.selected = false(1, obj.epoch.num);
                     obj.marks.lastclick = 0;
+                end
+
+                % add empty samplemarks
+                if ~isfield(obj, 'samplemarks') || isempty(obj.samplemarks)
+                    obj.samplemarks.name = {};
+                    obj.samplemarks.color = [];
+                    obj.samplemarks.type = [];
+                    obj.samplemarks.selected = [];
+                    obj.samplemarks.indata = [];
+                    obj.samplemarks.reldata = [];
                 end
 
                 % set mark limits
@@ -1113,9 +1214,9 @@ classdef fastplot < handle
         function plot_epochlimits(obj)
             % FIXME, DOCS - add docs
 
-            if ~isempty(ep)
+            if ~isempty(obj.epoch.current_limits)
                 drawnlims = length(obj.h.epochlimits);
-                newlims = length(ep.latency);
+                newlims = length(obj.epoch.current_limits);
 
                 plot_diff = newlims - drawnlims;
 
@@ -1130,7 +1231,7 @@ classdef fastplot < handle
                 drawnew = max([0, plot_diff]);
 
                 ylm = obj.h.ylim + [-20, 20];
-                xDat = repmat(ep.latency, [2, 1]);
+                xDat = repmat(obj.epoch.current_limits, [2, 1]);
                 yDat = repmat(ylm', [1, newlims]);
 
                 % change those present
@@ -1200,9 +1301,12 @@ classdef fastplot < handle
                 pattern{16,2} = {@obj.move, -1, 'window'};
             end
 
-            % initialize 
+            pattern{17, 1} = {'x'};
+            pattern{17, 2} = {@obj.change_click_mode};
+
+            % initialize
             km.register(pattern);
-            
+
             % connect keyboard manager to windowkeypress callback
             set(obj.h.fig, 'WindowKeyPressFcn', @(o, e) km.read(e));
             obj.keys = km;
@@ -1215,19 +1319,17 @@ classdef fastplot < handle
             % axesHandle  = get(objectHandle,'Parent');
             coord = get(obj.h.ax, 'CurrentPoint');
             coord = coord(1, 1:2);
-            % fprintf('x: %1.2f, y: %1.2f\n', coord(1), coord(2));
 
             % test where x is located relative to epoch.current_limits
             if obj.epoch.mode
-                x = coord(1);
 
                 % check selection type
                 selection_type = get(obj.h.fig, 'SelectionType');
-                % 'normal': left-click
-                % 'open': double-click
-                % 'alt': right-click
-                % 'extend': left and right together
+                % 'normal': left-click, 'open': double-click, 'alt': right-click,
+                % 'extend': left and right together (who uses that?)
 
+                x = coord(1);
+                modifiers = get(obj.h.fig, 'currentModifier');
                 if x > 0
                     % epoch clicking
                     if any(strcmp(selection_type, {'normal', 'extend'}))
@@ -1241,66 +1343,23 @@ classdef fastplot < handle
                         selected = obj.epoch.current_nums(...
                             find(x > epoch_lims, 1, 'last'));
 
-                        c = obj.marks.current;
-
-                        modifiers = get(obj.h.fig, 'currentModifier');
-                        if length(modifiers) == 1 && strcmp(modifiers{1}, 'shift') ...
-                            && obj.marks.lastclick(c) > 0 && ~(obj.marks.lastclick(c) ...
-                            == selected)
-                            if obj.marks.lastclick(c) > selected
-                                ind = selected:(obj.marks.lastclick(c) - 1);
-                            else
-                                ind = (obj.marks.lastclick(c) + 1):selected;
-                            end
-                        else
-                            ind = selected;
+                        % marks mode - select full epoch
+                        % ------------------------------
+                        if strcmp(obj.opt.click_mode, 'epoch')
+                            mark_full_epoch(obj, selected, modifiers)
+                        elseif strcmp(obj.opt.click_mode, 'channel')
+                            clicked_chan = which_chan_clicked(obj, coord);
+                            mark_channel_in_epoch(obj, selected, clicked_chan);
                         end
 
-                        % update lastclick
-                        obj.marks.lastclick(c) = selected;
-
-                        % revert activated windows
-                        obj.marks.selected(c, ind) = ...
-                            logical(1 - obj.marks.selected(c, ind));
-
-                        % plot the change
-                        obj.plot_marks();
                     elseif strcmp(selection_type, 'alt')
-                        % check which datapoint this is:
-                        data_ind = obj.window.span(round(x));
-                        chan_data = obj.(obj.opt.readfield{obj.opt.readfrom})(data_ind, :);
-                        if isempty(obj.h.topofigure) || ~ishandle(obj.h.topofigure)
-                            obj.h.topofigure = figure('toolbar', 'none', ...
-                                'menubar', 'none', 'units', 'normalized', ...
-                                'Position', [0.05, 0.8, 0.11, 0.16], ...
-                                'WindowKeyPressFcn', @(o,e) figure(obj.h.fig));
-                        end
-                        figure(obj.h.topofigure);
-                        cla;
-                        if obj.opt.has_locs
-                            topoplot(chan_data, obj.opt.chanloc);
-                        end
+                        plot_topo_for_timepoint(obj, x)
                     end
                 else
-                    % click on the left side
-                    y = coord(2);
-                    ylm = obj.h.ylim;
-                    fromtop = 1 - abs(ylm(1) - y) / diff(ylm);
-                    clicked_chan = round(fromtop * obj.opt.nbchan);
-                    if obj.opt.badchan(clicked_chan)
-                        obj.opt.badchan(clicked_chan) = false;
-                        set(obj.h.lines(clicked_chan), 'color', ...
-                            obj.opt.ecol(clicked_chan, :), ...
-                            'LineWidth', 1);
-                    else
-                        obj.opt.badchan(clicked_chan) = true;
-%                         newcol = sum([...
-%                             obj.opt.ecol(clicked_chan, :) * 0.3; ...
-%                             [0.7, 0.7, 0.7] * 0.7], 1);
-                        newcol = [1, 0, 0];
-                        set(obj.h.lines(clicked_chan), 'color', newcol, ...
-                            'LineWidth', 2);
-                    end
+                    % click on the left side - mark channel as bad
+                    % --------------------------------------------
+                    clicked_chan = which_chan_clicked(obj, coord);
+                    mark_channel(obj, clicked_chan);
                 end
             end
         end
@@ -1323,13 +1382,46 @@ classdef fastplot < handle
 
             % get selected epochs
             epoch_lims = obj.epoch.current_limits;
-            epoch_num = obj.epoch.current_nums;
-            selected  = obj.marks.selected(:, epoch_num);
-            num_selected = sum(sum(selected));
-            
+            epochs_visible = obj.epoch.current_nums;
+            marked_epochs = obj.marks.selected(:, epochs_visible);
+            num_marked_epochs = sum(sum(marked_epochs));
+
+            % FIXME - adding left and right edges shouldn't be necessary
+            %         it could be automatically in current epochs info
+            %         or could never be - and then the checks would not be
+            %         necessary
+            % add edges to epoch_lims
+            [pre, post] = deal([]);
+            if ~(epoch_lims(1) == 0)
+                pre = 0;
+            end
+            if ~(epoch_lims(end) == obj.window.size)
+                post = obj.window.size;
+            end
+            epoch_lims = [pre, epoch_lims, post];
+
+            if ~isempty(obj.samplemarks.selected)
+                % find by visible epochs
+                visible_mask = obj.samplemarks.reldata(:, end) >= ...
+                    epochs_visible(1) & obj.samplemarks.reldata(:, end) <= ...
+                    epochs_visible(end);
+                if any(visible_mask)
+                    samplemarks_types = obj.samplemarks.type(visible_mask);
+                    samplemarks_visible = obj.samplemarks.reldata(visible_mask, :);
+                    addlim = repmat(epoch_lims(...
+                      samplemarks_visible(:, 3) - epochs_visible(1) + 1)', 1, 2);
+                    samplemarks_visible = samplemarks_visible(:, 1:2) + addlim;
+                    n_samplemarks = size(samplemarks_visible, 1);
+                else
+                    n_samplemarks = 0;
+                end
+            else
+                n_samplemarks = 0;
+            end
+
             % hide unnecessary patches
             oldnum = length(obj.h.backpatches);
-            newnum = num_selected;
+            newnum = num_marked_epochs + n_samplemarks;
             plot_diff = newnum - oldnum;
 
             if plot_diff < 0
@@ -1338,57 +1430,74 @@ classdef fastplot < handle
                     'Visible', 'off'); % maybe set HitTest to 'off' ?
             end
 
-            if any(any(selected))
+            % init vertices and colors
+            if newnum > 0
+                current_mark = 1;
+                vert = cell(newnum, 1);
+                colors = cell(newnum, 1);
+
                 reuse = min([newnum, oldnum]);
                 drawnew = max([0, plot_diff]);
 
-                % create vertices
-                % ---------------
+                if any(any(marked_epochs))
+                    % create vertices
+                    % ---------------
+                    n_marks_per_epoch = sum(marked_epochs, 1);
 
-                % add edges to epoch_lims
-                [pre, post] = deal([]);
-                if ~(epoch_lims(1) == 0)
-                    pre = 0;
-                end
-                if ~(epoch_lims(end) == obj.window.size)
-                    post = obj.window.size;
-                end
-                epoch_lims = [pre, epoch_lims, post];
+                    % the code below was changed/introduced to handle multiple
+                    % marks per window
+                    % this is ugly and probably slow, but works
+                    % FIXME, CHECK is it really slow? can we change it?
+                    %              is it worth changing?
+                    % CONSIDER - some of these computations can be done before
+                    %            plotting and saved (vertices etc.)
+                    %            plotting methods could also be chosen
+                    %            (if sub-epoch marks present, if overlapping marks
+                    %             present)
+                    for ep = 1:size(marked_epochs, 2)
+                        if n_marks_per_epoch(ep) > 0
+                            mrk_tps = find(marked_epochs(:, ep));
+                            this_y = obj.marks.num2vertx{n_marks_per_epoch(ep)};
 
-                % init vertices and colors
-                vert = cell(num_selected, 1);
-                colors = cell(num_selected, 1);
-                n_mrk_ep = sum(selected, 1);
-
-                % this is ugly and slow, but works
-                current_mark = 1;
-                for ep = 1:size(selected, 2)
-                    if n_mrk_ep(ep) > 0
-                        mrk_tps = find(selected(:, ep));
-                        this_y = obj.marks.num2vertx{n_mrk_ep(ep)};
-
-                        for mr = 1:n_mrk_ep(ep)
-                            x = epoch_lims(ep:ep+1);
-                            x = [x(:); flipud(x(:))];
-                            y = this_y(((mr-1)*2)+1:mr*2 + 2);
-                            vert{current_mark} = [x, y];
-                            colors{current_mark} = obj.marks.colors(...
-                                mrk_tps(mr), :);
-                            current_mark = current_mark + 1;
+                            for mr = 1:n_marks_per_epoch(ep)
+                                x = epoch_lims(ep:ep + 1);
+                                x = [x(:); flipud(x(:))];
+                                y = this_y(((mr - 1) * 2) + 1:mr * 2 + 2);
+                                vert{current_mark} = [x, y];
+                                colors{current_mark} = obj.marks.colors(...
+                                    mrk_tps(mr), :);
+                                current_mark = current_mark + 1;
+                            end
                         end
                     end
+
+                    % the code below seems to be uncommented because multiple marks
+                    % per epoch were easier to implement using what is now shown
+                    % above
+                    % TODO - the code below was nice, multimark should
+                    %        go back to something similar
+                    %
+                    % vert = repmat(ylm([1, 1, 2, 2])', [1, newnum*2]);
+                    % sel = [marked_epochs; marked_epochs + 1];
+                    % x = reshape(epoch_lims(sel(:)), [2, numel(sel)/2]);
+                    % vert(:,1:2:end) = [x; flipud(x)];
+                    % vert = mat2cell(vert, 4, ones(newnum, 1) * 2)';
+
+                    % faces are always 1:4 so need to init
                 end
 
-                % TODO - the code below was nice, multimark should
-                %        go back to something similar
-                %
-                % vert = repmat(ylm([1, 1, 2, 2])', [1, newnum*2]);
-                % sel = [selected; selected + 1];
-                % x = reshape(epoch_lims(sel(:)), [2, numel(sel)/2]);
-                % vert(:,1:2:end) = [x; flipud(x)];
-                % vert = mat2cell(vert, 4, ones(newnum, 1) * 2)';
-
-                % faces are always 1:4 so need to init
+                if n_samplemarks > 0
+                    for mr = 1:n_samplemarks
+                        x = samplemarks_visible(mr, :);
+                        x = [x(:); flipud(x(:))];
+                        y = [obj.h.ylim(1); obj.h.ylim(1); ...
+                             obj.h.ylim(2); obj.h.ylim(2)];
+                        vert{current_mark} = [x, y];
+                        colors{current_mark} = obj.samplemarks.color(...
+                            samplemarks_types(mr), :);
+                        current_mark = current_mark + 1;
+                    end
+                end
 
                 % CHANGE:
                 % change those present
@@ -1447,8 +1556,7 @@ classdef fastplot < handle
 
             if numep > 0
                 % get necessary info to plot:
-                labelX = mean([0, epoch_lims(1:end-1); ...
-                epoch_lims], 1)';
+                labelX = mean([0, epoch_lims(1:end-1); epoch_lims], 1)';
                 labelY = double(repmat(obj.spacing, [numep, 1]));
                 strVal = arrayfun(@num2str, epoch_num, 'UniformOutput', false)';
 
@@ -1496,6 +1604,13 @@ classdef fastplot < handle
             end
         end
 
+        function change_click_mode(obj)
+            if strcmp(obj.opt.click_mode, 'epoch')
+                obj.opt.click_mode = 'channel';
+            elseif strcmp(obj.opt.click_mode, 'channel')
+                obj.opt.click_mode = 'epoch';
+            end
+        end
     end
 end
 
@@ -1504,4 +1619,147 @@ end
 function verty = create_vert_y(x, ylim)
     verty = repmat(linspace(ylim(1), ylim(2), x+1), [2, 1]);
     verty = verty(:);
+end
+
+function chan_ind = which_chan_clicked(plt, coord)
+    y = coord(2);
+    ylm = plt.h.ylim;
+    fromtop = 1 - abs(ylm(1) - y) / diff(ylm);
+    chan_ind = round(fromtop * (plt.opt.nbchan + 1));
+end
+
+function mark_full_epoch(plt, selected, modifiers)
+    c = plt.marks.current;
+    if length(modifiers) == 1 && strcmp(modifiers{1}, 'shift') ...
+        && plt.marks.lastclick(c) > 0 && ~(plt.marks.lastclick(c) ...
+        == selected)
+        if plt.marks.lastclick(c) > selected
+            ind = selected:(plt.marks.lastclick(c) - 1);
+        else
+            ind = (plt.marks.lastclick(c) + 1):selected;
+        end
+    else
+        ind = selected;
+    end
+
+    % update lastclick
+    plt.marks.lastclick(c) = selected;
+
+    % revert activated windows
+    plt.marks.selected(c, ind) = ...
+        logical(1 - plt.marks.selected(c, ind));
+
+    % plot the marks
+    plt.plot_marks();
+end
+
+function plot_topo_for_timepoint(plt, x)
+    % check which datapoint this is:
+    data_ind = plt.window.span(round(x));
+    chan_data = plt.(plt.opt.readfield{plt.opt.readfrom})(data_ind, :);
+
+    % create topo figure if it is not present
+    if isempty(plt.h.topofigure) || ~ishandle(plt.h.topofigure)
+        plt.h.topofigure = figure(...
+            'toolbar', 'none', 'menubar', 'none', 'units', 'normalized', ...
+            'Position', [0.05, 0.8, 0.11, 0.16], 'WindowKeyPressFcn', ...
+            @(o,e) figure(plt.h.fig));
+    end
+
+    % activate figure and clear
+    figure(plt.h.topofigure);
+    cla;
+
+    % plot topography
+    if plt.opt.has_locs
+        % CONSIDER - allow fieldtrip's topoplot
+        topoplot(chan_data, plt.opt.chanloc);
+    end
+end
+
+function mark_channel(plt, clicked_chan)
+    if plt.opt.badchan(clicked_chan)
+        % turn back to good channel
+        plt.opt.badchan(clicked_chan) = false;
+        set(plt.h.lines(clicked_chan), 'color', ...
+            plt.opt.ecol(clicked_chan, :), ...
+            'LineWidth', 1);
+    else
+        % turn to bad channel
+        plt.opt.badchan(clicked_chan) = true;
+        % FIXME - this should use bad channel color arg from
+        %         db...
+        % FIXME - z order should be also changed when turning
+        %         channel bad
+        newcol = [1, 0, 0];
+        set(plt.h.lines(clicked_chan), 'color', newcol, ...
+            'LineWidth', 2);
+    end
+end
+
+function mark_channel_in_epoch(plt, selected, clicked_chan)
+        if plt.opt.badchan_inepoch(clicked_chan, selected)
+        % turn back to good channel
+        plt.opt.badchan_inepoch(clicked_chan, selected) = false;
+        % FIXME - change visual state directly here
+    else
+        % turn to bad channel
+        plt.opt.badchan_inepoch(clicked_chan, selected) = true;
+        % FIXME - change visual state directly here
+        % FIXME - this should use bad channel color arg from
+        %         db...
+        % FIXME - z order should be also changed when turning
+        %         channel bad
+    end
+    % FIXME - could be made more optimal later (to refresh only what needs
+    %         to be refreshed, not all signals)
+    plt.refresh('signal');
+end
+
+function refresh_badchan_inepoch(plt, dat)
+    epoch_span = plt.epoch.current_nums;
+    bads = plt.opt.badchan_inepoch(:, epoch_span);
+    n_bads_epoch = sum(bads, 1);
+    n_bads = sum(n_bads_epoch);
+
+    % remove previous bad lines
+    if isfield(plt.h, 'badlines') && ~isempty(plt.h.badlines)
+        for idx = 1:length(plt.h.badlines)
+            % FIXME - can this be done without a loop?
+            delete(plt.h.badlines{idx});
+        end
+    end
+    if n_bads > 0
+        % FIXME - dat should always have the same type here
+        if iscell(dat)
+            n_pnts = length(dat{1});
+        else
+            n_pnts = size(dat, 1);
+        end
+        epoch_limits = [0, plt.epoch.current_limits, n_pnts];
+        % plot bad channels in epoch
+        hold on; % <- FIXME, this should be set for the fastplot figure
+        plt.h.badlines = cell(sum(n_bads_epoch > 0), 1);
+
+        % plot the lines
+        line_idx = 0;
+        for epoch_idx = find(n_bads_epoch)
+            line_idx = line_idx + 1;
+            ch_idx = find(bads(:, epoch_idx));
+            lims1 = epoch_limits(epoch_idx) + 1;
+            lims2 = epoch_limits(epoch_idx + 1);
+
+            % FIXME - one dat type only
+            if iscell(dat)
+                data_to_plot = [dat{ch_idx}];
+                data_to_plot = data_to_plot(lims1:lims2, :);
+            else
+                data_to_plot = dat(lims1:lims2, ch_idx);
+            end
+            plt.h.badlines{line_idx} = plot(...
+                lims1:lims2, data_to_plot, 'color', [0.75, 0.75, 0.75], ...
+                'HitTest', 'off', 'Parent', plt.h.ax, 'LineWidth', 2.5);
+        end
+        hold off;
+    end
 end
