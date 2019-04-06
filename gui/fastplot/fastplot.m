@@ -1,58 +1,65 @@
 classdef fastplot < handle
-    
+
     % FASTPLOT is a fast and friendly signal plotter.
-    % It has full keyboard support, with some vim-like
-    % features (see 'keyboard shortcuts' section).
-    % 
+    % It has full keyboard support, with some vim-like features
+    % (see'keyboard shortcuts' section for details).
+    %
+    % Basic usage:
     % plt = fastplot(EEG);
     %
-    % input
-    % -----
+    % arguments
+    % ---------
     % EEG - eeglab EEG structure, must have following fields:
     %    .data
     %    .srate
-    %    .epoch
-    %    .event
+    %    .event  (with subfields: 'latency' and 'type')
     %    .times
     %
-    % optional input
-    % --------------
-    % second EEG can be given ....
+    % optional arguments
+    % ------------------
+    % second EEG struct can be given to compare between the two using up/down
+    % buttons to switch between the first and second file given.
     %
-    % key-value options
-    % -----------------
-    % 'show' - whether to immediately plot the signal
+    % key-value arguemnts
+    % -------------------
+    % 'show' - *logical*, whether to immediately plot the signal
+    %          default: true
     % 'ecol' - electrode color cycle
     % 'vim' - *logical*, whether vim keybindings are active
     %         (more information in 'keyboard shortcuts' section)
     %         default: true
-    % 'data2' - *structure* second dataset to compare with the
-    %           first one. It must be an EEG structure of the
-    %           same size as the first EEG passed. If data2 is
-    %           passed the user can switch between viewing one
-    %           or the other of the two datasets with up/down
-    %           key presses (or k/j if vim mode is on)
+    % 'data2' - *structure* second dataset to compare with the first one. It
+    %           must be an EEG structure of the same size as the first EEG
+    %           passed. If data2 is passed the user can switch between viewing
+    %           one or the other of the two datasets with up/down key presses
+    %           (or k / j if vim mode is on <- is that really true)
+    % 'sampleinfo' - *array*, epoch sample info - defining epoch limits in
+    %                         samples of the original raw file
     %
     % examples
     % --------
     % run fastplot with vim keybindings on:
-    % plt = fastplot(EEG, 'vim', true);
-    %    
-    % run fastplot comparing two datasets (for example
-    % one with all components and the other with a sub-
-    % set of components removed):
-    % plt = fastplot(EEG, EEG2);
+    % > plt = fastplot(EEG, 'vim', true);
+    %
+    % run fastplot comparing two datasets (for example one with all components
+    % and the other with a sub-set of components removed):
+    % > plt = fastplot(EEG, EEG2);
     %
     % the same as above can be also done with key-value pairs:
-    % plt = fastplot(EEG, 'data2', EEG2);
+    % > plt = fastplot(EEG, 'data2', EEG2);
     %
-    % output
-    % ------
-    % the output is a fastplot object. Below you can find the
-    % description of its properties and methods.
+    % returns
+    % -------
+    % plt : fastplot instance
+    %     the output is a fastplot object. Below you can find the description
+    %     of its properties and methods.
     %
-    % fastplot properties:
-    % --------------------
+    % fastplot properties
+    % -------------------
+    % ! warning ! these properties should not be modified directly (unless you
+    %             really know what you are doing) - its much better to use
+    %             designated methods for that
+    %
     % h        -  structure of handles to:
     %     fig         - fastplot figure
     %     ax          - axis with eeg signal
@@ -64,6 +71,7 @@ classdef fastplot < handle
     %      mode    - whether signal has epochs or not (epoch mode)
     %      num     - how many epochs are present in the data
     %      limits  - what are the limits of each epoch
+    %                (FIXME - limits should be taken as in fieldtrip)
     %
     % marks    -  structure containing information about marks
     %             (marks should optimally have different name AND color)
@@ -72,16 +80,24 @@ classdef fastplot < handle
     %     colors      - M by 3 matrix of mark colors (M - number of marks)
     %     current     - integer; informs which mark is currently selected
     %     selected    - M by E boolean matrix; informs which epochs are marked
-    %                   with which mark types (M - number of marks, E - number
-    %                   of epochs)
+    %                   with which mark types (M - number of mark types,
+    %                   E - number of epochs)
+    %     samples     - m x 4 matrix of selections entered in sample limits
+    %                   where the rows denote consecutive marks (m - all
+    %                   marked segments, not mark types) and columns represent:
+    %                   [start sample, end sample, mark_type, which_epoch]
     % opt      -  various options, including:
     %    .step    - step values for different movement and scaling types:
-    %         .epoch_move
-    %         .epoch_scale
-    %         .signal_scale
-    %    .
+    %         .move - FIXME
+    %         .move_unit - FIXME
+    %         .epoch_move - FIXME
+    %         .epoch_scale - FIXME
+    %         .signal_scale - FIXME
+    %    .nbchan - FIXME
+    %    .badchan - FIXME
     % keys     -  a KeyboardManager instance - it is responsible for keyboard
-    %             interactions with the gui including sequences of key presses
+    %             interactions with the gui including processing of sequences
+    %             of key presses
     %
     % fastplot methdos
     % ----------------
@@ -90,15 +106,14 @@ classdef fastplot < handle
     % windowsize
     % mark
     % use_mark
-    % ...
+    % ... FIXME
     %
     % keyboard shortcuts
     % ------------------
     %
     % 1. movement-like commands:
-    % movement-like commands can be prepended with
-    % a numerical value to be evaluated that
-    % number of times
+    % movement-like commands can be prepended with a numerical value to be
+    % evaluated that number of times (3w -> move three windows right)
     % left arrow - go one unit left
     % right arrow - go one unit right
     % b - move one window left
@@ -108,7 +123,7 @@ classdef fastplot < handle
     % e= - extend the view length by one epoch
     % e- - shorten the view length by one epoch
     %
-    % 2.
+    % 2. FIXME
     %
 
     % REMEMBER
@@ -137,14 +152,15 @@ classdef fastplot < handle
         scrollmethod
         opt    % options (what goes here?)
     end
-    
+
     % TODOs:
+    % ------
     % USABILITY:
-    % [ ] - continuous mode
-    % [ ] - remove ticks for epochs (or set epoch-relevant ticks)
     % [ ] - time scroll bar at the bottom (turn on and off)
     % [ ] - turn off specific event labels/lines
     % [ ] - channel scroll?
+    % [ ] - continuous mode
+    % [ ] - remove ticks for epochs (or set epoch-relevant ticks)
     % PERFORMANCE-RELATED:
     % [ ] - downsampled mode?
     % [ ] - check profiling and then only worry about optimisation
@@ -152,12 +168,13 @@ classdef fastplot < handle
     %       cell arrays of strings
     % [ ] - check plotting against graphics performance tips:
     % http://www.mathworks.com/help/matlab/graphics-performance.html
-    
+
     % PUBLIC METHODS
     % --------------
     methods
-        
+
         function obj = fastplot(EEG, varargin)
+            % initialize FASTPLOT object.
 
             % default opt settings
             obj.opt.step.move_unit = 'epoch';
@@ -190,6 +207,7 @@ classdef fastplot < handle
                 signal_ind = varargin{where + 1};
             end
 
+            % FIXME - in the future there should be no need to segment
             % segment if continuous
             if length(size(EEG.data)) < 3
                 EEG = segment_eeg(EEG);
@@ -280,9 +298,24 @@ classdef fastplot < handle
 
 
         function refresh(obj, elements, mthd)
-            % refresh fastplot window
+            % refresh the fastplot window.
+            %
+            % > plt.refresh(element, mthd)
+            %
+            % Parameters
+            % ----------
+            % element : str or cell array of str, optional
+            %     Which elements should be updated. Can be 'all' or one of the
+            %     following: {'signal', 'events', 'limits', 'marks', 'epochnum'}
+            %     By default all elements are refreshed.
+            % mthd : str, optional
+            %     Refresh method. Mostly used for performance checks. Can be
+            %     one of the following: 'replot', 'set', 'loopset'
+            %     Default can be set through scrollmethod property of fastplot
+            %     instance.
 
-            % CHANGE maybe should check if sth actually changed
+            % CONSIDER maybe refresh should check if sth actually changed
+            %          and should be refreshed?
 
             % during re-plotting:
             % always use set 'XData', 'YData'
@@ -331,30 +364,37 @@ classdef fastplot < handle
                                 dat(:, i), 'HitTest', 'off');
                         end
                 end
+                refresh_badchan_inepoch(obj, dat);
             end
-            if refresh_elem(2); obj.plotevents(); end;
-            if refresh_elem(3); obj.plot_epochlimits(); end;
-            if refresh_elem(4); obj.plot_marks(); end;
-            if refresh_elem(5); obj.plot_epoch_numbers(); end;
+            if refresh_elem(2); obj.plotevents(); end
+            if refresh_elem(3); obj.plot_epochlimits(); end
+            if refresh_elem(4); obj.plot_marks(); end
+            if refresh_elem(5); obj.plot_epoch_numbers(); end
             % timetaken = toc;
             % fprintf('time taken: %f\n', timetaken);
         end
-        
-        
-        function move(obj, value, unit, mlt)
-            % move the current view a number of units.
-            %
-            % fastplot.move(value, unit)
-            % 
-            % value:
-            % positive value indicates forward motion
-            % negative value indicates backward motion
-            %
-            % unit:
-            % 'epoch'
-            % 'window'
 
-            % CHANGE - mlt is temporary
+
+        function move(obj, value, unit, mlt)
+            % MOVE the current view a number of units.
+            %
+            % > plt.move(value, unit)
+            %
+            % Parameters
+            % ----------
+            % value: int, optional
+            %     positive value indicates forward motion
+            %     negative value indicates backward motion
+            %     The default is to move by one unit.
+            % unit: str, optional
+            %     Unit to use in movement. Can be 'epoch' or 'window'.
+            %     By default uses window.step property of fastplot instance.
+            % mlt : int, optional
+            %     Additional argument used for vim mode movement. Defines
+            %     multiplication of the value argument. In vim mode this is
+            %     used internally to allow for `3w` to move by three windows.
+
+            % CHANGE - mlt is temporary?
             % ADD - mode of window.step?
 
             if ~exist('value', 'var')
@@ -368,7 +408,8 @@ classdef fastplot < handle
                     && value > 0)
                 return
             end
-            
+
+            % check whether variables are present
             if ~exist('mlt', 'var')
                 mlt = 1;
             end
@@ -377,7 +418,7 @@ classdef fastplot < handle
             elseif strcmp(unit, 'window')
                 unit = obj.window.size;
             end
-            
+
             % create and test new window limits
             wlims = obj.window.lims + mlt * value * unit;
             if value > 0 && wlims(2) > obj.data_size(1)
@@ -394,10 +435,17 @@ classdef fastplot < handle
         end
 
         function move_to_mark(obj, mark, whichone)
-            % move view to specific (next/previous) mark
+            % MOVE_TO_MARK - move view to specific (next/previous) mark.
             %
-            % plt = fastplot(EEG)
-            % plt.move_to_mark('badchan', 'next')
+            % > plt = fastplot(EEG)
+            % > plt.move_to_mark('badchan', 'next')
+            %
+            % Parameters
+            % ----------
+            % mark : str
+            %     Name of the mark type to move to.
+            % whichone : str
+            %     Direction of movement: 'next' or 'previous'.
 
             % check mark
             if ~exist('mark', 'var') || isempty(mark)
@@ -434,11 +482,10 @@ classdef fastplot < handle
         end
 
 
-        % maybe should be private? :
+        % CONSIDER - maybe this function should be private? :
         function ev = events_in_range(obj, rng)
-            % gives latency of events that are
-            % present within given range. If no range
-            % is given, the range of current fastplot
+            % EVETNS_IN_RANGE gives latency of events that are present within
+            % given range. If no range is given, the range of current fastplot
             % view is taken.
             %
             % default - range in samples
@@ -463,6 +510,14 @@ classdef fastplot < handle
 
 
         function scale_signal(obj, val, num)
+            % SCALE_SIGNAL - scale the signal traces.
+            %
+            % Parameters
+            % ----------
+            % val : FIXME
+            %     FIXME
+            % num : FIXME
+            %     FIXME
 
             if ~exist('num', 'var')
                 num = 1;
@@ -477,10 +532,9 @@ classdef fastplot < handle
 
 
         function ep = epochlimits_in_range(obj, rng)
-            % gives latency of epoch limits that are
-            % present within given range. If no range
-            % is given, the range of current fastplot
-            % view is taken.
+            % gives latency of epoch limits that are present within given
+            % range. If no range is given, the range of current fastplot view
+            % is taken.
             %
             % default - range in samples
             % default - range from winlim
@@ -508,6 +562,7 @@ classdef fastplot < handle
 
 
         function windowsize(obj, val, num)
+            % FIXME - add description
             if ~exist('val', 'var')
                 val = 1;
             end
@@ -529,6 +584,7 @@ classdef fastplot < handle
         end
 
         function set_window(obj, varargin)
+            % FIXME - add description
             if isstruct(varargin{1})
 
             % this will need some safty checks etc.
@@ -545,9 +601,10 @@ classdef fastplot < handle
         end
 
         function add_mark(obj, mark)
-            % allows to add new mark types to fastplot
-            % this does not mark epochs but adds new mark types 
-            % 
+            % allows to add new mark types to fastplot.
+            % Note that this method does not mark epochs but adds new mark
+            % types instead.
+            %
             % Arguments:
             % mark  - structure containing fields:
             %     name - string; name of the mark
@@ -583,10 +640,10 @@ classdef fastplot < handle
                 return
             end
 
-            % CONSIDER: pass mark to _add_mark 
+            % FIXME - CONSIDER: pass mark to _add_mark
             %           (private function without safety checks)
 
-            % CHANGE - check color too
+            % FIXME - CHANGE - check color too
 
             % add mark to obj.marks
             obj.marks.names{end + 1} = mark.name;
@@ -604,6 +661,7 @@ classdef fastplot < handle
 
 
         function gui_add_mark(obj)
+            % FIXME - add description
             % ask for mark name:
             markname = gui_editbox('', {'Type mark name'; 'here:'});
             marknames = obj.marks.names;
@@ -618,7 +676,7 @@ classdef fastplot < handle
             while any(strcmp(markname, marknames))
                 markname = gui_editbox('', {'This name is already in use.'; ...
                     'Please, try another.'});
-                
+
                 % if user aborts do not go any further
                 if isempty(markname)
                     return
@@ -647,13 +705,15 @@ classdef fastplot < handle
 
 
         function use_mark(obj, mark)
-            % allows to select given mark type as currently active.
-            % 
-            % Arguments:
-            % mark - integer indicating which mark type to activate or
+            % USE_MARK allows to select given mark type as currently active.
+            %
+            % Arguments
+            % ---------
+            % mark - *integer* indicating which mark type to activate or
             %        string with mark name
             %
-            % Example:
+            % Example
+            % -------
             % p = fastplot(EEG);
             % new_mark.name = 'new mark';
             % new_mark.color = [0.4, 0.7, 0.2];
@@ -709,8 +769,19 @@ classdef fastplot < handle
         end
 
 
+        % CONSIDER mark -> mark_epochs
         function mark(obj, mark_type, epoch_ind)
-            % MARK allows to mark specific epochs with given mark type
+            % MARK allows to mark specific epochs with given mark type.
+            %
+            % > plt.mark(mark_type, epoch_ind)
+            %
+            % Parameters
+            % ----------
+            % mark_type : str
+            %     Name of mark type.
+            %
+            % epoch_ind : int | vec of int
+            %     Epoch indices to mark .
 
             % check if mark type is present
             mark_ind = find(strcmp(mark_type, obj.marks.names));
@@ -785,10 +856,11 @@ classdef fastplot < handle
                 obj.opt.readfield(end + 1) = {'data2'};
             end
         end
-                    
+
 
         function launchplot(obj)
-            % figure setup
+            % LAUNCHPLOT - figure setup
+
             ss = obj.opt.scrsz;
             midpoint = round(ss(2)/2);
             edges_relative2midpoint = [-midpoint + 50, midpoint - 50];
@@ -811,7 +883,7 @@ classdef fastplot < handle
             if isempty(obj.opt.ecol)
                 obj.opt.ecol = [1. 1. 1.];
             end
-            
+
             % if ecol is < n_chan, rep it
             numrep = ceil(obj.opt.nbchan / size(obj.opt.ecol, 1));
             obj.opt.ecol = repmat(obj.opt.ecol, [numrep, 1]);
@@ -871,9 +943,11 @@ classdef fastplot < handle
             set(obj.h.ax, 'ButtonDownFcn', @(h, e) obj.onButtonPress());
             set(obj.h.fig, 'ButtonDownFcn', @(h, e) obj.onButtonPress());
         end
-        
-        
+
+
         function get_epoch(obj, EEG, orig_size)
+            % FIXME, DOCS - what does it do
+
             has_events = ~isempty(EEG.event);
             if has_events
                 obj.event.latency = [EEG.event.latency];
@@ -882,7 +956,7 @@ classdef fastplot < handle
             end
 
             % code event types with integers
-            
+
             if has_events
                 temptype = {EEG.event.type};
                 obj.event.alltypes = unique(temptype);
@@ -898,7 +972,7 @@ classdef fastplot < handle
                     obj.event.type(type2ind{i}) = i;
                 end
 
-                % make sure that event names have \_ in place 
+                % make sure that event names have \_ in place
                 % of _ because matlab renders it as lower index
                 % CONSIDER - alltypes (rawtypes) vs disptypes
                 obj.event.alltypes = cellfun(@(x) strrep(x, '_', '\_'), ...
@@ -925,6 +999,7 @@ classdef fastplot < handle
                 obj.epoch.limits     = orig_size(2):orig_size(2):...
                     obj.data_size(1) + obj.opt.stime / 2;
 
+                % FIXME - separate function
                 % set default marks
                 if isempty(obj.marks)
                     obj.marks.names    = {'reject'};
@@ -943,6 +1018,8 @@ classdef fastplot < handle
 
 
         function plotevents(obj)
+            % FIXME, DOCS - add docs
+
             % reuse lines and labels
             numlns = length(obj.h.eventlines);
 
@@ -1034,11 +1111,7 @@ classdef fastplot < handle
 
 
         function plot_epochlimits(obj)
-            % check what epoch limits are in range
-            ep = epochlimits_in_range(obj);
-            ep.latency = ep.latency - obj.window.lims(1);
-            obj.epoch.current_limits = ep.latency;
-            obj.epoch.current_nums = ep.nums;
+            % FIXME, DOCS - add docs
 
             if ~isempty(ep)
                 drawnlims = length(obj.h.epochlimits);
@@ -1065,7 +1138,7 @@ classdef fastplot < handle
                     ind = 1:reuse;
                     xDt = mat2cell(xDat(:, ind), 2, ones(reuse, 1))';
                     yDt = mat2cell(yDat(:, ind), 2, ones(reuse, 1))';
-                    
+
                     set(obj.h.epochlimits(ind), {'XData', 'YData'}, ...
                         [xDt, yDt], 'Visible', 'on');
                 end
@@ -1081,8 +1154,9 @@ classdef fastplot < handle
 
         end
 
-        
+
         function init_keypress(obj)
+            % FIXME, DOCS - add docs
 
             % get instance of KeyboardManager
             km = KeyboardManager(obj.h.fig);
@@ -1136,6 +1210,8 @@ classdef fastplot < handle
 
 
         function onButtonPress(obj)
+            % FIXME, DOCS - add docs
+
             % axesHandle  = get(objectHandle,'Parent');
             coord = get(obj.h.ax, 'CurrentPoint');
             coord = coord(1, 1:2);
@@ -1231,6 +1307,8 @@ classdef fastplot < handle
 
 
         function swap(obj, val)
+            % FIXME, DOCS - add docs
+
             % maybe change name to swapdata or dataswap
             % CHANGE - the tests should be a little more elaborate
             if length(obj.opt.readfield) > 1
@@ -1241,6 +1319,8 @@ classdef fastplot < handle
 
 
         function plot_marks(obj)
+            % PLOT_MARKS plots the marks that are withing window range.
+
             % get selected epochs
             epoch_lims = obj.epoch.current_limits;
             epoch_num = obj.epoch.current_nums;
@@ -1251,7 +1331,7 @@ classdef fastplot < handle
             oldnum = length(obj.h.backpatches);
             newnum = num_selected;
             plot_diff = newnum - oldnum;
-            
+
             if plot_diff < 0
                 inds = oldnum:-1:oldnum + plot_diff + 1;
                 set(obj.h.backpatches(inds), ...
@@ -1341,6 +1421,7 @@ classdef fastplot < handle
 
         % draw epoch numbers
         function plot_epoch_numbers(obj)
+            % plot epoch numbers over epochs.
 
             % get selected epochs
             epoch_lims = obj.epoch.current_limits;
@@ -1375,8 +1456,9 @@ classdef fastplot < handle
                 reuse = min([numeplab, numep]);
                 drawnew = max([0, plot_diff]);
 
+                % set properties of available lines and labels
+                % --------------------------------------------
                 if numeplab > 0
-                    % set available lines and labels
 
                     % create indexer
                     ind = 1:reuse;
@@ -1387,8 +1469,9 @@ classdef fastplot < handle
                         [pos, strVal(ind)], 'Visible', 'on');
                 end
 
+                % draw new lines and labels if more is needed
+                % -------------------------------------------
                 if drawnew > 0
-                    % draw new lines and labels
 
                     % create indexer
                     ind = reuse+1:(reuse + drawnew);

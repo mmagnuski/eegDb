@@ -1,10 +1,10 @@
 % Usage:
-%       >> OUTEEG = pop_selectcomps( INEEG, compnum );
+%       >> OUTEEG = compsgui( INEEG, compnum );
 %
 % Inputs:
 %   INEEG    - Input dataset
-%              May have some additional fields to allow for
-%              additional stuff (? - or db alongside ?)
+%              FIXME - May have some additional fields to allow for
+%                      additional stuff (? - or db alongside ?)
 %   compnum  - vector of component numbers
 %
 %  ---myadd---
@@ -13,9 +13,9 @@
 %              not used yet!
 %  'perfig'  - how many components to plot per figure
 %  'fill'    - ?? what was this for ??
-%  'db' ?
-%  'rsync' ?
-%  'r'    ?
+%  'db' ?      FIXME
+%  'rsync' ?   FIXME
+%  'r'    ?    FIXME
 %  'appdata' ? (handles structure etc. in case it was called from
 %               comp_explore
 %
@@ -56,7 +56,7 @@ function varargout = compsgui( varargin )
 %     .compnum (?)
 %     .topopts (?)
 %     .r
-%     .ver
+%     .ver               FIXME - is this needed?
 %     .comps
 %           .all   - all selected components
 %           .visible
@@ -142,11 +142,11 @@ if any(remvarargin)
 end
 
 
+% FIXME - what is this:
 % fig h!
 % fig_h_passed = false;
 %
 % add compnum !
-
 
 
 % INPUT PARSER

@@ -1,13 +1,21 @@
 function opt = parse_arse(varin, varargin)
 
-% currently - a simple input parser
+% Simple input parser.
 % 
-% opt = parse_arse(varin, opt);
-% opt = parse_arse(varin);
-%
+% Parameters
+% ----------
 % varin - a cell array of alternating keys and
 %         values.
 % opt   - structure with default options
+% 
+% Examples
+% --------
+% calling with one argument (cell array) turns the input into a structure
+% > opt = parse_arse(varin);
+%
+% calling with a scond argument, `opt` - a structure of expected argument-value
+% pairs - returns updated `opt`, including arguments defined in `varin`.
+% > opt = parse_arse(varin, opt);
 % 
 % see also: InputParser
 
