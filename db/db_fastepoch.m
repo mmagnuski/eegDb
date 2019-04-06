@@ -94,26 +94,31 @@ epflds(latfld) = [];
 EEG.event(1).epoch = [];
 evnt_accum         = 0;
 
+% we may have to duplicate some events, so we preallocate twice as much
+new_event = [EEG.event, EEG.event];
+current_ev_idx = 1;
+
 for e = 1:epoch_num
     % check which evnts are in this range
-    ev_mask = all_lats > epoch_lats(1,e) & all_lats < epoch_lats(2,e);
+    ev_mask = all_lats > epoch_lats(1, e) & all_lats < epoch_lats(2, e);
     num_ev  = sum(ev_mask);
-    
+    newev_idx = current_ev_idx:current_ev_idx + num_ev - 1;
+
     % check if boundary event is there:
     tps = all_tps(ev_mask);
     if any(strcmp('boundary', tps))
-        rem_ep(e) = true;
         continue
     end
     
-    % do not remove these events
-    rem_ev(ev_mask) = false;
+    % copy events from EEG.event
+    new_event(newev_idx) = EEG.event(ev_mask);
     
     % adjust events time
     sel_ev_lats = all_lats(ev_mask);
-    lt = num2cell(sel_ev_lats - epoch_lats(1,e) + (ee-1)*epoch_length + 1);
-    [EEG.event(ev_mask).latency] = deal(lt{:});
-    [EEG.event(ev_mask).epoch]   = deal(ee);
+    lt = num2cell(sel_ev_lats - epoch_lats(1, e) + (ee - 1) * ...
+                  epoch_length + 1);
+    [new_event(newev_idx).latency] = deal(lt{:});
+    [new_event(newev_idx).epoch]   = deal(ee);
     
     % fill in EEG.epoch
     EEG.epoch(ee).event = 1:num_ev + evnt_accum;
@@ -121,21 +126,22 @@ for e = 1:epoch_num
     for f = 1:numf-1
         EEG.epoch(ee).(epflds{f}) = {EEG.event(ev_mask).(flds{f})};
     end
-    
+
     % cut out a portion of the data
     epdt(:, :, e) = EEG.data(:, epoch_lats(1,e) : epoch_lats(2,e));
-    
-    % increment effective epoch
+
+    % increment effective epoch and current
     ee = ee + 1;
+    current_ev_idx = current_ev_idx + num_ev;
 end
 
-% remove epochs
+% remove epochs overlapping with boundaries
 if any(rem_ep)
-    epdt(:,:,rem_ep) = [];
+    epdt(:, :, rem_ep) = [];
 end
 
 % remove events:
-EEG.event(rem_ev) = [];
+EEG.event = new_event(1:current_ev_idx - 1);
 
 % put epoched data to EEG.data
 EEG.data = epdt;
@@ -144,5 +150,5 @@ EEG.data = epdt;
 EEG.trials = size(EEG.data, 3);
 EEG.pnts   = epoch_length;
 EEG.times  = (reallim(1):reallim(end)) * ms_per_sample;
-EEG.xmin   = EEG.times(1)/1000;
-EEG.xmax   = EEG.times(end)/1000;
+EEG.xmin   = EEG.times(1) / 1000;
+EEG.xmax   = EEG.times(end) / 1000;
