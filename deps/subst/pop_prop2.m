@@ -308,7 +308,7 @@ command = [ ...
 
 set( h.value, 'callback', command); 
 
-if isempty( EEG.stats.compenta )
+if femp(EEG, 'stats') && femp(EEG.stats, 'compenta')
 	set(h.value, 'enable', 'off');
 end
 
