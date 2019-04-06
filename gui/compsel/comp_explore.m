@@ -1169,21 +1169,21 @@ function ord=orderofmag(val)
 % used for computing erpimage trial axis tick labels as an alternative for
 % plotting sorting variable
 
-val=abs(val);
-if val>=1
-    ord=1;
-    val=floor(val/10);
-    while val>=1,
-        ord=ord*10;
-        val=floor(val/10);
+val = abs(val);
+if val >= 1
+    ord = 1;
+    val = floor(val / 10);
+    while val >= 1
+        ord = ord * 10;
+        val = floor(val / 10);
     end
     return;
 else
-    ord=1/10;
-    val=val*10;
-    while val<1,
-        ord=ord/10;
-        val=val*10;
+    ord = 1 / 10;
+    val = val * 10;
+    while val < 1
+        ord = ord / 10;
+        val = val * 10;
     end
     return;
 end
@@ -1264,7 +1264,7 @@ goodelecs = allelecs;
 goodelecs(db(h.r).chan.bad) = [];
 rejects = find([db(h.r).ICA.desc.reject]);
 
-if isempty(rejects);
+if isempty(rejects)
     h.EEG2 = h.EEG;
 else
     h.EEG2 = pop_subcomp(h.EEG, rejects, 0);

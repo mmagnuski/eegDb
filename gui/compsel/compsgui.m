@@ -558,15 +558,16 @@ for i = 1:length(compnum)
 
         % CHANGE this to checking whether
         % the figure is still alive
-        if ~strcmp(get(gcf, 'tag'), currentfigtag);
+        if ~strcmp(get(gcf, 'tag'), currentfigtag)
             disp('Aborting plot');
             return;
         end
 
         % create axes
         % CONSIDER - move axes out of the loop?
-        h.ax(i) = axes('Units','Normalized', 'Position',[X Y sizewx sizewy].*s+q,...
-            'tag', ['topoaxis', num2str(ri)], 'Visible', 'off'); %#ok<LAXES>
+        h.ax(i) = axes('Units','Normalized', 'Position', ...
+            [X Y sizewx sizewy] .* s + q, 'tag', ...
+            ['topoaxis', num2str(ri)], 'Visible', 'off');
 
 
         % axis should be square
@@ -575,9 +576,10 @@ for i = 1:length(compnum)
 
         % plot the button above
         % ---------------------
-        button_pos = [X, Y+sizewy, sizewx, sizewy*0.25] .* s+q;
-        h.button(i) = uicontrol(h.fig, 'Style', 'pushbutton', 'Units','Normalized',...
-            'Position', button_pos, 'tag', ['comp' num2str(ri)]);
+        button_pos = [X, Y + sizewy, sizewx, sizewy * 0.25] .* s + q;
+        h.button(i) = uicontrol(h.fig, 'Style', 'pushbutton', 'Units', ...
+            'Normalized', 'Position', button_pos, 'tag', ...
+            ['comp' num2str(ri)]);
     end
 
     % go to the next component
@@ -683,8 +685,8 @@ end
 
 
 function isv = isupdateval(v)
-% checks whether input is char and corresponds to
-% either 'workspace', 'eegDb gui'
+% checks whether input is char and corresponds to either 'workspace' or
+% 'eegDb gui'
 
     if ~ischar(v)
         isv = false;

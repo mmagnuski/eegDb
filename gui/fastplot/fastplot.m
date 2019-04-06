@@ -630,7 +630,7 @@ classdef fastplot < handle
             has_fields = cellfun(@(x) any(strcmp(x, flds)), needs_fields);
             if ~all(has_fields)
                 error(['fastplot add_mark error: mark structure should ',...
-                    'contain both name and color fields;']);
+                       'contain both name and color fields;']);
             end
 
             % check if the name is not present:
@@ -693,8 +693,8 @@ classdef fastplot < handle
                 badcol = any(all(bsxfun(@eq, c, markcolors), 2));
 
                 if badcol
-                    warndlg(['This color is already in use, ', ...
-                        'please choose another one.']);
+                    warndlg(['This color is already in use, please choose', ...
+                             ' another one.']);
                 end
             end
 
