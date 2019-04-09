@@ -30,7 +30,7 @@
 %   fields of the EEG datasets will be present and the current function
 %   will have some more button active to tune up the automatic rejection.
 %
-%   author:                   Mikołaj Magnuski,                     2014
+%   author:                   Miko?aj Magnuski,                     2014
 % based on: pop_selcomps.m by Arnaud Delorme, CNL / Salk Institute, 2001
 %
 % See also: pop_prop(), eeglab()
