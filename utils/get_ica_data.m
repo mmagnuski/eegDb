@@ -1,7 +1,7 @@
 function data = get_ica_data(EEG, ind)
 
-% returns EEG.icaact or calculates
-% it if it is not present
+% GET_ICA_DATA - get component timecourses
+% returns EEG.icaact or calculates it if it is not present
 
 if ~exist('ind', 'var')
     ind = 1:size(EEG.icaweights, 1);

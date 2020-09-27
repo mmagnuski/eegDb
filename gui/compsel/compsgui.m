@@ -1,10 +1,10 @@
 % Usage:
-%       >> OUTEEG = pop_selectcomps( INEEG, compnum );
+%       >> OUTEEG = compsgui( INEEG, compnum );
 %
 % Inputs:
 %   INEEG    - Input dataset
-%              May have some additional fields to allow for
-%              additional stuff (? - or db alongside ?)
+%              FIXME - May have some additional fields to allow for
+%                      additional stuff (? - or db alongside ?)
 %   compnum  - vector of component numbers
 %
 %  ---myadd---
@@ -13,9 +13,9 @@
 %              not used yet!
 %  'perfig'  - how many components to plot per figure
 %  'fill'    - ?? what was this for ??
-%  'db' ?
-%  'rsync' ?
-%  'r'    ?
+%  'db' ?      FIXME
+%  'rsync' ?   FIXME
+%  'r'    ?    FIXME
 %  'appdata' ? (handles structure etc. in case it was called from
 %               comp_explore
 %
@@ -56,7 +56,7 @@ function varargout = compsgui( varargin )
 %     .compnum (?)
 %     .topopts (?)
 %     .r
-%     .ver
+%     .ver               FIXME - is this needed?
 %     .comps
 %           .all   - all selected components
 %           .visible
@@ -126,7 +126,7 @@ remvarargin = [false, false];
 varargout_ord = {};
 if info.db_present
     where = find(isdb);
-    eegDb = varargin{where};
+    db = varargin{where};
     varargout_ord{where} = 'eegDb';
     remvarargin(where) = true;
 end
@@ -142,11 +142,11 @@ if any(remvarargin)
 end
 
 
+% FIXME - what is this:
 % fig h!
 % fig_h_passed = false;
 %
 % add compnum !
-
 
 
 % INPUT PARSER
@@ -156,18 +156,18 @@ prs.FunctionName = 'pop_selectcomps_new';
 
 % addParamValue is addParameter in new MATLAB...
 % moreover addParamValue is not recommended...
-addParamValue(prs, 'perfig',  PLOTPERFIG, @isnumeric);
-addParamValue(prs, 'fill',    true,       @islogical);
-addParamValue(prs, 'h',       [],         @isstructofhandles);
-addParamValue(prs, 'update',  'no',       @isupdateval);
-addParamValue(prs, 'rsync',   [],         @isnumeric);
-addParamValue(prs, 'r',       1,          @isnumeric);
-addParamValue(prs, 'topopts', topopts,    @isupdateval);
+addParameter(prs, 'perfig',  PLOTPERFIG, @isnumeric);
+addParameter(prs, 'fill',    true,       @islogical);
+addParameter(prs, 'h',       [],         @isstructofhandles);
+addParameter(prs, 'update',  'no',       @isupdateval);
+addParameter(prs, 'rsync',   [],         @isnumeric);
+addParameter(prs, 'r',       1,          @isnumeric);
+addParameter(prs, 'topopts', topopts,    @isupdateval);
 if ~info.EEG_present
-    addParamValue(prs, 'EEG',   [],       @isEEG);
+    addParameter(prs, 'EEG',   [],       @isEEG);
 end
 if ~info.db_present
-    addParamValue(prs, 'eegDb', [],       @iseegDb);
+    addParameter(prs, 'eegDb', [],       @iseegDb);
 end
 
 parse(prs, varargin{:});
@@ -211,7 +211,7 @@ end
 
 % if eegDb is present:
 if info.db_present
-    eegDb = params.eegDb;
+    db = params.eegDb;
 
     info.r = params.r;
 
@@ -222,20 +222,20 @@ if info.db_present
     end
 
     % icaweights
-    info.eegDbcompN = size(eegDb(info.r).ICA.icaweights, 1);
+    info.eegDbcompN = size(db(info.r).ICA.icaweights, 1);
     compnum = 1:info.eegDbcompN;
 
     % check mapping between EEG and eegDb comps:
-    info.mapping = db_get_ica_ind(EEG, eegDb(info.r));
+    info.mapping = db_get_ica_ind(EEG, db(info.r));
 
     % CHANGE
     % test for problems - when EEG does not have the same num
     %                     of components as eegDb
 
     % get chanind and put wininv and chanlocs in appdata
-    chansind = eegDb(info.r).ICA.icachansind;
-    icawinv  = eegDb(info.r).ICA.icawinv;
-    chanlocs = eegDb(info.r).datainfo.chanlocs(chansind);
+    chansind = db(info.r).ICA.icachansind;
+    icawinv  = db(info.r).ICA.icawinv;
+    chanlocs = db(info.r).datainfo.chanlocs(chansind);
 else
     chansind = EEG.icachansind;
     icawinv  = EEG.icawinv;
@@ -376,21 +376,25 @@ topocache     = [];
 
 % if eegDb passed - there
 if info.db_present
-    tst = femp(eegDb(info.r).ICA, 'topo');
+    tst = femp(db(info.r).ICA, 'topo');
     if tst
         info.ifcached = true;
-        topocache     = eegDb(info.r).ICA.topo;
+        topocache     = db(info.r).ICA.topo;
         clear tst
     end
 end
 
-if ~info.ifcached
+if ~info.ifcached && femp(EEG, 'etc')
     tst = femp(EEG.etc, 'topo');
     if tst
         info.ifcached = true;
         topocache     = EEG.etc.topo;
         clear tst
+    else
+        info.ifcached = false;
     end
+else
+    info.ifcached = false;
 end
 
 
@@ -410,18 +414,18 @@ if info.db_present
     info.comps.state = zeros(1, info.eegDbcompN);
 
     % components marked as removed
-    if femp(eegDb(info.r).ICA, 'reject')
-        info.comps.state(eegDb(info.r).ICA.reject) = 1;
+    if femp(db(info.r).ICA, 'reject')
+        info.comps.state(db(info.r).ICA.reject) = 1;
     end
 
     % components marked as selected
-    if femp(eegDb(info.r).ICA, 'select')
-        info.comps.state(eegDb(info.r).ICA.select) = 2;
+    if femp(db(info.r).ICA, 'select')
+        info.comps.state(db(info.r).ICA.select) = 2;
     end
 
     % components marked as 'maybe'
-    if femp(eegDb(info.r).ICA, 'maybe')
-        info.comps.state(eegDb(info.r).ICA.maybe) = 3;
+    if femp(db(info.r).ICA, 'maybe')
+        info.comps.state(db(info.r).ICA.maybe) = 3;
     end
 
     % select only those present in comps.all
@@ -471,7 +475,7 @@ if ~fig_h_passed
         'callback',  ' ' );
 
     % check if component statistics have been computed:
-    if isempty( EEG.stats.compenta	)
+    if femp( EEG , 'stats') && femp(EEG.stats, 'compenta')
         set(h.setthresholds, 'enable', 'off');
         set(h.seecompstats, 'enable', 'off');
     end
@@ -554,15 +558,16 @@ for i = 1:length(compnum)
 
         % CHANGE this to checking whether
         % the figure is still alive
-        if ~strcmp(get(gcf, 'tag'), currentfigtag);
+        if ~strcmp(get(gcf, 'tag'), currentfigtag)
             disp('Aborting plot');
             return;
         end
 
         % create axes
         % CONSIDER - move axes out of the loop?
-        h.ax(i) = axes('Units','Normalized', 'Position',[X Y sizewx sizewy].*s+q,...
-            'tag', ['topoaxis', num2str(ri)], 'Visible', 'off'); %#ok<LAXES>
+        h.ax(i) = axes('Units','Normalized', 'Position', ...
+            [X Y sizewx sizewy] .* s + q, 'tag', ...
+            ['topoaxis', num2str(ri)], 'Visible', 'off');
 
 
         % axis should be square
@@ -571,9 +576,10 @@ for i = 1:length(compnum)
 
         % plot the button above
         % ---------------------
-        button_pos = [X, Y+sizewy, sizewx, sizewy*0.25] .* s+q;
-        h.button(i) = uicontrol(h.fig, 'Style', 'pushbutton', 'Units','Normalized',...
-            'Position', button_pos, 'tag', ['comp' num2str(ri)]);
+        button_pos = [X, Y + sizewy, sizewx, sizewy * 0.25] .* s + q;
+        h.button(i) = uicontrol(h.fig, 'Style', 'pushbutton', 'Units', ...
+            'Normalized', 'Position', button_pos, 'tag', ...
+            ['comp' num2str(ri)]);
     end
 
     % go to the next component
@@ -629,7 +635,7 @@ setappdata(h.fig, 'syncer', snc);
 setappdata(h.fig, 'scheduler', s);
 
 if info.db_present
-    setappdata(h.fig, 'eegDb', eegDb);
+    setappdata(h.fig, 'eegDb', db);
 end
 
 
@@ -679,8 +685,8 @@ end
 
 
 function isv = isupdateval(v)
-% checks whether input is char and corresponds to
-% either 'workspace', 'eegDb gui'
+% checks whether input is char and corresponds to either 'workspace' or
+% 'eegDb gui'
 
     if ~ischar(v)
         isv = false;

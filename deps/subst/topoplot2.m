@@ -337,8 +337,8 @@ end
 if isempty(loc_file)
     loc_file = 0;
 end
-if isnumeric(loc_file) & loc_file == 0
-    loc_file = DEFAULT_ELOC;
+if isnumeric(loc_file) && loc_file == 0
+    loc_file = 'chan.locs';
 end
 
 if nargs > 2

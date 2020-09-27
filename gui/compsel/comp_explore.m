@@ -1,6 +1,6 @@
 function varargout = comp_explore(varargin)
-% COMP_EXPLORE - GUI used for exploring and classifying
-%                Independent Components
+% COMP_EXPLORE - GUI used for exploring and classifying Independent
+%                Components
 %      COMP_EXPLORE(EEG) lets you classify components in a given EEG
 %      signal. It is assumed that you have an db variable in your
 %      workspace - this variable should be the db database that
@@ -8,28 +8,8 @@ function varargout = comp_explore(varargin)
 %      EEG should be a given EEG recovered using recoverEEG
 %      with option 'ICAnorem' - that is without removing components
 %
-%
-%      COMP_EXPLORE, by itself, creates a new COMP_EXPLORE or raises the existing
-%      singleton*.
-%
-%      H = COMP_EXPLORE returns the handle to a new COMP_EXPLORE or the handle to
-%      the existing singleton*.
-%
-%      COMP_EXPLORE('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in COMP_EXPLORE.M with the given input arguments.
-%
-%      COMP_EXPLORE('Property','Value',...) creates a new COMP_EXPLORE or raises the
-%      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before comp_explore_OpeningFcn gets called.  An
-%      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to comp_explore_OpeningFcn via varargin.
-%
-%      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
-%      instance to run (singleton)".
-%
 % See also: GUIDE, GUIDATA, GUIHANDLES
 
-% Edit the above text to modify the response to help comp_explore
 
 % Last Modified by GUIDE v2.5 19-Dec-2013 13:20:01
 
@@ -124,20 +104,7 @@ function comp_explore_OpeningFcn(hObject, eventdata, h, varargin) %#ok<INUSL>
 % This function has no output args.
 
 % CHANGE:
-% arguments can be passed as:
-% [ ]        - if no db given we assume it is in the base workspace
-%              we perform checks:
-% [ ]          -- if no EEG given then we search base workspace
-%                for db structures, get name(s) of these structures,
-%                if multiple exist - pop up gui, if none - return error
-% [ ] EEG      -- if EEG is present we check whether the EEG has
-%                a copy of db in EEG.etc
-%                look for db just as in previous point
-%                (but if EEG.etc.db copy exists then look for db(r) that
-%                matches the EEG.etc.db copy
-%                display warning if no db is present
-%
-% [ ] db    - then r is assumed to be 1 (not if EEG present)
+% when using db arguments have to be passed as:
 % [ ] db, r - then EEG is recovered
 %
 % [ ]     if before first optional key occurs there is
@@ -160,7 +127,7 @@ h.button_ID = 1;
 
 % ==============
 % db as global
-if evalin('base', 'exist(''db'', ''var'');');
+if evalin('base', 'exist(''db'', ''var'');')
     % CHANGE - to avoid warning and incompatibility with
     % future MATLAB versions - additional function here
     % is needed that deals with
@@ -381,7 +348,7 @@ if h.opt.dipf.plot
         %         end
         %         clear d dips
         set(dips, 'visible', 'off');
-    end;
+    end
     clear tmpi
 end
 %% mac adjustments
@@ -701,7 +668,7 @@ if sum(strcmp('dip', refr)) > 0 && h.opt.dipf.plot
         end
 
         % make dipaxis globaly current (eh...)
-        axes(h.dipaxis); %#ok<MAXES>
+        axes(h.dipaxis);
 
         editobj = findobj('parent', h.dipfig, 'userdata', 'editor');
         set(editobj, 'string', num2str(h.comp));
@@ -1117,7 +1084,7 @@ function comp_signal_Callback(hObject, eventdata, handles) %#ok<INUSD,DEFNU>
 % handles    structure with handles and user data (see GUIDATA)
 h = guidata(hObject);
 
-if isfield(h.opt.plot, 'sigall') && h.opt.plot.sigall;
+if isfield(h.opt.plot, 'sigall') && h.opt.plot.sigall
     eegplot(h.EEG.icaact(:,:,:), 'srate', h.EEG.srate, ...
         'winlength', h.opt.plot.winl ,'limits', [h.EEG.times(1), h.EEG.times(end)],...
         'events', h.EEG.event, 'title', 'Component Timecourse');
@@ -1141,7 +1108,7 @@ goodelecs = allelecs;
 
 goodelecs(db(h.r).chan.bad) = [];
 
-if isfield(h.opt.plot, 'remall') && h.opt.plot.remall;
+if isfield(h.opt.plot, 'remall') && h.opt.plot.remall
     rejects = find([db(h.r).ICA.desc.reject]);
 else
     rejects = h.comp;
@@ -1202,21 +1169,21 @@ function ord=orderofmag(val)
 % used for computing erpimage trial axis tick labels as an alternative for
 % plotting sorting variable
 
-val=abs(val);
-if val>=1
-    ord=1;
-    val=floor(val/10);
-    while val>=1,
-        ord=ord*10;
-        val=floor(val/10);
+val = abs(val);
+if val >= 1
+    ord = 1;
+    val = floor(val / 10);
+    while val >= 1
+        ord = ord * 10;
+        val = floor(val / 10);
     end
     return;
 else
-    ord=1/10;
-    val=val*10;
-    while val<1,
-        ord=ord/10;
-        val=val*10;
+    ord = 1 / 10;
+    val = val * 10;
+    while val < 1
+        ord = ord / 10;
+        val = val * 10;
     end
     return;
 end
@@ -1297,7 +1264,7 @@ goodelecs = allelecs;
 goodelecs(db(h.r).chan.bad) = [];
 rejects = find([db(h.r).ICA.desc.reject]);
 
-if isempty(rejects);
+if isempty(rejects)
     h.EEG2 = h.EEG;
 else
     h.EEG2 = pop_subcomp(h.EEG, rejects, 0);

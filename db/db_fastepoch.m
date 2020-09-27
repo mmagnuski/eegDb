@@ -1,17 +1,18 @@
 function EEG = db_fastepoch(EEG, ev, lim)
 
-% faster epoching
+% DB_FASTEPOCH - faster version of EEGLAB epoching used in eegDb.
 % 
 % faster because:
-% does not use various key options
-% does not load eeglab_options (which is quite slow)
-% does not use eeg_checkset etc. (really slow!)
-% does not add AMICA probs
+% * does not use various key options
+% * does not load eeglab_options (which is quite slow)
+% * does not use eeg_checkset etc. (which is really slow!)
+% * does not add AMICA probs (which are not used in eegDb anyway)
 %
 % coded by mmagnuski
 
 % TODOs:
 % [ ] check if fillig EEG.epoch could be faster...
+% [x] duplicate EEG.event for overlapping epochs the way eeglab does
 % [x] repect boundary events
 
 % persistent uint32_max
