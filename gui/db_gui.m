@@ -462,9 +462,6 @@ for c = 1:length(cansel)
     % nonlocal call to recoverEEG
     % ADD - in some cases 'interp' may be wanted (?)
     handles.EEG = recoverEEG(handles.db, r, handles.recovopts{:});
-
-    % add version info to EEG
-    handles.EEG = db_ver2EEG(handles.db, handles.r, handles.EEG);
 end
 
 if ~isempty(cansel)
